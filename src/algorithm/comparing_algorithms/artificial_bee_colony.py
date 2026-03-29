@@ -44,6 +44,24 @@ class ABC(futoshiki_solver):
         errors = 0
         n = grid.shape[0]
         
+        # Check for duplicate numbers in rows
+        for row in range(n):
+            row_values = grid[row]
+            non_zero_values = row_values[row_values != 0]
+            unique_count = len(np.unique(non_zero_values))
+            total_count = len(non_zero_values)
+            if unique_count < total_count:
+                errors += total_count - unique_count
+        
+        # Check for duplicate numbers in columns
+        for col in range(n):
+            col_values = grid[:, col]
+            non_zero_values = col_values[col_values != 0]
+            unique_count = len(np.unique(non_zero_values))
+            total_count = len(non_zero_values)
+            if unique_count < total_count:
+                errors += total_count - unique_count
+        
         # Check horizontal constraints
         for row in range(n):
             for col in range(n - 1):

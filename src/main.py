@@ -127,7 +127,7 @@ def main():
     
     # Solve using ABC algorithm
     print("\nSolving with Artificial Bee Colony algorithm...")
-    solver = ABC(size, grid, constraint, swarm_size=1000, limit=50, max_iteration=10000)
+    solver = ABC(size, grid, constraint, swarm_size=500, limit=10, max_iteration=10000)
     solution = solver.solve()
     
     print(f"\nBest fitness achieved: {solver.best_fitness:.4f}")
