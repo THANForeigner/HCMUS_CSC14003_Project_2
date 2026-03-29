@@ -1,0 +1,24 @@
+# --- Python Virtual Environment ---
+.venv/
+venv/
+ENV/
+
+# --- Python Cache ---
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- IDE / Editor Settings ---
+.vscode/
+.idea/
+*.swp
+
+# --- Project Specifics (INPUT/OUTPUT) ---
+# Ignore large input datasets or generated logs/plots
+output/logs/
+output/plots/
+*.log
+
+# --- OS Generated Files ---
+.DS_Store
+Thumbs.db
