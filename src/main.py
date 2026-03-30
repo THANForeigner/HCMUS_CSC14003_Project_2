@@ -53,7 +53,7 @@ def read_input(input_file):
         if r < len(h_constraints_raw):
             h_constraints.append(h_constraints_raw[r])
         else:
-            h_constraints.append([0] * (size - 1))
+            h_constraints.append([0] * (size))
             
     # Ensure v_constraints has exactly `size - 1` rows
     v_constraints = []
