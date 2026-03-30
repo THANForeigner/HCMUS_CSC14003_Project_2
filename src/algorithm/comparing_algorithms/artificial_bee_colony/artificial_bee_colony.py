@@ -218,5 +218,7 @@ class ABC(futoshiki_solver):
             if self.fitness[best_idx] > self.best_fitness:
                 self.best_fitness = self.fitness[best_idx]
                 self.best_solution = self.food_sources[best_idx].copy()
-        
+
+            if self.best_fitness == 0.0:
+                return self.best_solution
         return self.best_solution
