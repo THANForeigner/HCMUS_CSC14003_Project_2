@@ -169,17 +169,34 @@ class GA(futoshiki_solver):
         return mutant
     
     def mutate(self, individual):
-        """Thực hiện đột biến dựa trên xác suất mutation_rate."""
         if np.random.random() > self.mutation_rate:
             return individual
         
         mutant = individual.copy()
-        strategy = np.random.randint(0, 2)
+        # Đột biến "mạnh": thực hiện từ 1 đến 3 lần thay đổi
+        for _ in range(np.random.randint(1, 4)):
+            strategy = np.random.randint(0, 2)
+            if strategy == 0:
+                mutant = self.swap_mutation(mutant)
+            else:
+                mutant = self.scramble_mutation(mutant)
+        return mutant
+    
+    def mutate_heavy(self, individual):
+        """Đột biến cực mạnh: Xáo trộn 3-5 hàng cùng lúc."""
+        mutant = individual.copy()
+        # Chọn ngẫu nhiên số lượng hàng bị tác động (khoảng 1/2 bảng)
+        num_rows = np.random.randint(3, 6)
+        rows = np.random.choice(self.size, size=num_rows, replace=False)
         
-        if strategy == 0:
-            return self.swap_mutation(mutant)
-        else:
-            return self.scramble_mutation(mutant)
+        for r in rows:
+            non_fixed = np.where(~self.fixed_mask[r])[0]
+            if len(non_fixed) >= 2:
+                # Xáo trộn (Scramble) toàn bộ ô trống trong hàng đó
+                vals = mutant[r, non_fixed]
+                np.random.shuffle(vals)
+                mutant[r, non_fixed] = vals
+        return mutant
     
     # -------------------------------------------------------------------------
     # Main GA loop
@@ -189,6 +206,10 @@ class GA(futoshiki_solver):
         Chạy Giải thuật Di truyền để giải Futoshiki.
         Bổ sung cơ chế Adaptive Mutation để tránh kẹt ở tối ưu cục bộ.
         """
+        # Lưu lại mutation ban đầu để reset khi cần
+        orig_mut_rate = self.mutation_rate
+        stagnant_generations = 0
+
         # Track the global best
         best_idx = np.argmax(self.fitness)
         self.best_fitness = self.fitness[best_idx]
@@ -205,10 +226,30 @@ class GA(futoshiki_solver):
 
             # --- Tự động điều chỉnh Mutation Rate (Adaptive) ---
             # Nếu 50 thế hệ không tìm thấy cá thể tốt hơn, tăng đột biến để phá vỡ bẫy
+
             if stagnant_generations > 50:
+                # Cấp 1: Tăng dần nhiệt độ (Mutation rate)
                 self.mutation_rate = min(0.5, self.mutation_rate + 0.05)
-            else:
-                self.mutation_rate = original_mutation_rate
+                
+            if stagnant_generations > 150:
+                # Cấp 2: Đổi sang vũ khí hạng nặng (Heavy Mutation)
+                current_mutate_fn = self.mutate_heavy
+
+            # if stagnant_generations > 500:
+            #     # Cấp 3: THAY MÁU (Reset 90% quần thể)
+            #     print(f"\n[Gen {iteration}] Kẹt quá lâu ở {self.best_fitness:.4f}. Đang thay máu...")
+            #     num_new = int(self.pop_size * 0.95)
+            #     new_blood = self.generate_random_states(num_new)
+            #     # Giữ lại 5% elite cũ, thay 95% bằng máu mới
+            #     elite_indices = np.argsort(self.fitness)[-int(self.pop_size*0.1):]
+            #     new_pop_list = [self.population[i].copy() for i in elite_indices]
+            #     self.population = np.vstack([np.array(new_pop_list), new_blood])
+                
+            #     # Reset các thông số về ban đầu sau khi thay máu
+            #     self.mutation_rate = orig_mut_rate
+            #     stagnant_generations = 0
+            #     self.fitness = self.calculate_fitness(self.population, self.constraint)
+            #     continue # Nhảy sang thế hệ mới
             
             new_population = []
             
@@ -250,8 +291,12 @@ class GA(futoshiki_solver):
             if self.fitness[gen_best_idx] > self.best_fitness:
                 self.best_fitness = self.fitness[gen_best_idx]
                 self.best_solution = self.population[gen_best_idx].copy()
-                stagnant_generations = 0
+                stagnant_generations = 0 # Reset khi có tiến triển
+                self.mutation_rate = orig_mut_rate # Trở về mức cũ để khai thác
             else:
                 stagnant_generations += 1
+
+            if iteration % 100 == 0:
+                print(f"Gen {iteration}: Best Fitness = {self.best_fitness:.4f}")
         
         return self.best_solution
