@@ -5,6 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from algorithm.comparing_algorithms.artificial_bee_colony import ABC
+from algorithm.comparing_algorithms.genetic_algorithm import GA
 
 
 def read_input(input_file):
@@ -129,6 +130,11 @@ def main():
     print("\nSolving with Artificial Bee Colony algorithm...")
     solver = ABC(size, grid, constraint, swarm_size=500, limit=10, max_iteration=10000)
     solution = solver.solve()
+
+    # Solve using GA algorithm
+    # print("\nSolving with Genetic Algorithm...")
+    # solver = GA(size, grid, constraint, pop_size=200, mutation_rate=0.1, crossover_rate=0.9, max_iteration=500)
+    # solution = solver.solve()
     
     print(f"\nBest fitness achieved: {solver.best_fitness:.4f}")
     print(f"Solution:\n{solution}")
