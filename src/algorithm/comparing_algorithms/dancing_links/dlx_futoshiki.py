@@ -32,17 +32,14 @@ class DLXFutoshiki(DancingLink):
                     row = [0] * num_cols
 
                     # tai o (r, c) dien i
-                    index = r * size + c
-                    row[index] = 1
+                    row[r * size + c] = 1
 
                     # hang c da co o i
                     # di qua size * size(o), r * size: moi hang dung size index.
-                    index = size * size + r * size + (i - 1)
-                    row[index] = 1
+                    row[size * size + r * size + (i - 1)] = 1
 
                     # tuong tu cho cot
-                    index = 2 * size * size + c * size + (i - 1)
-                    row[index] = 1
+                    row[2 * size * size + c * size + (i - 1)] = 1
                     ans.append(row)
 
         return ans, row_ids
