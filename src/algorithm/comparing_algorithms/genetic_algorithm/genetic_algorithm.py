@@ -1,6 +1,6 @@
 import numpy as np
 import random
-from ..futoshiki_solver import futoshiki_solver
+from ...futoshiki_solver import futoshiki_solver
 
 class GA(futoshiki_solver):
     def __init__(self, size, grid, constraint, pop_size=-1, mutation_rate=-1, 

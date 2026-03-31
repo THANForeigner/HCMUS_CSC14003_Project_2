@@ -7,7 +7,7 @@ from algorithm.comparing_algorithms.dancing_links.dlx_futoshiki import DLXFutosh
 from io_handler import read_input, write_output
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from algorithm.comparing_algorithms.genetic_algorithm import GA
+from algorithm.comparing_algorithms.genetic_algorithm.genetic_algorithm import GA
 
 def main():
     # Get input file from command line or use default
