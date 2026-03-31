@@ -20,6 +20,7 @@ class DancingLink:
     def __init__(self):
         self.root = ColumnNode("Root")
         self.row_ids = []
+        self.lt_pairs = None
         self.n = 0
         self.m = 0
 
@@ -45,14 +46,14 @@ class DancingLink:
                 newNode.row_id = self.row_ids[i]
                 newNode.C = colum[j]
 
-                # Cập nhật liên kết Up/Down
+                # Cập Up/Down
                 newNode.U = col_header.U
                 newNode.D = col_header
                 col_header.U.D = newNode
                 col_header.U = newNode
                 col_header.sum += 1
 
-                # Cập nhật liên kết Left/Right
+                # Cập Left/Right
                 if FirstNodeInRow is None:
                     FirstNodeInRow = newNode
                 else:
@@ -150,6 +151,13 @@ class DancingLink:
         col = c.D
         while col != c:
             stack.append(col)
+
+            # Kiểm tra class DLXFutoshiki có hàm 'check_futoshiki' không và kiểm tra điều kiện cộng thêm này
+            if hasattr(self, 'check_futoshiki') and getattr(self, 'check_futoshiki')(stack) == False:
+                stack.pop()
+                col = col.D
+                continue
+
             row = col.R
             while row != col:
                 self.cover(row.C)
@@ -157,7 +165,10 @@ class DancingLink:
 
             self.search(k + 1, stack)
 
-            stack.pop()
+            last_node = stack.pop()
+            if hasattr(self, 'uncheck_futoshiki'):
+                getattr(self, 'uncheck_futoshiki')(last_node)
+
             row = col.L
             while row != col:
                 self.uncover(row.C)
