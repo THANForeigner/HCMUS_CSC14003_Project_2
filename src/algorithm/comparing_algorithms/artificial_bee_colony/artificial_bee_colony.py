@@ -1,7 +1,7 @@
 import numpy as np
 import random
 from copy import deepcopy
-from ..futoshiki_solver import futoshiki_solver
+from ...futoshiki_solver import futoshiki_solver
 
 class ABC(futoshiki_solver):
     def __init__(self, size, grid, constraint, swarm_size=-1, limit=-1, max_iteration=-1):
@@ -218,5 +218,7 @@ class ABC(futoshiki_solver):
             if self.fitness[best_idx] > self.best_fitness:
                 self.best_fitness = self.fitness[best_idx]
                 self.best_solution = self.food_sources[best_idx].copy()
-        
+
+            if self.best_fitness == 0.0:
+                return self.best_solution
         return self.best_solution

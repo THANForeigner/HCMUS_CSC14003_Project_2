@@ -5,6 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from algorithm.comparing_algorithms.artificial_bee_colony import ABC
+from algorithm.comparing_algorithms.genetic_algorithm import GA
 
 
 def read_input(input_file):
@@ -14,8 +15,7 @@ def read_input(input_file):
     Input format:
     - Line 1: n (grid size)
     - Lines 2 to n+1: Initial grid (n x n) with 0 for empty cells
-    - Lines n+2 to 2n: Horizontal constraints (n x n-1)
-    - Lines 2n+1 to 3n-1: Vertical constraints (n-1 x n)
+    - Next lines: Horizontal constraints (length n-1) and Vertical constraints (length n)
     
     Args:
         input_file: Path to input file
@@ -35,22 +35,38 @@ def read_input(input_file):
         row = list(map(int, lines[i].split()))
         grid.append(row)
     
-    # Parse horizontal constraints
-    h_constraints = []
-    for i in range(size + 1, 2 * size + 1):
-        row = list(map(int, lines[i].split()))
-        h_constraints.append(row)
+    # Parse constraints flexibly based on line lengths
+    h_constraints_raw = []
+    v_constraints_raw = []
     
-    # Parse vertical constraints
+    idx = size + 1
+    while idx < len(lines):
+        row = list(map(int, lines[idx].split()))
+        if len(row) == size - 1:
+            h_constraints_raw.append(row)
+        elif len(row) == size:
+            v_constraints_raw.append(row)
+        idx += 1
+        
+    # Ensure h_constraints has exactly `size` rows
+    h_constraints = []
+    for r in range(size):
+        if r < len(h_constraints_raw):
+            h_constraints.append(h_constraints_raw[r])
+        else:
+            h_constraints.append([0] * (size))
+            
+    # Ensure v_constraints has exactly `size - 1` rows
     v_constraints = []
-    for i in range(2 * size + 1, 3 * size):
-        row = list(map(int, lines[i].split()))
-        v_constraints.append(row)
+    for r in range(size - 1):
+        if r < len(v_constraints_raw):
+            v_constraints.append(v_constraints_raw[r])
+        else:
+            v_constraints.append([0] * size)
     
     constraint = [h_constraints, v_constraints]
     
     return size, grid, constraint
-
 
 def format_output(solution, h_constraints, v_constraints):
     n = len(solution)
@@ -126,8 +142,13 @@ def main():
     print(f"Initial grid:\n{np.array(grid)}")
     
     # Solve using ABC algorithm
-    print("\nSolving with Artificial Bee Colony algorithm...")
-    solver = ABC(size, grid, constraint, swarm_size=500, limit=10, max_iteration=10000)
+    # print("\nSolving with Artificial Bee Colony algorithm...")
+    # solver = ABC(size, grid, constraint, swarm_size=500, limit=10, max_iteration=10000)
+    # solution = solver.solve()
+
+    # Solve using GA algorithm
+    print("\nSolving with Genetic Algorithm...")
+    solver = GA(size, grid, constraint, pop_size=200, mutation_rate=0.1, crossover_rate=0.9, elite_size=10, tournament_size=3, max_iteration=1000)
     solution = solver.solve()
     
     print(f"\nBest fitness achieved: {solver.best_fitness:.4f}")
