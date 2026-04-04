@@ -91,20 +91,6 @@ class FutoshikiKB:
             changed |= self.enforce_inequality(i + 1, j, i, j)
         return changed
 
-    def forward_chain(self):
-        self.apply_a9_enforce_clues()
-        changed = True
-        while changed:
-            changed = False
-            changed |= self.apply_a3_a4_uniqueness()
-            changed |= self.apply_a5_to_a8_constraints()
-
-        is_solved = all(len(self.domains[i][j]) == 1 for i in range(self.n) for j in range(self.n))
-        is_valid = all(len(self.domains[i][j]) > 0 for i in range(self.n) for j in range(self.n))
-
-        if not is_valid:
-            return "Contradiction", self.domains
-        return "Solved" if is_solved else "Incomplete", self.domains
 
     def format_output(self, h_constraints, v_constraints):
         output_lines = []
@@ -149,11 +135,13 @@ if __name__ == "__main__":
     base_path = Path(__file__).parent.parent
     input_file = base_path / "inputs" / f"input-{puzzle_id}.txt"
 
+    from src.algorithm.first_order_logic.forward_chaining import forward_chainning
+
     size, grid, constraint = read_input(input_file)
     h_constraints, v_constraints = constraint[0], constraint[1]
 
-    kb = FutoshikiKB.from_input(size, grid, h_constraints, v_constraints)
-    status, domains = kb.forward_chain()
+    solver = forward_chainning(size, grid, constraint)
+    status, domains = solver.solve()
 
     print(f"Status: {status}")
-    print(kb.format_output(h_constraints, v_constraints))
+    print(solver.kb.format_output(h_constraints, v_constraints))
