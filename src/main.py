@@ -12,9 +12,10 @@ def read_input(input_file):
     Read Futoshiki puzzle input from file.
     
     Input format:
-    - Line 1: n (grid size)
-    - Lines 2 to n+1: Initial grid (n x n) with 0 for empty cells
-    - Next lines: Horizontal constraints (length n-1) and Vertical constraints (length n)
+    - Line 1: N (grid size)
+    - Lines 2 to N+1: Initial grid (N x N) with 0 for empty, 1..N for pre-filled
+    - Next N lines: Horizontal constraints (N-1 values each: 0=none, 1='<', -1='>')
+    - Next N-1 lines: Vertical constraints (N values each: 0=none, 1='<', -1='>')
     
     Args:
         input_file: Path to input file
@@ -23,45 +24,24 @@ def read_input(input_file):
         Tuple of (size, grid, [h_constraints, v_constraints])
     """
     with open(input_file, 'r') as f:
-        lines = [line.strip() for line in f.readlines() if line.strip()]
+        lines = [line.strip() for line in f.readlines() if line.strip() and not line.strip().startswith('#')]
     
-    # Parse grid size
     size = int(lines[0])
     
-    # Parse initial grid
     grid = []
     for i in range(1, size + 1):
-        row = list(map(int, lines[i].split()))
+        row = list(map(int, lines[i].replace(' ', '').split(',')))
         grid.append(row)
     
-    # Parse constraints flexibly based on line lengths
-    h_constraints_raw = []
-    v_constraints_raw = []
-    
-    idx = size + 1
-    while idx < len(lines):
-        row = list(map(int, lines[idx].split()))
-        if len(row) == size - 1:
-            h_constraints_raw.append(row)
-        elif len(row) == size:
-            v_constraints_raw.append(row)
-        idx += 1
-        
-    # Ensure h_constraints has exactly `size` rows
     h_constraints = []
-    for r in range(size):
-        if r < len(h_constraints_raw):
-            h_constraints.append(h_constraints_raw[r])
-        else:
-            h_constraints.append([0] * (size - 1))
-            
-    # Ensure v_constraints has exactly `size - 1` rows
+    for i in range(size):
+        row = list(map(int, lines[size + 1 + i].replace(' ', '').split(',')))
+        h_constraints.append(row)
+    
     v_constraints = []
-    for r in range(size - 1):
-        if r < len(v_constraints_raw):
-            v_constraints.append(v_constraints_raw[r])
-        else:
-            v_constraints.append([0] * size)
+    for i in range(size - 1):
+        row = list(map(int, lines[size + 1 + size + i].replace(' ', '').split(',')))
+        v_constraints.append(row)
     
     constraint = [h_constraints, v_constraints]
     
