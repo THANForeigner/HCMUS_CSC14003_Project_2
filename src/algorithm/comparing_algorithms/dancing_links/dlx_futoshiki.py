@@ -1,9 +1,11 @@
 import numpy as np
 from .dancing_links import DancingLink, Node, ColumnNode
+from ...futoshiki_solver import futoshiki_solver
 
-class DLXFutoshiki(DancingLink):
+class DLXFutoshiki(futoshiki_solver, DancingLink):
     def __init__(self, size, grid, constraint):
-        super().__init__()
+        futoshiki_solver.__init__(self, size, grid, constraint)
+        DancingLink.__init__(self)
         self.n = self.m = self.size = size
         matrix, self.row_ids = self.build_matrix(size, grid)
         self.insert(matrix)

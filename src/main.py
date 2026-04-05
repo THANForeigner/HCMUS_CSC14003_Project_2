@@ -33,17 +33,17 @@ def read_input(input_file):
     
     grid = []
     for i in range(1, size + 1):
-        row = list(map(int, lines[i].replace(' ', '').split(',')))
+        row = list(map(int, lines[i].replace(',', ' ').split()))
         grid.append(row)
     
     h_constraints = []
     for i in range(size):
-        row = list(map(int, lines[size + 1 + i].replace(' ', '').split(',')))
+        row = list(map(int, lines[size + 1 + i].replace(',', ' ').split()))
         h_constraints.append(row)
     
     v_constraints = []
     for i in range(size - 1):
-        row = list(map(int, lines[size + 1 + size + i].replace(' ', '').split(',')))
+        row = list(map(int, lines[size + 1 + size + i].replace(',', ' ').split()))
         v_constraints.append(row)
     
     constraint = [h_constraints, v_constraints]
@@ -132,8 +132,20 @@ def main():
     # print("\nSolving with Genetic Algorithm...")
     # solver = GA(size, grid, constraint, pop_size=200, mutation_rate=0.1, crossover_rate=0.9, elite_size=10, tournament_size=3, max_iteration=1000)
     # solution = solver.solve()
-    solver = DLXFutoshiki(size, grid, constraint)
-    solution = solver.solve()
+    from algorithm.first_order_logic.backward_chaining import backward_chaining
+    from algorithm.first_order_logic.forward_chaining import forward_chaining
+    print("\nSolving with backward Chaining...")
+    solver = backward_chaining(size, grid, constraint)
+    
+    # backward_chaining solve() returns (status, domains) but stores the 2D matrix in self.solution
+    status, domains = solver.solve()
+    print(f"Status: {status}")
+    
+    if hasattr(solver, 'solution') and solver.solution is not None:
+        solution = np.array(solver.solution)
+    else:
+        print("Failed to solve.")
+        solution = np.zeros((size, size), dtype=int)
     
     print(f"Solution:\n{solution}")
     
@@ -142,7 +154,5 @@ def main():
     write_output(output_file, solution, constraint[0], constraint[1])
 
     print("Done!")
-
-
 if __name__ == "__main__":
     main()

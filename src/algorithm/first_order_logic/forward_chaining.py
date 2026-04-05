@@ -4,57 +4,83 @@ from pathlib import Path
 # Add project root to sys.path to allow running as script or importing
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 
-from src.algorithm.futoshiki_solver import futoshiki_solver
-from src.algorithm.first_order_logic.kb import FutoshikiKB
+from ..futoshiki_solver import futoshiki_solver
+from .kb import FutoshikiKB
+import copy
 
-class forward_chainning(futoshiki_solver):
+class forward_chaining(futoshiki_solver):
     def __init__(self, size, grid, constraint):
         super().__init__(size, grid, constraint)
         h_constraints, v_constraints = constraint[0], constraint[1]
         self.kb = FutoshikiKB.from_input(size, grid, h_constraints, v_constraints)
 
     def forward_chain(self):
-        self.kb.apply_a9_enforce_clues()
+        """Thực hiện lan truyền ràng buộc cho đến khi không thể thu hẹp thêm."""
         changed = True
         while changed:
             changed = False
             changed |= self.kb.apply_a3_a4_uniqueness()
             changed |= self.kb.apply_a5_to_a8_constraints()
+        
+        # Kiểm tra mâu thuẫn (có ô nào rỗng domain không)
+        for i in range(self.kb.n):
+            for j in range(self.kb.n):
+                if len(self.kb.domains[i][j]) == 0:
+                    return False # Mâu thuẫn
+        return True # Hợp lệ (nhưng có thể chưa xong)
 
+    def backtrack(self):
+        """Tìm kiếm quay lui kết hợp suy luận tiến."""
+        # 1. Chạy Forward Chaining để rút gọn miền giá trị
+        if not self.forward_chain():
+            return False # Nhánh này vô nghiệm, quay lui
+
+        # 2. Kiểm tra xem đã giải xong chưa
         is_solved = all(len(self.kb.domains[i][j]) == 1 for i in range(self.kb.n) for j in range(self.kb.n))
-        is_valid = all(len(self.kb.domains[i][j]) > 0 for i in range(self.kb.n) for j in range(self.kb.n))
+        if is_solved:
+            return True
 
-        if not is_valid:
-            status = "Contradiction"
-        elif is_solved:
-            status = "Solved"
-        else:
-            status = "Incomplete"
-            
-        return status, self.kb.domains
+        # 3. Chọn một ô để "đoán"
+        # Heuristic: Minimum Remaining Values (MRV) - Chọn ô có ít khả năng nhất để giảm rẽ nhánh
+        min_options = float('inf')
+        best_cell = None
+        for i in range(self.kb.n):
+            for j in range(self.kb.n):
+                d_len = len(self.kb.domains[i][j])
+                if 1 < d_len < min_options:
+                    min_options = d_len
+                    best_cell = (i, j)
+
+        if not best_cell:
+            return False # Không tìm được ô hợp lệ (mặc dù chưa giải xong)
+
+        r, c = best_cell
+
+        # 4. Thử từng giá trị trong domain của ô đã chọn
+        for val in list(self.kb.domains[r][c]):
+            # LƯU TRẠNG THÁI: Rất quan trọng, dùng deepcopy để không hỏng dữ liệu khi quay lui
+            saved_domains = copy.deepcopy(self.kb.domains)
+
+            # Thử gán giá trị
+            self.kb.domains[r][c] = {val}
+
+            # Đệ quy đi tiếp
+            if self.backtrack():
+                return True
+
+            # QUAY LUI: Khôi phục lại trạng thái cũ nếu việc gán 'val' dẫn đến ngõ cụt
+            self.kb.domains = saved_domains
+
+        return False # Tất cả các nhánh phỏng đoán đều sai
 
     def solve(self):
-        status, domains = self.forward_chain()
-        if status == "Solved":
+        self.kb.apply_a9_enforce_clues()
+        
+        # Gọi hàm backtrack thay vì gọi thẳng forward_chain
+        success = self.backtrack()
+        
+        if success:
             self.solution = [[list(self.kb.domains[i][j])[0] for j in range(self.size)] for i in range(self.size)]
-        return status, domains
-
-if __name__ == "__main__":
-    from src.main import read_input
-
-    if len(sys.argv) > 1:
-        puzzle_id = sys.argv[1]
-    else:
-        puzzle_id = "01"
-
-    base_path = Path(__file__).parent.parent.parent.parent
-    input_file = base_path / "inputs" / f"input-{puzzle_id}.txt"
-
-    size, grid, constraint = read_input(input_file)
-    h_constraints, v_constraints = constraint[0], constraint[1]
-
-    solver = forward_chainning(size, grid, constraint)
-    status, domains = solver.solve()
-
-    print(f"Status: {status}")
-    print(solver.kb.format_output(h_constraints, v_constraints))
+            return "Solved", self.kb.domains
+        else:
+            return "Contradiction", self.kb.domains
