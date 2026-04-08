@@ -96,18 +96,35 @@ def main():
     from algorithm.first_order_logic.forward_chaining import forward_chaining
     from algorithm.first_order_logic.fc_no_backtrack import fc_no_backtrack
     from algorithm.first_order_logic.backward_chaining import backward_chaining
-    print("\nSolving with Backward Chaining...")
+    import time
+    from algorithm.first_order_logic.bc_no_backtrack import bc_no_backtrack
+
+    print("\n--- No Backtrack Time Comparison ---")
     
-    solver = backward_chaining(size, grid, constraint)
-    status, domains = solver.solve()
+    print("\nSolving with Forward Chaining (No Backtrack)...")
+    start_time = time.time()
+    solver_fc = forward_chaining(size, grid, constraint)
+    status_fc, _ = solver_fc.solve()
+    time_fc = time.time() - start_time
+    print(f"Status: {status_fc}")
+    print(f"Execution Time (FC No Backtrack): {time_fc:.4f} seconds")
+
+    print("\nSolving with Backward Chaining (No Backtrack)...")
+    start_time = time.time()
+    solver_bc = backward_chaining(size, grid, constraint)
+    status_bc, _ = solver_bc.solve()
+    time_bc = time.time() - start_time
+    print(f"Status: {status_bc}")
+    print(f"Execution Time (BC No Backtrack): {time_bc:.4f} seconds")
+    
+    print(f"\nTime difference: {abs(time_fc - time_bc):.4f} seconds")
+
+    status = status_bc
+    solver = solver_bc
     
     print(f"Status: {status}")
     
-    if hasattr(solver, 'solution') and solver.solution is not None and status == "Solved":
-        solution = np.array(solver.solution)
-    else:
-        print("Failed to solve.")
-        solution = np.zeros((size, size), dtype=int)
+    solution = np.array(solver.solution)
     
     print(f"Solution:\n{solution}")
     

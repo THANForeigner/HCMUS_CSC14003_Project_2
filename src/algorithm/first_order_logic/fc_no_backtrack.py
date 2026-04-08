@@ -34,6 +34,8 @@ class fc_no_backtrack(futoshiki_solver):
                             break
                             
                     if all_premises_met:
+                        if conclusion == ("Contradiction",):
+                            return False, current_facts
                         fact_set.add(conclusion)
                         current_facts.append(conclusion)
                         changed = True
@@ -59,23 +61,28 @@ class fc_no_backtrack(futoshiki_solver):
         # Chỉ chạy Forward Chaining nguyên bản
         success, final_facts = self.forward_chain(initial_facts)
         
-        final_domains = [[set() for _ in range(self.size)] for _ in range(self.size)]
+        # SỬA LỖI: Khởi tạo domain ban đầu chứa tất cả các giá trị từ 1 đến size
+        final_domains = [[set(range(1, self.size + 1)) for _ in range(self.size)] for _ in range(self.size)]
         self.solution = [[0 for _ in range(self.size)] for _ in range(self.size)]
         
+        # Cập nhật Domain dựa trên các fact thu được
+        for fact in final_facts:
+            #breakpoint()
+            if fact[0] == "NotValue":
+                _, r, c, v = fact
+                # Loại bỏ giá trị v khỏi domain của ô (r, c)
+                if v in final_domains[r][c]:
+                    final_domains[r][c].remove(v)
+            elif fact[0] == "Value":
+                _, r, c, v = fact
+                self.solution[r][c] = v
+                # Nếu đã có Value chắc chắn, domain chỉ còn duy nhất giá trị đó
+                final_domains[r][c] = {v}
+
         if success:
-            for fact in final_facts:
-                if fact[0] == "Value":
-                    _, r, c, v = fact
-                    self.solution[r][c] = v
-                    final_domains[r][c].add(v)
-            
             if self.is_solved_check(final_facts):
                 return "Solved", final_domains
             else:
                 return "Unresolved (Needs Backtracking)", final_domains
         else:
-            for fact in final_facts:
-                if fact[0] == "Value":
-                    _, r, c, v = fact
-                    final_domains[r][c].add(v)
             return "Contradiction", final_domains

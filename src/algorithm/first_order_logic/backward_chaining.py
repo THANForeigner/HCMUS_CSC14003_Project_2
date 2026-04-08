@@ -16,7 +16,6 @@ class backward_chaining(futoshiki_solver):
     def prove(self, goal, current_facts, visited=None, memo=None):
         """
         Prolog-style Backward Chaining engine (SLD Resolution).
-        Truy vấn ngược trên cây Luật Horn (Horn Clauses) cho đên khi chạm Fact.
         """
         if visited is None:
             visited = set()
@@ -117,7 +116,7 @@ class backward_chaining(futoshiki_solver):
     def solve(self):
         # Thiết lập giới hạn đệ quy cao hơn để chứa SLD Resolution Tree
         old_limit = sys.getrecursionlimit()
-        sys.setrecursionlimit(max(old_limit, 5000))
+        sys.setrecursionlimit(max(old_limit, 100000))
         
         try:
             # Khởi tạo SLD Resolution Engine từ Given clues a9
