@@ -5,6 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from algorithm.comparing_algorithms.artificial_bee_colony import ABC
+from algorithm.comparing_algorithms.astar import AStarFutoshiki
 
 
 def read_input(input_file):
@@ -35,13 +36,13 @@ def read_input(input_file):
     
     h_constraints = []
     for i in range(size):
-        row = list(map(int, lines[size + 1 + i].replace(' ', '').split(',')))
-        h_constraints.append(row)
+        values = list(map(int, lines[size + 1 + i].replace(' ', '').split(',')))
+        h_constraints.append(values[:size-1])
     
     v_constraints = []
     for i in range(size - 1):
-        row = list(map(int, lines[size + 1 + size + i].replace(' ', '').split(',')))
-        v_constraints.append(row)
+        values = list(map(int, lines[size + 1 + size + i].replace(' ', '').split(',')))
+        v_constraints.append(values[:size])
     
     constraint = [h_constraints, v_constraints]
     
@@ -98,40 +99,55 @@ def write_output(output_file, solution, h_constraints, v_constraints):
 
 
 def main():
-    # Get input file from command line or use default
     if len(sys.argv) > 1:
         puzzle_id = sys.argv[1]
     else:
         puzzle_id = "01"
     
-    # Construct file paths
+    algorithm = sys.argv[2] if len(sys.argv) > 2 else "astar"
+    heuristic = sys.argv[3] if len(sys.argv) > 3 else "h1"
+    
     base_path = Path(__file__).parent.parent
     input_file = base_path / "inputs" / f"input-{puzzle_id}.txt"
     output_file = base_path / "outputs" / f"output-{puzzle_id}.txt"
     
-    # Create output directory if it doesn't exist
     output_file.parent.mkdir(parents=True, exist_ok=True)
     
     print(f"Reading puzzle from {input_file}")
-    
-    # Read input
     size, grid, constraint = read_input(input_file)
     
     print(f"Puzzle size: {size}x{size}")
     print(f"Initial grid:\n{np.array(grid)}")
     
-    # Solve using ABC algorithm
-    print("\nSolving with Artificial Bee Colony algorithm...")
-    solver = ABC(size, grid, constraint, swarm_size=500, limit=10, max_iteration=10000)
-    solution = solver.solve()
+    if algorithm == "astar":
+        h_names = {'h1': 'Hamming (Blank Cells)', 'h2': 'Constraint Violations', 'h3': 'MRV + AC-3'}
+        print(f"\nSolving with A* (Heuristic: {h_names.get(heuristic, heuristic)})...")
+        solver = AStarFutoshiki(size, grid, constraint)
+        
+        if heuristic == 'h3':
+            solution, expanded, generated = solver.solve_with_ac3(heuristic)
+        else:
+            solution, expanded, generated = solver.solve(heuristic)
+        
+        if solution is not None:
+            print(f"Solution found!")
+            print(f"Nodes expanded: {expanded}")
+            print(f"Nodes generated: {generated}")
+            print(f"Solution:\n{solution}")
+            write_output(output_file, solution, constraint[0], constraint[1])
+        else:
+            print("No solution found.")
     
-    print(f"\nBest fitness achieved: {solver.best_fitness:.4f}")
-    print(f"Solution:\n{solution}")
+    elif algorithm == "abc":
+        print("\nSolving with Artificial Bee Colony algorithm...")
+        solver = ABC(size, grid, constraint, swarm_size=500, limit=10, max_iteration=10000)
+        solution = solver.solve()
+        
+        print(f"\nBest fitness achieved: {solver.best_fitness:.4f}")
+        print(f"Solution:\n{solution}")
+        write_output(output_file, solution, constraint[0], constraint[1])
     
-    # Format and write output
     print(f"\nWriting solution to {output_file}")
-    write_output(output_file, solution, constraint[0], constraint[1])
-    
     print("Done!")
 
 
