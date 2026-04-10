@@ -98,24 +98,25 @@ def main():
     from algorithm.first_order_logic.backward_chaining import backward_chaining
     import time
     from algorithm.first_order_logic.bc_no_backtrack import bc_no_backtrack
+    from algorithm.first_order_logic.backward_chaining_with_ac3 import backward_chaining_with_ac3
 
     print("\n--- No Backtrack Time Comparison ---")
     
-    print("\nSolving with Forward Chaining (No Backtrack)...")
+    print("\nSolving with Backward Chaining (Backtrack)...")
     start_time = time.time()
-    solver_fc = forward_chaining(size, grid, constraint)
+    solver_fc = backward_chaining(size, grid, constraint)
     status_fc, _ = solver_fc.solve()
     time_fc = time.time() - start_time
     print(f"Status: {status_fc}")
-    print(f"Execution Time (FC No Backtrack): {time_fc:.4f} seconds")
+    print(f"Execution Time: {time_fc:.4f} seconds")
 
-    print("\nSolving with Backward Chaining (No Backtrack)...")
+    print("\nSolving with Backward Chaining (With AC3)...")
     start_time = time.time()
-    solver_bc = backward_chaining(size, grid, constraint)
+    solver_bc = backward_chaining_with_ac3(size, grid, constraint)
     status_bc, _ = solver_bc.solve()
     time_bc = time.time() - start_time
     print(f"Status: {status_bc}")
-    print(f"Execution Time (BC No Backtrack): {time_bc:.4f} seconds")
+    print(f"Execution Time: {time_bc:.4f} seconds")
     
     print(f"\nTime difference: {abs(time_fc - time_bc):.4f} seconds")
 
