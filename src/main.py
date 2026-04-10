@@ -5,6 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from algorithm.comparing_algorithms.artificial_bee_colony import ABC
+from algorithm.comparing_algorithms.pure_astar import PureAStarSolver
 from algorithm.comparing_algorithms.astar import AStarFutoshiki
 
 
@@ -122,17 +123,14 @@ def main():
     if algorithm == "astar":
         h_names = {'h1': 'Hamming (Blank Cells)', 'h2': 'Constraint Violations', 'h3': 'MRV + AC-3'}
         print(f"\nSolving with A* (Heuristic: {h_names.get(heuristic, heuristic)})...")
-        solver = AStarFutoshiki(size, grid, constraint)
-        
-        if heuristic == 'h3':
-            solution, expanded, generated = solver.solve_with_ac3(heuristic)
-        else:
-            solution, expanded, generated = solver.solve(heuristic)
+        solver = AStarFutoshiki(size, grid, constraint, heuristic)
+        solution = solver.solve()
+        stats = solver.get_stats()
         
         if solution is not None:
             print(f"Solution found!")
-            print(f"Nodes expanded: {expanded}")
-            print(f"Nodes generated: {generated}")
+            print(f"Nodes expanded: {stats['nodes_expanded']}")
+            print(f"Nodes generated: {stats['nodes_generated']}")
             print(f"Solution:\n{solution}")
             write_output(output_file, solution, constraint[0], constraint[1])
         else:

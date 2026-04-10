@@ -1,49 +1,8 @@
 import heapq
 import numpy as np
-from typing import Tuple, List, Optional, Set, Dict
+from typing import Tuple, Optional, Dict, List, Set
 from collections import deque
-
-
-class FutoshikiState:
-    def __init__(self, grid: np.ndarray, domains: Optional[Dict[Tuple[int, int], Set[int]]] = None):
-        self.grid = grid.copy()
-        self.size = len(grid)
-        self.h_constraints = None
-        self.v_constraints = None
-        
-        if domains is not None:
-            self.domains = {k: v.copy() for k, v in domains.items()}
-        else:
-            self.domains = {}
-            for i in range(self.size):
-                for j in range(self.size):
-                    if grid[i, j] == 0:
-                        self.domains[(i, j)] = set(range(1, self.size + 1))
-                    else:
-                        self.domains[(i, j)] = {grid[i, j]}
-    
-    def set_constraints(self, h_constraints: np.ndarray, v_constraints: np.ndarray):
-        self.h_constraints = h_constraints.copy()
-        self.v_constraints = v_constraints.copy()
-    
-    def __hash__(self):
-        return hash(tuple(self.grid.flatten()))
-    
-    def __eq__(self, other):
-        return np.array_equal(self.grid, other.grid)
-    
-    def copy(self):
-        new_state = FutoshikiState(self.grid, self.domains)
-        if self.h_constraints is not None:
-            new_state.set_constraints(self.h_constraints, self.v_constraints)
-        return new_state
-    
-    def get_blank_positions(self) -> List[Tuple[int, int]]:
-        return [(i, j) for i in range(self.size) 
-                for j in range(self.size) if self.grid[i, j] == 0]
-    
-    def is_assigned(self, row: int, col: int) -> bool:
-        return self.grid[row, col] != 0
+from ..futoshiki_solver import FutoshikiSolver, FutoshikiState
 
 
 class AC3Solver:
@@ -170,17 +129,12 @@ class AC3Solver:
         return True
 
 
-class AStarFutoshiki:
-    def __init__(self, size: int, grid: np.ndarray, constraints: Tuple[np.ndarray, np.ndarray]):
-        self.size = size
-        self.initial_grid = np.array(grid)
-        self.h_constraints = np.array(constraints[0])
-        self.v_constraints = np.array(constraints[1])
+class AStarFutoshiki(FutoshikiSolver):
+    def __init__(self, size: int, grid, constraint, heuristic: str = 'h3'):
+        super().__init__(size, grid, constraint)
+        self.heuristic = heuristic
         self.nodes_expanded = 0
         self.nodes_generated = 0
-        
-    def is_goal(self, state: FutoshikiState) -> bool:
-        return len(state.get_blank_positions()) == 0
     
     def check_constraints(self, state: FutoshikiState) -> int:
         violations = 0
@@ -294,7 +248,14 @@ class AStarFutoshiki:
         
         return successors
     
-    def solve(self, heuristic: str = 'h1', max_nodes: int = 500000) -> Tuple[Optional[np.ndarray], int, int]:
+    def solve(self) -> Optional[np.ndarray]:
+        if self.heuristic == 'h3':
+            solution, _, _ = self.solve_with_ac3()
+        else:
+            solution, _, _ = self.solve_astar()
+        return solution
+    
+    def solve_astar(self, max_nodes: int = 500000) -> Tuple[Optional[np.ndarray], int, int]:
         self.nodes_expanded = 0
         self.nodes_generated = 0
         
@@ -304,17 +265,14 @@ class AStarFutoshiki:
             'h3': (self.h3_mrv_domain_size, True)
         }
         
-        if heuristic not in heuristic_map:
-            raise ValueError(f"Unknown heuristic: {heuristic}")
+        heuristic_fn, use_mrv = heuristic_map[self.heuristic]
         
-        heuristic_fn, use_mrv = heuristic_map[heuristic]
-        
-        initial_state = FutoshikiState(self.initial_grid)
+        initial_state = FutoshikiState(self.grid)
         initial_state.set_constraints(self.h_constraints, self.v_constraints)
         
-        if np.all(self.initial_grid != 0):
+        if np.all(self.grid != 0):
             if self.check_constraints(initial_state) == 0:
-                return self.initial_grid, 0, 1
+                return self.grid, 0, 1
         
         if self.has_conflict(initial_state):
             return None, 0, 1
@@ -336,7 +294,7 @@ class AStarFutoshiki:
             
             f, g, h, _, current_state = heapq.heappop(open_set)
             
-            if self.is_goal(current_state):
+            if len(current_state.get_blank_positions()) == 0:
                 if self.check_constraints(current_state) == 0:
                     return current_state.grid, self.nodes_expanded, self.nodes_generated
             
@@ -360,28 +318,28 @@ class AStarFutoshiki:
         
         return None, self.nodes_expanded, self.nodes_generated
     
-    def solve_with_ac3(self, heuristic: str = 'h3', max_nodes: int = 100000) -> Tuple[Optional[np.ndarray], int, int]:
+    def solve_with_ac3(self, max_nodes: int = 100000) -> Tuple[Optional[np.ndarray], int, int]:
         self.nodes_expanded = 0
         self.nodes_generated = 0
         
-        ac3 = AC3Solver(self.size, self.initial_grid, self.h_constraints, self.v_constraints)
+        ac3 = AC3Solver(self.size, self.grid, self.h_constraints, self.v_constraints)
         
         if not ac3.ac3():
             return None, 0, 1
         
         initial_domains = {k: v.copy() for k, v in ac3.domains.items()}
-        initial_state = FutoshikiState(self.initial_grid, initial_domains)
+        initial_state = FutoshikiState(self.grid, initial_domains)
         initial_state.set_constraints(self.h_constraints, self.v_constraints)
         
         for key in list(initial_state.domains.keys()):
             if len(initial_state.domains[key]) == 1:
                 val = list(initial_state.domains[key])[0]
                 r, c = key
-                if self.initial_grid[r, c] == 0:
+                if self.grid[r, c] == 0:
                     initial_state.grid[r, c] = val
         
         def backtrack(state: FutoshikiState, domains: Dict) -> Tuple[Optional[FutoshikiState], int, int]:
-            if self.is_goal(state):
+            if len(state.get_blank_positions()) == 0:
                 return state, self.nodes_expanded, self.nodes_generated
             
             self.nodes_expanded += 1
@@ -423,7 +381,7 @@ class AStarFutoshiki:
                             assigned = False
                             break
                     
-                    if assigned and self.is_goal(new_state):
+                    if assigned and len(new_state.get_blank_positions()) == 0:
                         if self.check_constraints(new_state) == 0:
                             return new_state, self.nodes_expanded, self.nodes_generated
                     
@@ -435,7 +393,7 @@ class AStarFutoshiki:
             
             return None, self.nodes_expanded, self.nodes_generated
         
-        if self.is_goal(initial_state):
+        if len(initial_state.get_blank_positions()) == 0:
             if self.check_constraints(initial_state) == 0:
                 return initial_state.grid, 0, 1
         
@@ -445,28 +403,9 @@ class AStarFutoshiki:
             return result.grid, exp, gen
         return None, exp, gen
     
-    def solve_all_heuristics(self) -> dict:
-        results = {}
-        for h in ['h1', 'h2', 'h3']:
-            if h == 'h3':
-                solution, expanded, generated = self.solve_with_ac3(h)
-            else:
-                solution, expanded, generated = self.solve(h)
-            results[h] = {
-                'solution': solution,
-                'nodes_expanded': expanded,
-                'nodes_generated': generated,
-                'solved': solution is not None
-            }
-        return results
-
-
-def solve_futoshiki_astar(size: int, grid: np.ndarray, 
-                          constraints: Tuple[np.ndarray, np.ndarray],
-                          heuristic: str = 'h1') -> Optional[np.ndarray]:
-    solver = AStarFutoshiki(size, grid, constraints)
-    if heuristic == 'h3':
-        solution, _, _ = solver.solve_with_ac3(heuristic)
-    else:
-        solution, _, _ = solver.solve(heuristic)
-    return solution
+    def get_stats(self) -> Dict:
+        return {
+            'nodes_expanded': self.nodes_expanded,
+            'nodes_generated': self.nodes_generated,
+            'heuristic': self.heuristic
+        }

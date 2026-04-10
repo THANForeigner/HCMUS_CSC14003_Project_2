@@ -1,12 +1,11 @@
 import numpy as np
 import random
 from copy import deepcopy
-from ..futoshiki_solver import futoshiki_solver
+from ..futoshiki_solver import FutoshikiSolver
 
-class ABC(futoshiki_solver):
+class ABC(FutoshikiSolver):
     def __init__(self, size, grid, constraint, swarm_size=-1, limit=-1, max_iteration=-1):
         super().__init__(size, grid, constraint)
-        self.size = size
         self.grid = np.array(grid, dtype=np.int32)
         self.constraint = [np.array(constraint[0], dtype=np.int32), 
                           np.array(constraint[1], dtype=np.int32)]
