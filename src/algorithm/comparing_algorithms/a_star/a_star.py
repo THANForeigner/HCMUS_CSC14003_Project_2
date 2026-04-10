@@ -1,7 +1,7 @@
 import heapq
 import numpy as np
 from typing import Tuple, Optional, Dict, List, Set
-from ..futoshiki_solver import FutoshikiSolver, FutoshikiState
+from ...futoshiki_solver import FutoshikiSolver, FutoshikiState
 
 
 class PureAStarSolver(FutoshikiSolver):

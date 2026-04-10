@@ -5,8 +5,8 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from algorithm.comparing_algorithms.artificial_bee_colony import ABC
-from algorithm.comparing_algorithms.pure_astar import PureAStarSolver
-from algorithm.comparing_algorithms.astar import AStarFutoshiki
+from algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
+from algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
 
 
 def read_input(input_file):
