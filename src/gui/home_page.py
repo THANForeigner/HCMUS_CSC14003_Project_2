@@ -2,7 +2,7 @@ import flet as ft
 
 def home_page(page: ft.Page):
     return ft.View(
-        "/",
+        route="/",
         controls=[
             ft.Container(
                 content=ft.Column(
@@ -20,8 +20,7 @@ def home_page(page: ft.Page):
                         ),
                         ft.Container(height=50),
                         ft.ElevatedButton(
-                            text="🧩 Puzzle Solving Mode",
-                            icon="extension",
+                            content=ft.Text("Puzzle Solving Mode"),
                             width=350,
                             height=60,
                             style=ft.ButtonStyle(
@@ -33,8 +32,7 @@ def home_page(page: ft.Page):
                         ),
                         ft.Container(height=10),
                         ft.ElevatedButton(
-                            text="🤖 Algorithm Demonstration",
-                            icon="smart_toy",
+                            content=ft.Text("Algorithm Demonstration"),
                             width=350,
                             height=60,
                             style=ft.ButtonStyle(
@@ -54,7 +52,7 @@ def home_page(page: ft.Page):
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                     alignment=ft.MainAxisAlignment.CENTER,
                 ),
-                alignment=ft.alignment.center,
+                alignment=ft.Alignment(0, 0),
                 expand=True
             )
         ],
