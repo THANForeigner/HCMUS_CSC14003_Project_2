@@ -11,6 +11,13 @@ try:
 except ImportError:
     pass
 
+try:
+    from src.gui.puzzle_manager import PuzzleManager
+except ImportError:
+    # allow running as package or module during development
+    from gui.puzzle_manager import PuzzleManager
+
+
 class PuzzlePage(ft.View):
     def __init__(self, page: ft.Page):
         super().__init__(route="/puzzle")
@@ -31,6 +38,22 @@ class PuzzlePage(ft.View):
         )
         self.load_available_files()
         
+        # algorithm selector
+        self.algorithm_dropdown = ft.Dropdown(
+            width=200,
+            value='backtrack',
+            options=[
+                ft.dropdown.Option('backtrack', text='Backtracking'),
+                ft.dropdown.Option('astar', text="A* (heuristic h3)"),
+                ft.dropdown.Option('astar_ac3', text='A* + AC3')
+            ]
+        )
+
+        # interactive controls
+        self.play_button = ft.ElevatedButton(content=ft.Text("Play"), on_click=self.on_play_pause)
+        self.step_button = ft.ElevatedButton(content=ft.Text("Step"), on_click=self.on_manual_step)
+        self.speed_slider = ft.Slider(min=0.05, max=1.0, divisions=19, value=0.25, width=140, on_change=self.on_speed_change)
+
         # Build layout
         self.controls = [
             ft.Container(
@@ -38,6 +61,19 @@ class PuzzlePage(ft.View):
                     ft.ElevatedButton(content=ft.Text("< Back"), on_click=lambda _: page.go("/")),
                     ft.Text("Select Puzzle:", size=16, weight=ft.FontWeight.BOLD),
                     self.file_dropdown,
+                    ft.Container(width=10),
+                    ft.Text("Algorithm:", size=16, weight=ft.FontWeight.BOLD),
+                    self.algorithm_dropdown,
+                    ft.Container(width=10),
+                    ft.ElevatedButton(content=ft.Text("Generate Solved"), on_click=self.generate_solved),
+                    ft.Container(width=10),
+                    ft.ElevatedButton(content=ft.Text("Solve"), on_click=self.solve_puzzle),
+                    ft.Container(width=8),
+                    self.play_button,
+                    ft.Container(width=8),
+                    self.step_button,
+                    ft.Container(width=12),
+                    ft.Row([ft.Text("Speed:"), self.speed_slider], alignment=ft.MainAxisAlignment.CENTER),
                     ft.Container(expand=True),
                     ft.ElevatedButton(
                         content=ft.Text("Clear Board"), 
@@ -76,6 +112,23 @@ class PuzzlePage(ft.View):
             self.file_dropdown.value = self.file_dropdown.options[0].key
             self.load_puzzle(self.file_dropdown.value)
 
+        # solver controller
+        try:
+            from src.gui.solver_controller import SolverController
+        except ImportError:
+            from gui.solver_controller import SolverController
+        self.solver = SolverController()
+
+        # step player for interactive reveals
+        try:
+            from src.gui.step_player import StepPlayer
+        except ImportError:
+            from gui.step_player import StepPlayer
+        self.step_player = StepPlayer()
+        self._steps = []
+        self._solution = None
+        self._original_grid = None
+
         self._is_initialized = True
 
     def load_available_files(self):
@@ -90,6 +143,26 @@ class PuzzlePage(ft.View):
 
     def on_file_selected(self, e):
         self.load_puzzle(e.control.value)
+        self.page.update()
+
+    def generate_solved(self, e):
+        # Generate a solved board (Phase 1 scaffold behavior)
+        try:
+            size = self.size if self.size and self.size >= 2 else 5
+            pm = PuzzleManager()
+            grid, h_constraints, v_constraints = pm.generate_solved(size)
+            # update internal state and rebuild
+            self.size = size
+            self.grid_data = grid
+            self.h_constraints = h_constraints
+            self.v_constraints = v_constraints
+            self._original_grid = [row[:] for row in grid]
+            self.build_board()
+            self.status_text.value = "Generated solved puzzle"
+            self.status_text.color = ft.Colors.GREEN_400
+        except Exception as ex:
+            self.status_text.value = f"Generate failed: {ex}"
+            self.status_text.color = ft.Colors.RED_400
         self.page.update()
 
     def clear_board(self, e):
@@ -284,3 +357,119 @@ class PuzzlePage(ft.View):
         self.status_text.value = "Valid Solution! Excellent!"
         self.status_text.color = ft.Colors.GREEN_400
         self.page.update()
+
+    def solve_puzzle(self, e):
+        # Run solver in background and update board on completion. Use history-enabled runner when available.
+        def on_result(solution, stats, steps=None):
+            if solution is None:
+                self.status_text.value = "No solution found"
+                self.status_text.color = ft.Colors.RED_400
+                self.page.update()
+                return
+
+            # store solution and original grid
+            self._solution = solution
+            self._original_grid = [row[:] for row in self.grid_data]
+
+            # reset board visuals
+            for r in range(self.size):
+                for c in range(self.size):
+                    is_fixed = self.grid_data[r][c] != 0
+                    self.cells[r][c].value = str(self.grid_data[r][c]) if is_fixed and self.grid_data[r][c] != 0 else ""
+                    self.cells[r][c].bgcolor = ft.Colors.BLUE_900 if is_fixed else ft.Colors.GREY_900
+
+            # If steps were provided (instrumented solver), use event steps
+            if steps:
+                # expect steps like ('assign'|'check'|'backtrack', r, c, val)
+                self._steps = steps
+                # stop any previous player
+                try:
+                    self.step_player.stop()
+                except Exception:
+                    pass
+
+                def event_callback(action, r, c, val):
+                    # Visual handling per action
+                    try:
+                        if action == 'check':
+                            # highlight as checking (yellow)
+                            self.cells[r][c].bgcolor = ft.Colors.AMBER_400
+                        elif action == 'assign':
+                            self.cells[r][c].value = str(val)
+                            self.cells[r][c].bgcolor = ft.Colors.GREEN_700
+                        elif action == 'backtrack':
+                            # clear cell if it was not originally fixed
+                            if self._original_grid[r][c] == 0:
+                                self.cells[r][c].value = ""
+                            self.cells[r][c].bgcolor = ft.Colors.RED_700
+                        else:
+                            pass
+                        self.page.update()
+                    except Exception:
+                        pass
+
+                # use the new event-aware setter
+                self.step_player.set_event_steps(self._steps, event_callback)
+
+            else:
+                # fallback: reveal full solution step-by-step
+                steps = []
+                for r in range(self.size):
+                    for c in range(self.size):
+                        if self._original_grid[r][c] == 0:
+                            steps.append((r, c, solution[r][c]))
+                self._steps = steps
+                self.step_player.set_steps(self._steps, lambda r, c, v: self._update_cell_and_refresh(r, c, v))
+
+            self.status_text.value = f"Solved - nodes: {stats.get('nodes_generated', '?')} time: {stats.get('time', 0):.3f}s"
+            self.status_text.color = ft.Colors.GREEN_400
+            self.page.update()
+
+        try:
+            self.status_text.value = "Solving..."
+            self.status_text.color = ft.Colors.ORANGE_400
+            self.page.update()
+            # prefer history-enabled run
+            try:
+                self.solver.run_with_history(self.size, self.grid_data, self.h_constraints, self.v_constraints, callback=on_result, algorithm=self.algorithm_dropdown.value)
+            except AttributeError:
+                # fallback to run_full
+                self.solver.run_full(self.size, self.grid_data, self.h_constraints, self.v_constraints, callback=lambda sol, stats: on_result(sol, stats, None), algorithm=self.algorithm_dropdown.value)
+        except Exception as ex:
+            self.status_text.value = f"Solver error: {ex}"
+            self.status_text.color = ft.Colors.RED_400
+            self.page.update()
+
+    def _update_cell_and_refresh(self, r, c, val):
+        self.cells[r][c].value = str(val)
+        self.page.update()
+
+    def on_play_pause(self, e):
+        if not self._steps:
+            return
+        if not self.step_player.is_running():
+            delay = float(self.speed_slider.value)
+            self.step_player.start_auto(delay=delay)
+            # update button label
+            self.play_button.content = ft.Text("Pause")
+        else:
+            # toggle pause/resume
+            if self.step_player.is_paused():
+                self.step_player.resume()
+                self.play_button.content = ft.Text("Pause")
+            else:
+                self.step_player.pause()
+                self.play_button.content = ft.Text("Play")
+        self.page.update()
+
+    def on_manual_step(self, e):
+        if not self._steps:
+            return
+        self.step_player.step_once()
+
+    def on_speed_change(self, e):
+        try:
+            delay = float(self.speed_slider.value)
+            self.step_player._delay = delay
+        except Exception:
+            pass

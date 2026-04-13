@@ -53,21 +53,48 @@ class BacktrackSolver(futoshiki_solver.FutoshikiSolver):
                 return False
         return True
         
-    def backtrack(self, row, col):
+    def backtrack(self, row, col, steps=None):
+        if steps is None:
+            steps = None
         if self.solution[row][col] != 0:
-            self.backtrack(row, col + 1 if col + 1 < self.size else 0)
+            next_col = col + 1 if col + 1 < self.size else 0
+            next_row = row + (col + 1) // self.size
+            self.backtrack(next_row, next_col, steps)
             return
         for num in range(1, self.size + 1):
+            if steps is not None:
+                steps.append(('check', row, col, num))
             safe = self.check_contraints(row, col, num, self.constraint)
             if safe:
                 self.solution[row][col] = num
+                if steps is not None:
+                    steps.append(('assign', row, col, num))
                 if row == self.size - 1 and col == self.size - 1:
                     return
-                self.backtrack(row + (col + 1) // self.size, (col + 1) % self.size)
+                next_row = row + (col + 1) // self.size
+                next_col = (col + 1) % self.size
+                self.backtrack(next_row, next_col, steps)
                 if self.solution[self.size - 1][self.size - 1] != 0:
                     return
                 self.solution[row][col] = 0
+                if steps is not None:
+                    steps.append(('backtrack', row, col, 0))
                 
+    def solve_with_history(self):
+        """Run the solver while recording a list of step events.
+
+        Returns: (solution or None, stats dict, steps list)
+        """
+        # reset stats
+        self.nodes_expanded = 0
+        self.nodes_generated = 0
+        start = time.time()
+        steps = []
+        self.backtrack(0, 0, steps)
+        duration = time.time() - start
+        stats = {'nodes_expanded': self.nodes_expanded, 'nodes_generated': self.nodes_generated, 'time': duration}
+        return (self.solution, stats, steps)
+
     def solve(self):
-        self.backtrack(0, 0)
+        """Backward-compatible solve(): returns solution only as before."""
         return self.solution

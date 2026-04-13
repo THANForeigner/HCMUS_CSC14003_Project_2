@@ -2,15 +2,19 @@ import sys
 import os
 import flet as ft
 
-# Ensure src directory is in path to allow imports anywhere
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# Ensure repo root and src directory are in path to allow imports anywhere
+repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+src_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, src_dir)
+sys.path.insert(0, repo_root)
 
 from gui.home_page import home_page
 from gui.puzzle_page import PuzzlePage
+from gui.demo_page import DemoPage
 
 def main(page: ft.Page):
     # Setup main window properties
-    page.title = "Futoshiki - Artificial Bee Colony"
+    page.title = "Futoshiki"
     page.theme_mode = ft.ThemeMode.DARK
     page.window_width = 900
     page.window_height = 800
@@ -26,7 +30,8 @@ def main(page: ft.Page):
         if page.route == "/puzzle":
             # Add puzzle page on top
             page.views.append(PuzzlePage(page))
-            
+        elif page.route == "/demo":
+            page.views.append(DemoPage(page))
         page.update()
 
     def view_pop(view):

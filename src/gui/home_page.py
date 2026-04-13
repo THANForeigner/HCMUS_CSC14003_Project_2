@@ -40,7 +40,7 @@ def home_page(page: ft.Page):
                                 bgcolor=ft.Colors.PURPLE_700,
                                 shape=ft.RoundedRectangleBorder(radius=12),
                             ),
-                            on_click=lambda _: print("Demo Mode coming soon...")
+                            on_click=lambda _: page.go("/demo")
                         ),
                         ft.Container(height=100),
                         ft.Text(

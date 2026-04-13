@@ -3,3 +3,4 @@ pillow==12.1.1
 setuptools==75.6.0
 wheel==0.45.1
 flet>=0.21.0
+z3-solver>=4.8.17
