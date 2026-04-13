@@ -87,16 +87,84 @@ class SolverController:
                     s = PureAStarSolver(size, grid, (h_constraints, v_constraints))
                     solution, nodes_expanded, nodes_generated = s.solve_astar()
                     stats = {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
-                elif algorithm == 'astar_ac3':
+                elif algorithm == 'astar_h1':
+                    from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
+                    s = PureAStarSolver(size, grid, (h_constraints, v_constraints), heuristic='h1')
+                    solution, nodes_expanded, nodes_generated = s.solve_astar()
+                    stats = {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
+                elif algorithm == 'astar_h2':
+                    from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
+                    s = PureAStarSolver(size, grid, (h_constraints, v_constraints), heuristic='h2')
+                    solution, nodes_expanded, nodes_generated = s.solve_astar()
+                    stats = {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
+                elif algorithm == 'astar_h3':
+                    from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
+                    s = PureAStarSolver(size, grid, (h_constraints, v_constraints), heuristic='h3')
+                    solution, nodes_expanded, nodes_generated = s.solve_astar()
+                    stats = {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
                     from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
                     s = AStarFutoshiki(size, grid, (h_constraints, v_constraints))
                     solution, nodes_expanded, nodes_generated = s.solve_with_ac3()
                     stats = {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
+                elif algorithm == 'astar_ac3_h1':
+                    from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
+                    s = AStarFutoshiki(size, grid, (h_constraints, v_constraints), heuristic='h1')
+                    solution, nodes_expanded, nodes_generated = s.solve_with_ac3()
+                    stats = {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
+                elif algorithm == 'astar_ac3_h2':
+                    from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
+                    s = AStarFutoshiki(size, grid, (h_constraints, v_constraints), heuristic='h2')
+                    solution, nodes_expanded, nodes_generated = s.solve_with_ac3()
+                    stats = {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
+                elif algorithm == 'astar_ac3_h3':
+                    from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
+                    s = AStarFutoshiki(size, grid, (h_constraints, v_constraints), heuristic='h3')
+                    solution, nodes_expanded, nodes_generated = s.solve_with_ac3()
+                    stats = {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
+                elif algorithm == 'backward_chaining_with_ac3':
+                    from src.algorithm.first_order_logic.backward_chaining_with_ac3 import backward_chaining_with_ac3
+                    s = backward_chaining_with_ac3(size, grid, (h_constraints, v_constraints))
+                    status, domains = s.solve()
+                    solution = s.solution
+                    stats = {'nodes_expanded': 0, 'nodes_generated': 0}
+                elif algorithm == 'backward_chaining':
+                    from src.algorithm.first_order_logic.backward_chaining import backward_chaining
+                    s = backward_chaining(size, grid, (h_constraints, v_constraints))
+                    status, domains = s.solve()
+                    solution = s.solution
+                    stats = {'nodes_expanded': 0, 'nodes_generated': 0}
+                elif algorithm == 'bc_no_backtrack':
+                    from src.algorithm.first_order_logic.bc_no_backtrack import bc_no_backtrack
+                    s = bc_no_backtrack(size, grid, (h_constraints, v_constraints))
+                    status, domains = s.solve()
+                    solution = s.solution
+                    stats = {'nodes_expanded': 0, 'nodes_generated': 0}
+                elif algorithm == 'forward_chaining':
+                    from src.algorithm.first_order_logic.forward_chaining import fc_no_backtrack
+                    s = fc_no_backtrack(size, grid, (h_constraints, v_constraints))
+                    status, domains = s.solve()
+                    solution = s.solution
+                    stats = {'nodes_expanded': 0, 'nodes_generated': 0}
+                elif algorithm == 'fc_with_backtrack':
+                    from src.algorithm.first_order_logic.fc_with_backtrack import forward_chaining
+                    s = forward_chaining(size, grid, (h_constraints, v_constraints))
+                    status, domains = s.solve()
+                    solution = s.solution
+                    stats = {'nodes_expanded': 0, 'nodes_generated': 0}
+                elif algorithm == 'dancing_links':
+                    from src.algorithm.comparing_algorithms.dancing_links.dlx_futoshiki import DLXFutoshiki
+                    s = DLXFutoshiki(size, grid, (h_constraints, v_constraints))
+                    solution = s.solve()
+                    stats = {'nodes_expanded': 0, 'nodes_generated': 0}
                 else:
                     # default to backtrack
                     s = BacktrackSolverSimple(size, grid, (h_constraints, v_constraints))
                     solution, stats = s.solve()
-            except Exception:
+            except Exception as e:
+                import sys
+                print(f"ERROR in run_full target: {e}", file=sys.stderr)
+                import traceback
+                traceback.print_exc(file=sys.stderr)
                 solution, stats = None, {}
 
             with self._lock:
@@ -122,10 +190,74 @@ class SolverController:
                     from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
                     s = PureAStarSolver(size, grid, (h_constraints, v_constraints))
                     solution, stats, steps = s.solve_with_history()
-                elif algorithm == 'astar_ac3':
+                elif algorithm == 'astar_h1':
+                    from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
+                    s = PureAStarSolver(size, grid, (h_constraints, v_constraints), heuristic='h1')
+                    solution, stats, steps = s.solve_with_history()
+                elif algorithm == 'astar_h2':
+                    from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
+                    s = PureAStarSolver(size, grid, (h_constraints, v_constraints), heuristic='h2')
+                    solution, stats, steps = s.solve_with_history()
+                elif algorithm == 'astar_h3':
+                    from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
+                    s = PureAStarSolver(size, grid, (h_constraints, v_constraints), heuristic='h3')
+                    solution, stats, steps = s.solve_with_history()
                     from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
                     s = AStarFutoshiki(size, grid, (h_constraints, v_constraints))
                     solution, stats, steps = s.solve_with_history()
+                elif algorithm == 'astar_ac3_h1':
+                    from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
+                    s = AStarFutoshiki(size, grid, (h_constraints, v_constraints), heuristic='h1')
+                    solution, stats, steps = s.solve_with_history()
+                elif algorithm == 'astar_ac3_h2':
+                    from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
+                    s = AStarFutoshiki(size, grid, (h_constraints, v_constraints), heuristic='h2')
+                    solution, stats, steps = s.solve_with_history()
+                elif algorithm == 'astar_ac3_h3':
+                    from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
+                    s = AStarFutoshiki(size, grid, (h_constraints, v_constraints), heuristic='h3')
+                    solution, stats, steps = s.solve_with_history()
+                elif algorithm == 'backward_chaining_with_ac3':
+                    from src.algorithm.first_order_logic.backward_chaining_with_ac3 import backward_chaining_with_ac3
+                    s = backward_chaining_with_ac3(size, grid, (h_constraints, v_constraints))
+                    status, domains = s.solve()
+                    solution = s.solution
+                    stats = {'nodes_expanded': 0, 'nodes_generated': 0}
+                    steps = []
+                elif algorithm == 'backward_chaining':
+                    from src.algorithm.first_order_logic.backward_chaining import backward_chaining
+                    s = backward_chaining(size, grid, (h_constraints, v_constraints))
+                    status, domains = s.solve()
+                    solution = s.solution
+                    stats = {'nodes_expanded': 0, 'nodes_generated': 0}
+                    steps = []
+                elif algorithm == 'bc_no_backtrack':
+                    from src.algorithm.first_order_logic.bc_no_backtrack import bc_no_backtrack
+                    s = bc_no_backtrack(size, grid, (h_constraints, v_constraints))
+                    status, domains = s.solve()
+                    solution = s.solution
+                    stats = {'nodes_expanded': 0, 'nodes_generated': 0}
+                    steps = []
+                elif algorithm == 'forward_chaining':
+                    from src.algorithm.first_order_logic.forward_chaining import fc_no_backtrack
+                    s = fc_no_backtrack(size, grid, (h_constraints, v_constraints))
+                    status, domains = s.solve()
+                    solution = s.solution
+                    stats = {'nodes_expanded': 0, 'nodes_generated': 0}
+                    steps = []
+                elif algorithm == 'fc_with_backtrack':
+                    from src.algorithm.first_order_logic.fc_with_backtrack import forward_chaining
+                    s = forward_chaining(size, grid, (h_constraints, v_constraints))
+                    status, domains = s.solve()
+                    solution = s.solution
+                    stats = {'nodes_expanded': 0, 'nodes_generated': 0}
+                    steps = []
+                elif algorithm == 'dancing_links':
+                    from src.algorithm.comparing_algorithms.dancing_links.dlx_futoshiki import DLXFutoshiki
+                    s = DLXFutoshiki(size, grid, (h_constraints, v_constraints))
+                    solution = s.solve()
+                    stats = {'nodes_expanded': 0, 'nodes_generated': 0}
+                    steps = []
                 else:
                     s = BacktrackSolverSimple(size, grid, (h_constraints, v_constraints))
                     solution, stats, steps = s.solve_with_history()
