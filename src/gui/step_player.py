@@ -61,6 +61,7 @@ class StepPlayer:
         with self._lock:
             self._streaming = True
             self._callback = callback
+            self._delay = delay
             self._stop_event.clear()
             self._pause_event.set()
             if self._thread and self._thread.is_alive():

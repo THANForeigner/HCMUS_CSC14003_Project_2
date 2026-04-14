@@ -1,6 +1,8 @@
 import threading
 import time
 from typing import List, Tuple, Optional
+import multiprocessing
+import queue
 
 class BacktrackSolverSimple:
     def __init__(self, size: int, grid: List[List[int]], constraint: Tuple[List[List[int]], List[List[int]]]):
@@ -70,6 +72,68 @@ class BacktrackSolverSimple:
         return (self.solution if ok else None, {'nodes_expanded': self.nodes_expanded, 'nodes_generated': self.nodes_generated, 'time': duration})
 
 
+def _mp_worker(algorithm, size, grid, h_constraints, v_constraints, q):
+    try:
+        if algorithm == 'backtrack':
+            from src.algorithm.comparing_algorithms.brute_force_and_backtrack.backtrack import BacktrackSolver
+            s = BacktrackSolver(size, grid, (h_constraints, v_constraints))
+            s.solve_with_history(stream_queue=q)
+        elif algorithm == 'brute_force':
+            from src.algorithm.comparing_algorithms.brute_force_and_backtrack.backtrack import BacktrackSolver
+            s = BacktrackSolver(size, grid, (h_constraints, v_constraints))
+            s.solve_with_history(stream_queue=q)
+        elif algorithm.startswith('astar_ac3_h'):
+            from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
+            heuristic = algorithm.split('_')[2]
+            s = AStarFutoshiki(size, grid, (h_constraints, v_constraints), heuristic=heuristic)
+            s.solve_with_history(stream_queue=q)
+        elif algorithm == 'astar_ac3':
+            from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
+            s = AStarFutoshiki(size, grid, (h_constraints, v_constraints))
+            s.solve_with_history(stream_queue=q)
+        elif algorithm.startswith('astar_h'):
+            from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
+            heuristic = algorithm.split('_')[1]
+            s = PureAStarSolver(size, grid, (h_constraints, v_constraints), heuristic=heuristic)
+            s.solve_with_history(stream_queue=q)
+        elif algorithm == 'astar':
+            from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
+            s = PureAStarSolver(size, grid, (h_constraints, v_constraints))
+            s.solve_with_history(stream_queue=q)
+        elif algorithm == 'backward_chaining':
+            from src.algorithm.first_order_logic.backward_chaining import backward_chaining
+            s = backward_chaining(size, grid, (h_constraints, v_constraints))
+            s.solve_with_history(stream_queue=q)
+        elif algorithm == 'backward_chaining_with_ac3':
+            from src.algorithm.first_order_logic.backward_chaining_with_ac3 import backward_chaining_with_ac3
+            s = backward_chaining_with_ac3(size, grid, (h_constraints, v_constraints))
+            s.solve_with_history(stream_queue=q)
+        elif algorithm == 'bc_no_backtrack':
+            from src.algorithm.first_order_logic.bc_no_backtrack import bc_no_backtrack
+            s = bc_no_backtrack(size, grid, (h_constraints, v_constraints))
+            s.solve_with_history(stream_queue=q)
+        elif algorithm == 'forward_chaining':
+            from src.algorithm.first_order_logic.forward_chaining import fc_no_backtrack
+            s = fc_no_backtrack(size, grid, (h_constraints, v_constraints))
+            s.solve_with_history(stream_queue=q)
+        elif algorithm == 'fc_with_backtrack':
+            from src.algorithm.first_order_logic.fc_with_backtrack import forward_chaining
+            s = forward_chaining(size, grid, (h_constraints, v_constraints))
+            s.solve_with_history(stream_queue=q)
+        elif algorithm == 'dancing_links':
+            from src.algorithm.comparing_algorithms.dancing_links.dlx_futoshiki import DLXFutoshiki
+            s = DLXFutoshiki(size, grid, (h_constraints, v_constraints))
+            s.solve_with_history(stream_queue=q)
+        else:
+            from src.algorithm.comparing_algorithms.brute_force_and_backtrack.backtrack import BacktrackSolver
+            s = BacktrackSolver(size, grid, (h_constraints, v_constraints))
+            s.solve_with_history(stream_queue=q)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        q.put(('done', None, {}))
+
+
 class SolverController:
     def __init__(self):
         self._thread = None
@@ -102,6 +166,7 @@ class SolverController:
                     s = PureAStarSolver(size, grid, (h_constraints, v_constraints), heuristic='h3')
                     solution, nodes_expanded, nodes_generated = s.solve_astar()
                     stats = {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
+                elif algorithm == 'astar_ac3':
                     from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
                     s = AStarFutoshiki(size, grid, (h_constraints, v_constraints))
                     solution, nodes_expanded, nodes_generated = s.solve_with_ac3()
@@ -176,42 +241,6 @@ class SolverController:
         self._thread = t
         return t
 
-import multiprocessing
-import queue
-
-def _mp_worker(algorithm, size, grid, h_constraints, v_constraints, q):
-    try:
-        if algorithm == 'backtrack':
-            from src.algorithm.comparing_algorithms.brute_force_and_backtrack.backtrack import BacktrackSolver
-            s = BacktrackSolver(size, grid, (h_constraints, v_constraints))
-            s.solve_with_history(stream_queue=q)
-        elif algorithm.startswith('astar_ac3_h'):
-            from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
-            heuristic = algorithm.split('_')[2]
-            s = AStarFutoshiki(size, grid, (h_constraints, v_constraints), heuristic=heuristic)
-            s.solve_with_history(stream_queue=q)
-        elif algorithm == 'astar_ac3':
-            from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
-            s = AStarFutoshiki(size, grid, (h_constraints, v_constraints))
-            s.solve_with_history(stream_queue=q)
-        elif algorithm.startswith('astar_h'):
-            from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
-            heuristic = algorithm.split('_')[1]
-            s = PureAStarSolver(size, grid, (h_constraints, v_constraints), heuristic=heuristic)
-            s.solve_with_history(stream_queue=q)
-        elif algorithm == 'astar':
-            from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
-            s = PureAStarSolver(size, grid, (h_constraints, v_constraints))
-            s.solve_with_history(stream_queue=q)
-        else:
-            from src.algorithm.comparing_algorithms.brute_force_and_backtrack.backtrack import BacktrackSolver
-            s = BacktrackSolver(size, grid, (h_constraints, v_constraints))
-            s.solve_with_history(stream_queue=q)
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        q.put(('done', None, {}))
-
     def run_with_history(self, size: int, grid: List[List[int]], h_constraints: List[List[int]], v_constraints: List[List[int]], callback=None, algorithm: str = 'backtrack', step_player=None):
         """Run solver and stream events to step_player via multiprocessing.
 
@@ -250,33 +279,22 @@ def _mp_worker(algorithm, size, grid, h_constraints, v_constraints, q):
         """
         def target():
             try:
-                if algorithm == 'backtrack':
-                    s = BacktrackSolverSimple(size, grid, (h_constraints, v_constraints))
-                    # BacktrackSolverSimple doesn't yet support streaming; use solve_with_history and forward
-                    solution, stats, steps = s.solve_with_history()
-                    if event_callback:
-                        for step in steps:
+                # We reuse the multiprocessing logic for consistency
+                q = multiprocessing.Queue()
+                p = multiprocessing.Process(target=_mp_worker, args=(algorithm, size, grid, h_constraints, v_constraints, q))
+                p.daemon = True
+                p.start()
+                
+                while True:
+                    try:
+                        step = q.get(timeout=0.05)
+                        if step[0] == 'done':
+                            break
+                        if event_callback:
                             event_callback(*step)
-                elif algorithm == 'astar':
-                    from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
-                    s = PureAStarSolver(size, grid, (h_constraints, v_constraints))
-                    solution, stats, steps = s.solve_with_history()
-                    if event_callback:
-                        for step in steps:
-                            event_callback(*step)
-                elif algorithm == 'astar_ac3':
-                    from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
-                    s = AStarFutoshiki(size, grid, (h_constraints, v_constraints))
-                    solution, stats, steps = s.solve_with_history()
-                    if event_callback:
-                        for step in steps:
-                            event_callback(*step)
-                else:
-                    s = BacktrackSolverSimple(size, grid, (h_constraints, v_constraints))
-                    solution, stats, steps = s.solve_with_history()
-                    if event_callback:
-                        for step in steps:
-                            event_callback(*step)
+                    except queue.Empty:
+                        if not p.is_alive():
+                            break
                 # final
                 if event_callback:
                     event_callback('final', -1, -1, 0)
@@ -287,6 +305,7 @@ def _mp_worker(algorithm, size, grid, h_constraints, v_constraints, q):
         t.start()
         self._thread = t
         return t
+
     def get_result(self) -> Optional[Tuple[List[List[int]], dict]]:
         with self._lock:
             return self._result

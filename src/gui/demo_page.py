@@ -17,6 +17,11 @@ except ImportError:
     from gui.solver_controller import SolverController
     from io_handler import read_input
 
+try:
+    from src.gui.step_player import StepPlayer
+except ImportError:
+    from gui.step_player import StepPlayer
+
 class DemoPage(ft.View):
     def __init__(self, page: ft.Page):
         super().__init__(route="/demo")
@@ -66,6 +71,7 @@ class DemoPage(ft.View):
                     ft.ElevatedButton(content=ft.Text("< Back"), on_click=lambda _: page.go("/")),
                     ft.Text("Test:", size=16, weight=ft.FontWeight.BOLD),
                     self.file_dropdown,
+                    ft.IconButton(icon=ft.Icons.REFRESH, tooltip="Refresh Puzzle", on_click=lambda _: self.load_puzzle(self.file_dropdown.value)),
                     ft.Text("Algo:", size=16, weight=ft.FontWeight.BOLD),
                     self.algorithm_dropdown,
                     ft.ElevatedButton(content=ft.Text("Compute Solution"), on_click=self.on_compute_solution),
@@ -77,11 +83,6 @@ class DemoPage(ft.View):
             ft.Container(content=ft.Column([], alignment=ft.MainAxisAlignment.CENTER), expand=True, alignment=ft.Alignment(0,0))
         ]
 
-        # step player
-        try:
-            from src.gui.step_player import StepPlayer
-        except ImportError:
-            from gui.step_player import StepPlayer
         self.step_player = StepPlayer()
         self._steps = []
         self._solution = None
@@ -202,7 +203,7 @@ class DemoPage(ft.View):
         algo = self.algorithm_dropdown.value
         
         # Start streaming mode on step_player
-        self.step_player.start_streaming(self._event_callback, delay=self.delay_slider.value if hasattr(self, 'delay_slider') else 0.1)
+        self.step_player.start_streaming(self._event_callback, delay=self.speed_slider.value if hasattr(self, 'speed_slider') else 0.1)
 
         try:
             self.solver.run_with_history(self.size, puzzle_grid, self.h_constraints, self.v_constraints, callback=callback, algorithm=algo, step_player=self.step_player)

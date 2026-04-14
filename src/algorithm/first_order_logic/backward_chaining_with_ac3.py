@@ -1,4 +1,5 @@
 import sys
+import time
 from pathlib import Path
 
 # Add project root to sys.path to allow running as script or importing
@@ -130,7 +131,7 @@ class backward_chaining_with_ac3(futoshiki_solver):
         memo[goal] = False
         return False
 
-    def sld_backtrack(self, current_facts):
+    def sld_backtrack(self, current_facts, stream_queue=None):
         """
         Cấu trúc Depth First Search (DFS) đại diện cho nhánh rẽ cây lựa chọn của Prolog giải toàn bộ bài toán.
         Sử dụng thêm AC-3 kết hợp để loại bỏ miền giá trị dư thừa siêu nhanh trước khi chạy Logic Rule Search.
@@ -172,6 +173,8 @@ class backward_chaining_with_ac3(futoshiki_solver):
                         
                     valid_vals = []
                     for v in ac3_filtered_vals:
+                        if stream_queue:
+                            stream_queue.put(('check', r, c, v))
                         # Prolog NAF (Negation As Failure):
                         # Gán `NotValue` làm Goal. AC3 coi v là có thể, còn prove() là Tòa Án FOL chốt hạ.
                         if not self.prove(("NotValue", r, c, v), current_facts, memo=shared_memo):
@@ -192,14 +195,41 @@ class backward_chaining_with_ac3(futoshiki_solver):
         
         # Prolog Branching: Thử Assert Fact mới và đệ quy xuống nhánh DFS
         for val in valid_options_for_target:
+            if stream_queue:
+                stream_queue.put(('assign', r, c, val))
             new_facts = current_facts.copy()
             new_facts.append(("Value", r, c, val))
             
-            success, final_facts = self.sld_backtrack(new_facts)
+            success, final_facts = self.sld_backtrack(new_facts, stream_queue)
             if success:
                 return True, final_facts
                 
+            if stream_queue:
+                stream_queue.put(('backtrack', r, c, 0))
+                
         return False, current_facts
+
+    def solve_with_history(self, stream_queue=None):
+        start = time.time()
+        old_limit = sys.getrecursionlimit()
+        sys.setrecursionlimit(max(old_limit, 100000))
+        
+        try:
+            success, final_facts = self.sld_backtrack(self.kb.facts, stream_queue)
+            self.solution = [[0 for _ in range(self.size)] for _ in range(self.size)]
+            
+            if success:
+                for fact in final_facts:
+                    if fact[0] == "Value":
+                        _, r, c, v = fact
+                        self.solution[r][c] = v
+            
+            stats = {'nodes_expanded': 0, 'nodes_generated': 0, 'time': time.time() - start}
+            if stream_queue:
+                stream_queue.put(('done', self.solution, stats))
+            return self.solution, stats, []
+        finally:
+            sys.setrecursionlimit(old_limit)
 
     def solve(self):
         # Thiết lập giới hạn đệ quy cao hơn để chứa SLD Resolution Tree
