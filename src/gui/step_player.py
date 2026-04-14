@@ -28,6 +28,7 @@ class StepPlayer:
         self._lock = threading.Lock()
         self._streaming = False
         self._stream_queue: List[tuple] = []
+        self._user_paused = False
 
     def set_steps(self, steps: List[Tuple[int,int,int]], callback: Callable[[int,int,int], None]):
         with self._lock:
@@ -71,25 +72,28 @@ class StepPlayer:
         """Push a single step tuple into the streaming queue."""
         with self._lock:
             self._stream_queue.append(step)
-            # ensure player un-paused so events are consumed
-            self._pause_event.set()
+            # only unpause if not explicitly paused by user
+            if not self._user_paused:
+                self._pause_event.set()
 
     def _run(self):
         while True:
+            # wait if paused
+            self._pause_event.wait()
             with self._lock:
                 if self._stop_event.is_set():
                     break
                 if self._streaming:
                     if not self._stream_queue:
                         step = None
+                        # queue is empty, auto-pause until new item
+                        self._pause_event.clear()
                     else:
                         step = self._stream_queue.pop(0)
                 else:
                     if self._index >= len(self._steps):
                         break
                     step = self._steps[self._index]
-            # wait if paused
-            self._pause_event.wait()
             if self._stop_event.is_set():
                 break
             if step is None:
@@ -98,11 +102,7 @@ class StepPlayer:
             # execute step
             try:
                 if self._callback:
-                    # history mode: step is tuple of (r,c,val) or event tuples
-                    if self._streaming:
-                        self._callback(*step)
-                    else:
-                        self._callback(*step)
+                    self._callback(*step)
             except Exception:
                 pass
             with self._lock:
@@ -113,16 +113,7 @@ class StepPlayer:
     def start_auto(self, delay: float = 0.25):
         with self._lock:
             self._delay = delay
-            self._pause_event.set()
-            self._stop_event.clear()
-            if self._thread and self._thread.is_alive():
-                return
-            self._thread = threading.Thread(target=self._run, daemon=True)
-            self._thread.start()
-
-    def start_auto(self, delay: float = 0.25):
-        with self._lock:
-            self._delay = delay
+            self._user_paused = False
             self._pause_event.set()
             self._stop_event.clear()
             if self._thread and self._thread.is_alive():
@@ -131,17 +122,24 @@ class StepPlayer:
             self._thread.start()
 
     def pause(self):
+        self._user_paused = True
         self._pause_event.clear()
 
     def resume(self):
+        self._user_paused = False
         self._pause_event.set()
 
     def step_once(self):
         with self._lock:
-            if self._index >= len(self._steps):
-                return
-            step = self._steps[self._index]
-            self._index += 1
+            if self._streaming:
+                if not self._stream_queue:
+                    return
+                step = self._stream_queue.pop(0)
+            else:
+                if self._index >= len(self._steps):
+                    return
+                step = self._steps[self._index]
+                self._index += 1
         if self._callback:
             try:
                 self._callback(*step)

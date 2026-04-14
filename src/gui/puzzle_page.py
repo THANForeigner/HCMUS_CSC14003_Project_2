@@ -369,58 +369,10 @@ class PuzzlePage(ft.View):
 
             # store solution and original grid
             self._solution = solution
-            self._original_grid = [row[:] for row in self.grid_data]
+            if not getattr(self, '_original_grid', None):
+                self._original_grid = [row[:] for row in self.grid_data]
 
-            # reset board visuals
-            for r in range(self.size):
-                for c in range(self.size):
-                    is_fixed = self.grid_data[r][c] != 0
-                    self.cells[r][c].value = str(self.grid_data[r][c]) if is_fixed and self.grid_data[r][c] != 0 else ""
-                    self.cells[r][c].bgcolor = ft.Colors.BLUE_900 if is_fixed else ft.Colors.GREY_900
-
-            # If steps were provided (instrumented solver), use event steps
-            if steps:
-                # expect steps like ('assign'|'check'|'backtrack', r, c, val)
-                self._steps = steps
-                # stop any previous player
-                try:
-                    self.step_player.stop()
-                except Exception:
-                    pass
-
-                def event_callback(action, r, c, val):
-                    # Visual handling per action
-                    try:
-                        if action == 'check':
-                            # highlight as checking (yellow)
-                            self.cells[r][c].bgcolor = ft.Colors.AMBER_400
-                        elif action == 'assign':
-                            self.cells[r][c].value = str(val)
-                            self.cells[r][c].bgcolor = ft.Colors.GREEN_700
-                        elif action == 'backtrack':
-                            # clear cell if it was not originally fixed
-                            if self._original_grid[r][c] == 0:
-                                self.cells[r][c].value = ""
-                            self.cells[r][c].bgcolor = ft.Colors.RED_700
-                        else:
-                            pass
-                        self.page.update()
-                    except Exception:
-                        pass
-
-                # use the new event-aware setter
-                self.step_player.set_event_steps(self._steps, event_callback)
-
-            else:
-                # fallback: reveal full solution step-by-step
-                steps = []
-                for r in range(self.size):
-                    for c in range(self.size):
-                        if self._original_grid[r][c] == 0:
-                            steps.append((r, c, solution[r][c]))
-                self._steps = steps
-                self.step_player.set_steps(self._steps, lambda r, c, v: self._update_cell_and_refresh(r, c, v))
-
+            # In streaming mode, the board is updated live. Here we just set the final text.
             self.status_text.value = f"Solved - nodes: {stats.get('nodes_generated', '?')} time: {stats.get('time', 0):.3f}s"
             self.status_text.color = ft.Colors.GREEN_400
             self.page.update()
@@ -429,9 +381,37 @@ class PuzzlePage(ft.View):
             self.status_text.value = "Solving..."
             self.status_text.color = ft.Colors.ORANGE_400
             self.page.update()
+            
+            # prepare for new solve
+            self._original_grid = [row[:] for row in self.grid_data]
+            for r in range(self.size):
+                for c in range(self.size):
+                    is_fixed = self.grid_data[r][c] != 0
+                    self.cells[r][c].value = str(self.grid_data[r][c]) if is_fixed and self.grid_data[r][c] != 0 else ""
+                    self.cells[r][c].bgcolor = ft.Colors.BLUE_900 if is_fixed else ft.Colors.GREY_900
+            self.page.update()
+
+            def event_callback(action, r, c, val):
+                try:
+                    if action == 'check':
+                        self.cells[r][c].bgcolor = ft.Colors.AMBER_400
+                    elif action == 'assign':
+                        self.cells[r][c].value = str(val)
+                        self.cells[r][c].bgcolor = ft.Colors.GREEN_700
+                    elif action == 'backtrack':
+                        if self._original_grid[r][c] == 0:
+                            self.cells[r][c].value = ""
+                        self.cells[r][c].bgcolor = ft.Colors.RED_700
+                    self.page.update()
+                except Exception:
+                    pass
+
+            # Start the player in streaming mode
+            self.step_player.start_streaming(event_callback, delay=self.delay_slider.value if hasattr(self, 'delay_slider') else 0.1)
+
             # prefer history-enabled run
             try:
-                self.solver.run_with_history(self.size, self.grid_data, self.h_constraints, self.v_constraints, callback=on_result, algorithm=self.algorithm_dropdown.value)
+                self.solver.run_with_history(self.size, self.grid_data, self.h_constraints, self.v_constraints, callback=on_result, algorithm=self.algorithm_dropdown.value, step_player=self.step_player)
             except AttributeError:
                 # fallback to run_full
                 self.solver.run_full(self.size, self.grid_data, self.h_constraints, self.v_constraints, callback=lambda sol, stats: on_result(sol, stats, None), algorithm=self.algorithm_dropdown.value)
@@ -445,7 +425,7 @@ class PuzzlePage(ft.View):
         self.page.update()
 
     def on_play_pause(self, e):
-        if not self._steps:
+        if not self._steps and not self.step_player._streaming:
             return
         if not self.step_player.is_running():
             delay = float(self.speed_slider.value)
@@ -463,7 +443,7 @@ class PuzzlePage(ft.View):
         self.page.update()
 
     def on_manual_step(self, e):
-        if not self._steps:
+        if not self._steps and not self.step_player._streaming:
             return
         self.step_player.step_once()
 

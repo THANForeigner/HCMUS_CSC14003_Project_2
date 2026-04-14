@@ -41,11 +41,12 @@ class DemoPage(ft.View):
             value='backtrack',
             options=[
                 ft.dropdown.Option('backtrack', text='Backtracking'),
+                ft.dropdown.Option('brute_force', text='Brute Force'),
                 ft.dropdown.Option('backward_chaining_with_ac3', text='Backward Chaining with AC3'),
                 ft.dropdown.Option('backward_chaining', text='Backward Chaining'),
-                ft.dropdown.Option('bc_no_backtrack', text='BC No Backtrack'),
+                ft.dropdown.Option('bc_no_backtrack', text='Backward Chaining No Backtrack'),
                 ft.dropdown.Option('forward_chaining', text='Forward Chaining'),
-                ft.dropdown.Option('fc_with_backtrack', text='FC with Backtrack'),
+                ft.dropdown.Option('fc_with_backtrack', text='Forward Chaining with Backtrack'),
                 ft.dropdown.Option('dancing_links', text='Dancing Links'),
                 ft.dropdown.Option('astar_h2', text='A* (h2)'),
                 ft.dropdown.Option('astar_h1', text='A* (h1)'),
@@ -53,14 +54,10 @@ class DemoPage(ft.View):
                 ft.dropdown.Option('astar_ac3_h1', text='A* with AC3 (h1)'),
                 ft.dropdown.Option('astar_ac3_h2', text='A* with AC3 (h2)'),
                 ft.dropdown.Option('astar_ac3_h3', text='A* with AC3 (h3)'),
-                ft.dropdown.Option('astar', text="A* (heuristic h3)"),
-                ft.dropdown.Option('astar_ac3', text='A* + AC3')
             ]
         )
 
         # controls
-        self.play_button = ft.ElevatedButton(content=ft.Text("Play"), on_click=self.on_play_pause)
-        self.step_button = ft.ElevatedButton(content=ft.Text("Step"), on_click=self.on_manual_step)
         self.speed_slider = ft.Slider(min=0.05, max=1.0, divisions=19, value=0.25, label='{value}s', on_change=self.on_speed_change, width=150)
 
         self.controls = [
@@ -72,8 +69,6 @@ class DemoPage(ft.View):
                     ft.Text("Algo:", size=16, weight=ft.FontWeight.BOLD),
                     self.algorithm_dropdown,
                     ft.ElevatedButton(content=ft.Text("Compute Solution"), on_click=self.on_compute_solution),
-                    self.play_button,
-                    self.step_button,
                     ft.Row([ft.Text("Speed:"), self.speed_slider], alignment=ft.MainAxisAlignment.CENTER)
                 ], alignment=ft.MainAxisAlignment.START, wrap=True),
                 padding=20
@@ -178,7 +173,6 @@ class DemoPage(ft.View):
         
         if self.step_player.is_running() or self.step_player.is_paused():
             self.step_player.stop()
-            self.play_button.content = ft.Text("Play")
             
         if self._is_initialized:
             self._page.update()
@@ -191,33 +185,27 @@ class DemoPage(ft.View):
                 return
             self.status.value = f"Solution computed (Nodes generated: {stats.get('nodes_generated', '?')}) — ready to reveal"
             self._solution = solution
-            if steps:
-                self._steps = steps
-                self.step_player.set_event_steps(self._steps, self._event_callback)
-            else:
-                steps = []
-                for r in range(self.size):
-                    for c in range(self.size):
-                        if self._original_grid is not None and self._original_grid[r][c] == 0:
-                            steps.append((r, c, solution[r][c]))
-                self._steps = steps
-                self.step_player.set_steps(self._steps, self._step_callback)
-            
-            # Reset board visuals back to original values before playing animation
-            for r in range(self.size):
-                for c in range(self.size):
-                    val = self._original_grid[r][c]
-                    self.cells[r][c].value = str(val) if val != 0 else ""
-                    self.cells[r][c].bgcolor = ft.Colors.BLUE_900 if val != 0 else ft.Colors.GREY_900
-            
             self._page.update()
 
         self.status.value = "Solving..."
         self._page.update()
+        
+        # Reset board visuals back to original values before solving/streaming
+        for r in range(self.size):
+            for c in range(self.size):
+                val = self._original_grid[r][c] if self._original_grid is not None else self.grid[r][c]
+                self.cells[r][c].value = str(val) if val != 0 else ""
+                self.cells[r][c].bgcolor = ft.Colors.BLUE_900 if val != 0 else ft.Colors.GREY_900
+        self._page.update()
+        
         puzzle_grid = self._original_grid if self._original_grid is not None else self.grid
         algo = self.algorithm_dropdown.value
+        
+        # Start streaming mode on step_player
+        self.step_player.start_streaming(self._event_callback, delay=self.delay_slider.value if hasattr(self, 'delay_slider') else 0.1)
+
         try:
-            self.solver.run_with_history(self.size, puzzle_grid, self.h_constraints, self.v_constraints, callback=callback, algorithm=algo)
+            self.solver.run_with_history(self.size, puzzle_grid, self.h_constraints, self.v_constraints, callback=callback, algorithm=algo, step_player=self.step_player)
         except AttributeError:
             self.solver.run_full(self.size, puzzle_grid, self.h_constraints, self.v_constraints, callback=lambda sol, stats: callback(sol, stats, None), algorithm=algo)
 
@@ -243,27 +231,6 @@ class DemoPage(ft.View):
         self.cells[r][c].value = str(val)
         self.cells[r][c].bgcolor = ft.Colors.GREEN_700
         self._page.update()
-
-    def on_play_pause(self, e):
-        if not self._steps:
-            return
-        if not self.step_player.is_running():
-            delay = float(self.speed_slider.value)
-            self.step_player.start_auto(delay=delay)
-            self.play_button.content = ft.Text("Pause")
-        else:
-            if self.step_player.is_paused():
-                self.step_player.resume()
-                self.play_button.content = ft.Text("Pause")
-            else:
-                self.step_player.pause()
-                self.play_button.content = ft.Text("Play")
-        self._page.update()
-
-    def on_manual_step(self, e):
-        if not self._steps:
-            return
-        self.step_player.step_once()
 
     def on_speed_change(self, e):
         try:

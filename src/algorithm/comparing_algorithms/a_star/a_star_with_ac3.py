@@ -414,12 +414,21 @@ class AStarFutoshiki(FutoshikiSolver):
             return result.grid, exp, gen
         return None, exp, gen
 
-    def solve_with_history(self, max_nodes: int = 100000):
+    def solve_with_history(self, max_nodes: int = 100000, stream_queue=None):
         """Run the AC3+backtrack or plain A* while recording step events.
 
         Returns: (solution, stats, steps)
         """
-        steps = []
+        class StreamList(list):
+            def __init__(self, q):
+                self.q = q
+            def append(self, item):
+                if self.q:
+                    self.q.put(item)
+                else:
+                    super().append(item)
+                    
+        steps = StreamList(stream_queue)
         # if heuristic h3 prefer AC3 variant
         if self.heuristic == 'h3':
             # instrumented version of solve_with_ac3
@@ -429,7 +438,9 @@ class AStarFutoshiki(FutoshikiSolver):
             ac3 = AC3Solver(self.size, self.grid, self.h_constraints, self.v_constraints)
             # we won't instrument deep AC3 steps for now
             if not ac3.ac3():
-                return None, {'nodes_expanded': 0, 'nodes_generated': 1}, steps
+                stats = {'nodes_expanded': 0, 'nodes_generated': 1}
+                if stream_queue: stream_queue.put(('done', None, stats))
+                return None, stats, steps
 
             initial_domains = {k: v.copy() for k, v in ac3.domains.items()}
             initial_state = FutoshikiState(self.grid, initial_domains)
@@ -504,23 +515,36 @@ class AStarFutoshiki(FutoshikiSolver):
 
             if len(initial_state.get_blank_positions()) == 0:
                 if self.check_constraints(initial_state) == 0:
-                    return initial_state.grid, {'nodes_expanded': 0, 'nodes_generated': 1}, steps
+                    stats = {'nodes_expanded': 0, 'nodes_generated': 1}
+                    if stream_queue: stream_queue.put(('done', initial_state.grid, stats))
+                    return initial_state.grid, stats, steps
 
             result, exp, gen = backtrack(initial_state, ac3.domains)
-
-            if result is not None:
-                return result.grid, {'nodes_expanded': exp, 'nodes_generated': gen}, steps
-            return None, {'nodes_expanded': exp, 'nodes_generated': gen}, steps
+            
+            stats = {'nodes_expanded': exp, 'nodes_generated': gen}
+            sol = result.grid if result is not None else None
+            if stream_queue: stream_queue.put(('done', sol, stats))
+            return sol, stats, steps
         else:
             # use A* flow instrumented
-            sol, stats, steps_astar = self._solve_astar_with_steps(max_nodes=max_nodes)
+            sol, stats, steps_astar = self._solve_astar_with_steps(max_nodes=max_nodes, stream_queue=stream_queue)
             return sol, stats, steps_astar
 
-    def _solve_astar_with_steps(self, max_nodes: int = 500000):
+    def _solve_astar_with_steps(self, max_nodes: int = 500000, stream_queue=None):
         # reuse code from solve_astar but collect steps
         self.nodes_expanded = 0
         self.nodes_generated = 0
-        steps = []
+        
+        class StreamList(list):
+            def __init__(self, q):
+                self.q = q
+            def append(self, item):
+                if self.q:
+                    self.q.put(item)
+                else:
+                    super().append(item)
+                    
+        steps = StreamList(stream_queue)
 
         heuristic_map = {
             'h1': (self.h1_hamming, False),
@@ -534,10 +558,14 @@ class AStarFutoshiki(FutoshikiSolver):
 
         if np.all(self.grid != 0):
             if self.check_constraints(initial_state) == 0:
-                return self.grid, {'nodes_expanded': 0, 'nodes_generated': 1}, steps
+                stats = {'nodes_expanded': 0, 'nodes_generated': 1}
+                if stream_queue: stream_queue.put(('done', self.grid, stats))
+                return self.grid, stats, steps
 
         if self.has_conflict(initial_state):
-            return None, {'nodes_expanded': 0, 'nodes_generated': 1}, steps
+            stats = {'nodes_expanded': 0, 'nodes_generated': 1}
+            if stream_queue: stream_queue.put(('done', None, stats))
+            return None, stats, steps
 
         open_set = []
         g_cost = 0
@@ -552,7 +580,9 @@ class AStarFutoshiki(FutoshikiSolver):
 
         while open_set:
             if self.nodes_expanded > max_nodes:
-                return None, {'nodes_expanded': self.nodes_expanded, 'nodes_generated': self.nodes_generated}, steps
+                stats = {'nodes_expanded': self.nodes_expanded, 'nodes_generated': self.nodes_generated}
+                if stream_queue: stream_queue.put(('done', None, stats))
+                return None, stats, steps
 
             f, g, h, _, current_state = heapq.heappop(open_set)
             row, col = self.find_best_blank(current_state)
@@ -561,7 +591,9 @@ class AStarFutoshiki(FutoshikiSolver):
             if len(current_state.get_blank_positions()) == 0:
                 if self.check_constraints(current_state) == 0:
                     steps.append(('final', -1, -1, 0))
-                    return current_state.grid, {'nodes_expanded': self.nodes_expanded, 'nodes_generated': self.nodes_generated}, steps
+                    stats = {'nodes_expanded': self.nodes_expanded, 'nodes_generated': self.nodes_generated}
+                    if stream_queue: stream_queue.put(('done', current_state.grid, stats))
+                    return current_state.grid, stats, steps
 
             if self.has_conflict(current_state):
                 continue
@@ -582,7 +614,9 @@ class AStarFutoshiki(FutoshikiSolver):
                     heapq.heappush(open_set, (new_f, new_g, new_h, counter, successor))
                     closed_set.add(state_hash)
 
-        return None, {'nodes_expanded': self.nodes_expanded, 'nodes_generated': self.nodes_generated}, steps
+        stats = {'nodes_expanded': self.nodes_expanded, 'nodes_generated': self.nodes_generated}
+        if stream_queue: stream_queue.put(('done', None, stats))
+        return None, stats, steps
 
     def get_stats(self) -> Dict:
         return {

@@ -33,7 +33,7 @@ class backward_chaining_with_ac3(futoshiki_solver):
         # Check horizontal constraints
         if r1 == r2 and abs(c1 - c2) == 1:
             left, right = (c1, c2) if c1 < c2 else (c2, c1)
-            h = self.constraint[0][r1][left]
+            h = self.h_constraints[r1][left]
             if h == 1:
                 relation = "<" if c1 < c2 else ">"
             elif h == -1:
@@ -42,7 +42,7 @@ class backward_chaining_with_ac3(futoshiki_solver):
         # Check vertical constraints
         elif c1 == c2 and abs(r1 - r2) == 1:
             top, bottom = (r1, r2) if r1 < r2 else (r2, r1)
-            v = self.constraint[1][top][c1]
+            v = self.v_constraints[top][c1]
             if v == 1:
                 relation = "<" if r1 < r2 else ">"
             elif v == -1:

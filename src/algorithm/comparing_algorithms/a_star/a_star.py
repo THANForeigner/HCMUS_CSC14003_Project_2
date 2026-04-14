@@ -196,13 +196,23 @@ class PureAStarSolver(FutoshikiSolver):
         
         return None, self.nodes_expanded, self.nodes_generated
 
-    def solve_with_history(self, max_nodes: int = 500000):
+    def solve_with_history(self, max_nodes: int = 500000, stream_queue=None):
         """Run A* while recording step events. Returns (solution, stats, steps)
         """
         # reuse existing algorithm but collect steps via get_successors
         self.nodes_expanded = 0
         self.nodes_generated = 0
-        steps = []
+        
+        class StreamList(list):
+            def __init__(self, q):
+                self.q = q
+            def append(self, item):
+                if self.q:
+                    self.q.put(item)
+                else:
+                    super().append(item)
+                    
+        steps = StreamList(stream_queue)
 
         heuristic_map = {
             'h1': (self.h1_hamming, False),
@@ -217,10 +227,14 @@ class PureAStarSolver(FutoshikiSolver):
         
         if np.all(self.grid != 0):
             if self.check_constraints(initial_state) == 0:
-                return self.grid, {'nodes_expanded': 0, 'nodes_generated': 1}, steps
+                stats = {'nodes_expanded': 0, 'nodes_generated': 1}
+                if stream_queue: stream_queue.put(('done', self.grid, stats))
+                return self.grid, stats, steps
         
         if self.has_conflict(initial_state):
-            return None, {'nodes_expanded': 0, 'nodes_generated': 1}, steps
+            stats = {'nodes_expanded': 0, 'nodes_generated': 1}
+            if stream_queue: stream_queue.put(('done', None, stats))
+            return None, stats, steps
         
         open_set = []
         g_cost = 0
@@ -235,7 +249,9 @@ class PureAStarSolver(FutoshikiSolver):
         
         while open_set:
             if self.nodes_expanded > max_nodes:
-                return None, {'nodes_expanded': self.nodes_expanded, 'nodes_generated': self.nodes_generated}, steps
+                stats = {'nodes_expanded': self.nodes_expanded, 'nodes_generated': self.nodes_generated}
+                if stream_queue: stream_queue.put(('done', None, stats))
+                return None, stats, steps
                 
             f, g, h, _, current_state = heapq.heappop(open_set)
             
@@ -246,7 +262,9 @@ class PureAStarSolver(FutoshikiSolver):
             if len(current_state.get_blank_positions()) == 0:
                 if self.check_constraints(current_state) == 0:
                     steps.append(('final', -1, -1, 0))
-                    return current_state.grid, {'nodes_expanded': self.nodes_expanded, 'nodes_generated': self.nodes_generated}, steps
+                    stats = {'nodes_expanded': self.nodes_expanded, 'nodes_generated': self.nodes_generated}
+                    if stream_queue: stream_queue.put(('done', current_state.grid, stats))
+                    return current_state.grid, stats, steps
             
             if self.has_conflict(current_state):
                 continue
@@ -267,7 +285,9 @@ class PureAStarSolver(FutoshikiSolver):
                     heapq.heappush(open_set, (new_f, new_g, new_h, counter, successor))
                     closed_set.add(state_hash)
         
-        return None, {'nodes_expanded': self.nodes_expanded, 'nodes_generated': self.nodes_generated}, steps
+        stats = {'nodes_expanded': self.nodes_expanded, 'nodes_generated': self.nodes_generated}
+        if stream_queue: stream_queue.put(('done', None, stats))
+        return None, stats, steps
 
     def get_stats(self) -> Dict:
         return {

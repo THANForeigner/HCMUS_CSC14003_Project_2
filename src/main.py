@@ -47,4 +47,6 @@ def main(page: ft.Page):
     route_change(None)
 
 if __name__ == "__main__":
+    import multiprocessing
+    multiprocessing.freeze_support()
     ft.run(main)

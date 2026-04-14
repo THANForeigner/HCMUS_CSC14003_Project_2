@@ -6,6 +6,7 @@ class FutoshikiSolver:
     def __init__(self, size: int, grid, constraint):
         self.size = size
         self.grid = np.array(grid)
+        self.constraint = constraint
         self.h_constraints = np.array(constraint[0])
         self.v_constraints = np.array(constraint[1])
         self.solution = None
