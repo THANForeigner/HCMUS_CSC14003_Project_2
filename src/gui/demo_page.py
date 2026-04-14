@@ -1,6 +1,6 @@
 import os
 import sys
-import threading
+import asyncio
 import flet as ft
 
 # Ensure imports can resolve during different run modes
@@ -22,9 +22,26 @@ try:
 except ImportError:
     from gui.step_player import StepPlayer
 
+# Nord Theme Palette
+POLAR_NIGHT_0 = "#2E3440"
+POLAR_NIGHT_1 = "#3B4252"
+POLAR_NIGHT_2 = "#434C5E"
+POLAR_NIGHT_3 = "#4C566A"
+SNOW_STORM_0 = "#D8DEE9"
+SNOW_STORM_1 = "#E5E9F0"
+SNOW_STORM_2 = "#ECEFF4"
+FROST_0 = "#8FBCBB"
+FROST_1 = "#88C0D0"
+FROST_2 = "#81A1C1"
+FROST_3 = "#5E81AC"
+AURORA_RED = "#BF616A"
+AURORA_ORANGE = "#D08770"
+AURORA_YELLOW = "#EBCB8B"
+AURORA_GREEN = "#A3BE8C"
+
 class DemoPage(ft.View):
     def __init__(self, page: ft.Page):
-        super().__init__(route="/demo")
+        super().__init__(route="/demo", bgcolor=POLAR_NIGHT_0)
         self._page = page
         self._is_initialized = False
         self.size = 5
@@ -32,12 +49,13 @@ class DemoPage(ft.View):
         self.h_constraints = []
         self.v_constraints = []
         self.cells = []
-        self.status = ft.Text("", size=16)
+        self.status = ft.Text("", size=16, color=SNOW_STORM_0, weight=ft.FontWeight.BOLD)
 
         # Dropdowns
         self.file_dropdown = ft.Dropdown(
             width=180,
-            on_select=self.on_file_selected
+            on_select=self.on_file_selected,
+            bgcolor=POLAR_NIGHT_1, color=SNOW_STORM_2, border_color=POLAR_NIGHT_3
         )
         self.load_available_files()
 
@@ -49,50 +67,55 @@ class DemoPage(ft.View):
                 ft.dropdown.Option('brute_force', text='Brute Force'),
                 ft.dropdown.Option('backward_chaining_with_ac3', text='Backward Chaining with AC3'),
                 ft.dropdown.Option('backward_chaining', text='Backward Chaining'),
-                ft.dropdown.Option('bc_no_backtrack', text='Backward Chaining No Backtrack'),
+                ft.dropdown.Option('bc_no_backtrack', text='BC No Backtrack'),
                 ft.dropdown.Option('forward_chaining', text='Forward Chaining'),
-                ft.dropdown.Option('fc_with_backtrack', text='Forward Chaining with Backtrack'),
+                ft.dropdown.Option('fc_with_backtrack', text='FC with Backtrack'),
                 ft.dropdown.Option('dancing_links', text='Dancing Links'),
                 ft.dropdown.Option('astar_h2', text='A* (h2)'),
                 ft.dropdown.Option('astar_h1', text='A* (h1)'),
                 ft.dropdown.Option('astar_h3', text='A* (h3)'),
-                ft.dropdown.Option('astar_ac3_h1', text='A* with AC3 (h1)'),
-                ft.dropdown.Option('astar_ac3_h2', text='A* with AC3 (h2)'),
-                ft.dropdown.Option('astar_ac3_h3', text='A* with AC3 (h3)'),
-            ]
+                ft.dropdown.Option('astar_ac3_h1', text='A* AC3 (h1)'),
+                ft.dropdown.Option('astar_ac3_h2', text='A* AC3 (h2)'),
+                ft.dropdown.Option('astar_ac3_h3', text='A* AC3 (h3)'),
+            ],
+            bgcolor=POLAR_NIGHT_1, color=SNOW_STORM_2, border_color=POLAR_NIGHT_3
         )
 
-        # controls
-        self.speed_slider = ft.Slider(min=0.05, max=1.0, divisions=19, value=0.25, label='{value}s', on_change=self.on_speed_change, width=150)
+        self.speed_slider = ft.Slider(min=0.01, max=1.0, value=0.1, active_color=FROST_1, width=150, on_change=self.on_speed_change)
+
+        self.board_container = ft.Container(
+            content=ft.Column([], alignment=ft.MainAxisAlignment.CENTER, horizontal_alignment=ft.CrossAxisAlignment.CENTER),
+            expand=True,
+            alignment=ft.Alignment(0, 0),
+            padding=20
+        )
 
         self.controls = [
             ft.Container(
                 content=ft.Row([
-                    ft.ElevatedButton(content=ft.Text("< Back"), on_click=lambda _: page.go("/")),
-                    ft.Text("Test:", size=16, weight=ft.FontWeight.BOLD),
+                    ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda _: page.go("/"), icon_color=SNOW_STORM_0),
+                    ft.Text("Test:", size=14, color=FROST_2),
                     self.file_dropdown,
-                    ft.IconButton(icon=ft.Icons.REFRESH, tooltip="Refresh Puzzle", on_click=lambda _: self.load_puzzle(self.file_dropdown.value)),
-                    ft.Text("Algo:", size=16, weight=ft.FontWeight.BOLD),
+                    ft.IconButton(icon=ft.Icons.REFRESH, on_click=lambda _: self.load_puzzle(self.file_dropdown.value), icon_color=FROST_1),
+                    ft.Text("Algo:", size=14, color=FROST_2),
                     self.algorithm_dropdown,
-                    ft.ElevatedButton(content=ft.Text("Compute Solution"), on_click=self.on_compute_solution),
-                    ft.Row([ft.Text("Speed:"), self.speed_slider], alignment=ft.MainAxisAlignment.CENTER)
+                    ft.ElevatedButton(
+                        content=ft.Text("Demonstrate"),
+                        on_click=self.on_compute_solution,
+                        style=ft.ButtonStyle(bgcolor=FROST_3, color=SNOW_STORM_2)
+                    ),
+                    ft.Row([ft.Text("Speed", size=12, color=SNOW_STORM_0), self.speed_slider], spacing=5)
                 ], alignment=ft.MainAxisAlignment.START, wrap=True),
-                padding=20
+                padding=15, bgcolor=POLAR_NIGHT_1, border_radius=15, margin=10
             ),
-            ft.Container(content=self.status, padding=10),
-            ft.Container(content=ft.Column([], alignment=ft.MainAxisAlignment.CENTER), expand=True, alignment=ft.Alignment(0,0))
+            ft.Row([self.status], alignment=ft.MainAxisAlignment.CENTER),
+            self.board_container
         ]
 
         self.step_player = StepPlayer()
-        self._steps = []
-        self._solution = None
+        self.solver = SolverController()
         self._original_grid = None
 
-        # solver
-        self.pmanager = PuzzleManager()
-        self.solver = SolverController()
-
-        # initial setup
         if self.file_dropdown.options:
             self.file_dropdown.value = self.file_dropdown.options[0].key
             self.load_puzzle(self.file_dropdown.value)
@@ -111,22 +134,19 @@ class DemoPage(ft.View):
         files.sort()
         self.file_dropdown.options = [ft.dropdown.Option(f) for f in files]
 
-    def on_file_selected(self, e):
+    async def on_file_selected(self, e):
         self.load_puzzle(e.control.value)
         self._page.update()
 
     def load_puzzle(self, filename):
         if not filename: return
         filepath = os.path.join(base_dir, "inputs", filename)
-        self.status.value = ""
         try:
-            self.size, self.grid, constraints = read_input(filepath)
-            self.h_constraints, self.v_constraints = constraints
+            self.size, self.grid, (self.h_constraints, self.v_constraints) = read_input(filepath)
             self._original_grid = [row[:] for row in self.grid]
             self._render_board()
         except Exception as e:
-            self.status.value = f"Failed to load: {e}"
-            self._page.update()
+            self.status.value = f"Error: {e}"; self.status.color = AURORA_RED
 
     def build_empty_board(self):
         n = self.size
@@ -145,97 +165,67 @@ class DemoPage(ft.View):
             row_cells = []
             for c in range(n):
                 val = self._original_grid[r][c] if self._original_grid else 0
-                tf = ft.TextField(
-                    value=str(val) if val != 0 else "", 
-                    width=60, height=60, text_align=ft.TextAlign.CENTER, 
-                    text_size=24, read_only=True,
-                    bgcolor=ft.Colors.BLUE_900 if val != 0 else ft.Colors.GREY_900
+                is_fixed = val != 0
+                
+                cell_container = ft.Container(
+                    content=ft.Text(str(val) if is_fixed else "", size=22, weight=ft.FontWeight.BOLD, color=SNOW_STORM_2 if is_fixed else FROST_1),
+                    alignment=ft.Alignment(0, 0),
+                    width=55, height=55, bgcolor=POLAR_NIGHT_1 if is_fixed else POLAR_NIGHT_2,
+                    border_radius=8,
+                    animate=ft.Animation(300, ft.AnimationCurve.EASE_OUT_QUART),
+                    animate_scale=ft.Animation(200, ft.AnimationCurve.EASE_OUT)
                 )
-                row_controls.append(tf)
-                row_cells.append(tf)
+                row_controls.append(cell_container)
+                row_cells.append(cell_container)
                 if c < n-1:
                     h_val = self.h_constraints[r][c]
-                    sym = "<" if h_val == 1 else ">" if h_val == -1 else ""
-                    row_controls.append(ft.Container(content=ft.Text(sym, size=24, weight=ft.FontWeight.BOLD, color=ft.Colors.ORANGE_400), width=30, alignment=ft.Alignment(0,0)))
+                    txt = "<" if h_val == 1 else ">" if h_val == -1 else ""
+                    row_controls.append(ft.Container(content=ft.Text(txt, size=18, color=FROST_3, weight=ft.FontWeight.BOLD), alignment=ft.Alignment(0, 0), width=25))
             self.cells.append(row_cells)
-            board_rows.append(ft.Row(controls=row_controls, alignment=ft.MainAxisAlignment.CENTER))
+            board_rows.append(ft.Row(controls=row_controls, alignment=ft.MainAxisAlignment.CENTER, spacing=5))
             if r < n-1:
                 v_controls = []
                 for c in range(n):
                     v_val = self.v_constraints[r][c]
-                    sym = "^" if v_val == 1 else "v" if v_val == -1 else ""
-                    v_controls.append(ft.Container(content=ft.Text(sym, size=24, weight=ft.FontWeight.BOLD, color=ft.Colors.ORANGE_400), width=60, alignment=ft.Alignment(0,0)))
-                    if c < n-1:
-                        v_controls.append(ft.Container(width=30))
-                board_rows.append(ft.Row(controls=v_controls, alignment=ft.MainAxisAlignment.CENTER))
+                    txt = "^" if v_val == 1 else "v" if v_val == -1 else ""
+                    v_controls.append(ft.Container(content=ft.Text(txt, size=18, color=FROST_3, weight=ft.FontWeight.BOLD), alignment=ft.Alignment(0, 0), width=55))
+                    if c < n-1: v_controls.append(ft.Container(width=25))
+                board_rows.append(ft.Row(controls=v_controls, alignment=ft.MainAxisAlignment.CENTER, spacing=5))
 
-        column = ft.Column(controls=board_rows, alignment=ft.MainAxisAlignment.CENTER)
-        self.controls[2].content = column
-        
-        if self.step_player.is_running() or self.step_player.is_paused():
-            self.step_player.stop()
-            
-        if self._is_initialized:
+        self.board_container.content = ft.Column(controls=board_rows, alignment=ft.MainAxisAlignment.CENTER, horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=5)
+        if self.step_player.is_running(): asyncio.create_task(self.step_player.stop())
+        if self._is_initialized: self._page.update()
+
+    async def on_compute_solution(self, e):
+        async def callback(solution, stats, steps=None):
+            if solution is None: self.status.value = "No solution found"; self.status.color = AURORA_RED
+            else: self.status.value = f"Demo Finished. {stats.get('nodes_generated','?')} nodes."; self.status.color = AURORA_GREEN
             self._page.update()
 
-    def on_compute_solution(self, e):
-        def callback(solution, stats, steps=None):
-            if solution is None:
-                self.status.value = "No solution found"
-                self._page.update()
-                return
-            self.status.value = f"Solution computed (Nodes generated: {stats.get('nodes_generated', '?')}) — ready to reveal"
-            self._solution = solution
-            self._page.update()
-
-        self.status.value = "Solving..."
-        self._page.update()
+        self.status.value = "Demonstrating..."; self.status.color = FROST_1; self._page.update()
         
-        # Reset board visuals back to original values before solving/streaming
+        # Reset board visuals
         for r in range(self.size):
             for c in range(self.size):
-                val = self._original_grid[r][c] if self._original_grid is not None else self.grid[r][c]
-                self.cells[r][c].value = str(val) if val != 0 else ""
-                self.cells[r][c].bgcolor = ft.Colors.BLUE_900 if val != 0 else ft.Colors.GREY_900
+                val = self._original_grid[r][c]
+                self.cells[r][c].content.value = str(val) if val != 0 else ""
+                self.cells[r][c].bgcolor = POLAR_NIGHT_1 if val != 0 else POLAR_NIGHT_2
         self._page.update()
         
-        puzzle_grid = self._original_grid if self._original_grid is not None else self.grid
-        algo = self.algorithm_dropdown.value
-        
-        # Start streaming mode on step_player
-        self.step_player.start_streaming(self._event_callback, delay=self.speed_slider.value if hasattr(self, 'speed_slider') else 0.1)
+        async def event_callback(action, r, c, val):
+            if action == 'check': self.cells[r][c].bgcolor = AURORA_YELLOW
+            elif action == 'assign':
+                self.cells[r][c].content.value = str(val); self.cells[r][c].bgcolor = AURORA_GREEN; self.cells[r][c].scale = 1.1
+                await asyncio.sleep(0.05); self.cells[r][c].scale = 1.0
+            elif action == 'backtrack':
+                if self._original_grid[r][c] == 0: self.cells[r][c].content.value = ""
+                self.cells[r][c].bgcolor = AURORA_RED
+            elif action == 'expand': self.cells[r][c].bgcolor = "#8FBCBB" # Frost 0
+            elif action == 'gen': self.cells[r][c].content.value = str(val); self.cells[r][c].bgcolor = AURORA_ORANGE
+            self._page.update()
 
-        try:
-            self.solver.run_with_history(self.size, puzzle_grid, self.h_constraints, self.v_constraints, callback=callback, algorithm=algo, step_player=self.step_player)
-        except AttributeError:
-            self.solver.run_full(self.size, puzzle_grid, self.h_constraints, self.v_constraints, callback=lambda sol, stats: callback(sol, stats, None), algorithm=algo)
+        await self.step_player.start_streaming(event_callback, delay=self.speed_slider.value)
+        await self.solver.run_with_history(self.size, self._original_grid, self.h_constraints, self.v_constraints, callback=callback, algorithm=self.algorithm_dropdown.value, step_player=self.step_player)
 
-    def _event_callback(self, action, r, c, val):
-        if r < 0 or c < 0: return
-        if action == 'check':
-            self.cells[r][c].bgcolor = ft.Colors.AMBER_400
-        elif action == 'assign':
-            self.cells[r][c].value = str(val)
-            self.cells[r][c].bgcolor = ft.Colors.GREEN_700
-        elif action == 'backtrack':
-            if self._original_grid[r][c] == 0:
-                self.cells[r][c].value = ""
-            self.cells[r][c].bgcolor = ft.Colors.RED_700
-        elif action == 'expand':
-            self.cells[r][c].bgcolor = ft.Colors.PURPLE_500
-        elif action == 'gen':
-            self.cells[r][c].value = str(val)
-            self.cells[r][c].bgcolor = ft.Colors.YELLOW_700
-        self._page.update()
-
-    def _step_callback(self, r, c, val):
-        self.cells[r][c].value = str(val)
-        self.cells[r][c].bgcolor = ft.Colors.GREEN_700
-        self._page.update()
-
-    def on_speed_change(self, e):
-        try:
-            delay = float(self.speed_slider.value)
-            self.step_player._delay = delay
-        except Exception:
-            pass
+    async def on_speed_change(self, e):
+        self.step_player._delay = float(self.speed_slider.value)

@@ -1,6 +1,7 @@
 import sys
 import os
 import flet as ft
+import asyncio
 
 # Ensure repo root and src directory are in path to allow imports anywhere
 repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -12,7 +13,7 @@ from gui.home_page import home_page
 from gui.puzzle_page import PuzzlePage
 from gui.demo_page import DemoPage
 
-def main(page: ft.Page):
+async def main(page: ft.Page):
     # Setup main window properties
     page.title = "Futoshiki"
     page.theme_mode = ft.ThemeMode.DARK
@@ -21,7 +22,7 @@ def main(page: ft.Page):
     page.window_min_width = 700
     page.window_min_height = 600
     
-    def route_change(route):
+    async def route_change(route):
         page.views.clear()
         
         # Always add home page at the bottom of the stack
@@ -34,7 +35,7 @@ def main(page: ft.Page):
             page.views.append(DemoPage(page))
         page.update()
 
-    def view_pop(view):
+    async def view_pop(view):
         page.views.pop()
         top_view = page.views[-1]
         page.route = top_view.route
@@ -44,9 +45,9 @@ def main(page: ft.Page):
     page.on_view_pop = view_pop
     
     # Start app execution at root route
-    route_change(None)
+    await route_change(None)
 
 if __name__ == "__main__":
     import multiprocessing
     multiprocessing.freeze_support()
-    ft.run(main)
+    ft.app(main)

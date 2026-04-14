@@ -1,108 +1,99 @@
-from ...futoshiki_solver import futoshiki_solver
-class BacktrackSolver(futoshiki_solver.FutoshikiSolver):
+import time
+from ...futoshiki_solver import FutoshikiSolver
+
+class BacktrackSolver(FutoshikiSolver):
     def __init__(self, size, grid, constraint):
         super().__init__(size, grid, constraint)
+        self.solution = self.grid.copy()
     
     def check_row_column(self, row, col, num):
-        # Check if num is not in the current row and column
+        # Check if num is not in the current row and column of the solution
         for i in range(self.size):
-            if self.grid[row][i] == num or self.grid[i][col] == num:
+            if self.solution[row][i] == num or self.solution[i][col] == num:
                 return False
         
         # Check horizontal constraints
-        if col > 0 and self.constraint[0][row][col - 1] != 0:
-            if self.constraint[0][row][col - 1] == 1 and num <= self.grid[row][col - 1]:
+        h_constraints = self.constraint[0]
+        if col > 0 and h_constraints[row][col - 1] != 0:
+            if h_constraints[row][col - 1] == 1 and self.solution[row][col - 1] != 0 and num <= self.solution[row][col - 1]:
                 return False
-            if self.constraint[0][row][col - 1] == -1 and num >= self.grid[row][col - 1]:
+            if h_constraints[row][col - 1] == -1 and self.solution[row][col - 1] != 0 and num >= self.solution[row][col - 1]:
                 return False
         
-        if col < self.size - 1 and self.constraint[0][row][col] != 0:
-            if self.constraint[0][row][col] == 1 and num >= self.grid[row][col + 1]:
+        if col < self.size - 1 and h_constraints[row][col] != 0:
+            if h_constraints[row][col] == 1 and self.solution[row][col + 1] != 0 and num >= self.solution[row][col + 1]:
                 return False
-            if self.constraint[0][row][col] == -1 and num <= self.grid[row][col + 1]:
+            if h_constraints[row][col] == -1 and self.solution[row][col + 1] != 0 and num <= self.solution[row][col + 1]:
                 return False
         
         # Check vertical constraints
-        if row > 0 and self.constraint[1][row - 1][col] != 0:
-            if self.constraint[1][row - 1][col] == 1 and num <= self.grid[row - 1][col]:
+        v_constraints = self.constraint[1]
+        if row > 0 and v_constraints[row - 1][col] != 0:
+            if v_constraints[row - 1][col] == 1 and self.solution[row - 1][col] != 0 and num <= self.solution[row - 1][col]:
                 return False
-            if self.constraint[1][row - 1][col] == -1 and num >= self.grid[row - 1][col]:
+            if v_constraints[row - 1][col] == -1 and self.solution[row - 1][col] != 0 and num >= self.solution[row - 1][col]:
                 return False
         
-        if row < self.size - 1 and self.constraint[1][row][col] != 0:
-            if self.constraint[1][row][col] == 1 and num >= self.grid[row + 1][col]:
+        if row < self.size - 1 and v_constraints[row][col] != 0:
+            if v_constraints[row][col] == 1 and self.solution[row + 1][col] != 0 and num >= self.solution[row + 1][col]:
                 return False
-            if self.constraint[1][row][col] == -1 and num <= self.grid[row + 1][col]:
+            if v_constraints[row][col] == -1 and self.solution[row + 1][col] != 0 and num <= self.solution[row + 1][col]:
                 return False
         
         return True
 
-    def check_contraints(self, row, col, num, constraint):
-        if not self.check_row_column(row, col, num):
-            return False
-        h_constraints, v_constraints = constraint[0], constraint[1]
-        if col > 0 and h_constraints[row][col - 1] != 0:
-            if h_constraints[row][col - 1] == 1 and num <= self.grid[row][col - 1]:
-                return False
-            if h_constraints[row][col - 1] == -1 and num >= self.grid[row][col - 1]:
-                return False
-        if row < self.size - 1 and v_constraints[row][col] != 0:
-            if v_constraints[row][col] == 1 and num >= self.grid[row + 1][col]:
-                return False
-            if v_constraints[row][col] == -1 and num <= self.grid[row + 1][col]:
-                return False
-        return True
+    def check_constraints(self, row, col, num):
+        return self.check_row_column(row, col, num)
         
-    def backtrack(self, row, col, steps=None, stream_queue=None):
-        if steps is None:
-            steps = None
-        if self.solution[row][col] != 0:
-            next_col = col + 1 if col + 1 < self.size else 0
-            next_row = row + (col + 1) // self.size
-            self.backtrack(next_row, next_col, steps, stream_queue)
-            return
+    def backtrack(self, row, col, stream_queue=None):
+        if row == self.size:
+            return True
+        
+        next_row = row + (col + 1) // self.size
+        next_col = (col + 1) % self.size
+        
+        if self.grid[row][col] != 0:
+            return self.backtrack(next_row, next_col, stream_queue)
+        
         for num in range(1, self.size + 1):
-            if steps is not None:
-                steps.append(('check', row, col, num))
+            self.nodes_generated += 1
             if stream_queue:
                 stream_queue.put(('check', row, col, num))
-            safe = self.check_contraints(row, col, num, self.constraint)
-            if safe:
+            
+            if self.check_constraints(row, col, num):
                 self.solution[row][col] = num
-                if steps is not None:
-                    steps.append(('assign', row, col, num))
+                self.nodes_expanded += 1
                 if stream_queue:
                     stream_queue.put(('assign', row, col, num))
-                if row == self.size - 1 and col == self.size - 1:
-                    return
-                next_row = row + (col + 1) // self.size
-                next_col = (col + 1) % self.size
-                self.backtrack(next_row, next_col, steps, stream_queue)
-                if self.solution[self.size - 1][self.size - 1] != 0:
-                    return
+                
+                if self.backtrack(next_row, next_col, stream_queue):
+                    return True
+                
                 self.solution[row][col] = 0
-                if steps is not None:
-                    steps.append(('backtrack', row, col, 0))
                 if stream_queue:
                     stream_queue.put(('backtrack', row, col, 0))
+        
+        return False
                 
     def solve_with_history(self, stream_queue=None):
         """Run the solver while recording a list of step events.
-
-        Returns: (solution or None, stats dict, steps list)
         """
-        # reset stats
         self.nodes_expanded = 0
         self.nodes_generated = 0
+        self.solution = self.grid.copy()
         start = time.time()
-        steps = [] if stream_queue is None else None
-        self.backtrack(0, 0, steps, stream_queue)
+        ok = self.backtrack(0, 0, stream_queue)
         duration = time.time() - start
         stats = {'nodes_expanded': self.nodes_expanded, 'nodes_generated': self.nodes_generated, 'time': duration}
+        
+        sol_list = self.solution.tolist() if ok else None
         if stream_queue:
-            stream_queue.put(('done', self.solution, stats))
-        return (self.solution, stats, steps)
+            stream_queue.put(('done', sol_list, stats))
+        return (sol_list, stats, [])
 
     def solve(self):
         """Backward-compatible solve(): returns solution only as before."""
-        return self.solution
+        self.solution = self.grid.copy()
+        if self.backtrack(0, 0):
+            return self.solution
+        return None

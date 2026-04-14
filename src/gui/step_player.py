@@ -1,126 +1,101 @@
-import threading
-import time
+import asyncio
 from typing import List, Tuple, Callable, Optional
 
 class StepPlayer:
-    """Play a sequence of steps (r,c,val). Provide play/pause/step/stop and speed control.
-
-    Usage:
-      player = StepPlayer()
-      player.set_steps(steps, step_callback)
-      player.start_auto(delay)
-      player.pause()
-      player.step_once()
-      player.stop()
+    """Play a sequence of steps (r,c,val) using asyncio. Provide play/pause/step/stop and speed control.
 
     Supports two modes:
       - history mode: set_steps / set_event_steps (existing behavior)
       - streaming mode: push_event(step_tuple) to push live events. Player can be paused/resumed.
     """
     def __init__(self):
-        self._thread: Optional[threading.Thread] = None
-        self._pause_event = threading.Event()
-        self._stop_event = threading.Event()
-        self._steps: List[Tuple[int,int,int]] = []
+        self._task: Optional[asyncio.Task] = None
+        self._pause_event = asyncio.Event()
+        self._stop_event = asyncio.Event()
+        self._steps: List[tuple] = []
         self._index = 0
         self._delay = 0.25
         self._callback: Optional[Callable] = None
-        self._lock = threading.Lock()
         self._streaming = False
         self._stream_queue: List[tuple] = []
         self._user_paused = False
 
-    def set_steps(self, steps: List[Tuple[int,int,int]], callback: Callable[[int,int,int], None]):
-        with self._lock:
-            self._streaming = False
-            self._steps = list(steps)
-            self._index = 0
-            self._callback = callback
-            self._stop_event.clear()
-            self._pause_event.set()  # default to running when started
+    def set_steps(self, steps: List[tuple], callback: Callable):
+        self._streaming = False
+        self._steps = list(steps)
+        self._index = 0
+        self._callback = callback
+        self._stop_event.clear()
+        self._pause_event.set()  # default to running when started
 
     def set_event_steps(self, steps: List[tuple], callback: Callable):
-        """Accept steps as arbitrary tuples and a callback that accepts the tuple unpacked.
+        self.set_steps(steps, callback)
 
-        Example step: ('assign', r, c, val)
-        The callback must accept the tuple as separate args: callback(action, r, c, val)
-        """
-        with self._lock:
-            self._streaming = False
-            self._steps = list(steps)
-            self._index = 0
-            self._callback = callback
-            self._stop_event.clear()
-            self._pause_event.set()
-
-    def start_streaming(self, callback: Callable, delay: float = 0.1):
-        """Start streaming mode: events are pushed via push_event and processed by the internal loop calling callback(*step).
-
-        callback: function accepting step tuple unpacked, e.g., callback(action, r, c, val)
-        """
-        with self._lock:
-            self._streaming = True
-            self._callback = callback
-            self._delay = delay
-            self._stop_event.clear()
-            self._pause_event.set()
-            if self._thread and self._thread.is_alive():
-                return
-            self._thread = threading.Thread(target=self._run, daemon=True)
-            self._thread.start()
+    async def start_streaming(self, callback: Callable, delay: float = 0.1):
+        """Start streaming mode: events are pushed via push_event and processed by the internal loop."""
+        self._streaming = True
+        self._callback = callback
+        self._delay = delay
+        self._stop_event.clear()
+        self._pause_event.set()
+        
+        if self._task and not self._task.done():
+            return
+        
+        self._task = asyncio.create_task(self._run())
 
     def push_event(self, step: tuple):
         """Push a single step tuple into the streaming queue."""
-        with self._lock:
-            self._stream_queue.append(step)
-            # only unpause if not explicitly paused by user
-            if not self._user_paused:
-                self._pause_event.set()
+        self._stream_queue.append(step)
+        # only unpause if not explicitly paused by user
+        if not self._user_paused:
+            self._pause_event.set()
 
-    def _run(self):
-        while True:
+    async def _run(self):
+        while not self._stop_event.is_set():
             # wait if paused
-            self._pause_event.wait()
-            with self._lock:
-                if self._stop_event.is_set():
-                    break
-                if self._streaming:
-                    if not self._stream_queue:
-                        step = None
-                        # queue is empty, auto-pause until new item
-                        self._pause_event.clear()
-                    else:
-                        step = self._stream_queue.pop(0)
-                else:
-                    if self._index >= len(self._steps):
-                        break
-                    step = self._steps[self._index]
+            await self._pause_event.wait()
+            
             if self._stop_event.is_set():
                 break
-            if step is None:
-                time.sleep(0.01)
-                continue
-            # execute step
-            try:
-                if self._callback:
-                    self._callback(*step)
-            except Exception:
-                pass
-            with self._lock:
-                if not self._streaming:
-                    self._index += 1
-            time.sleep(self._delay)
 
-    def start_auto(self, delay: float = 0.25):
-        with self._lock:
-            self._delay = delay
-            self._user_paused = False
-            self._pause_event.set()
-            self._stop_event.clear()
-            if self._thread and self._thread.is_alive():
-                return
-            self._thread = threading.Thread(target=self._run, daemon=True)
-            self._thread.start()
+            step = None
+            if self._streaming:
+                if not self._stream_queue:
+                    # queue is empty, auto-pause until new item
+                    self._pause_event.clear()
+                    await asyncio.sleep(0.01)
+                    continue
+                step = self._stream_queue.pop(0)
+            else:
+                if self._index >= len(self._steps):
+                    break
+                step = self._steps[self._index]
+                self._index += 1
+
+            if step is not None:
+                # execute step
+                try:
+                    if self._callback:
+                        if asyncio.iscoroutinefunction(self._callback):
+                            await self._callback(*step)
+                        else:
+                            self._callback(*step)
+                except Exception:
+                    pass
+            
+            await asyncio.sleep(self._delay)
+
+    async def start_auto(self, delay: float = 0.25):
+        self._delay = delay
+        self._user_paused = False
+        self._pause_event.set()
+        self._stop_event.clear()
+        
+        if self._task and not self._task.done():
+            return
+            
+        self._task = asyncio.create_task(self._run())
 
     def pause(self):
         self._user_paused = True
@@ -130,35 +105,41 @@ class StepPlayer:
         self._user_paused = False
         self._pause_event.set()
 
-    def step_once(self):
-        with self._lock:
-            if self._streaming:
-                if not self._stream_queue:
-                    return
-                step = self._stream_queue.pop(0)
-            else:
-                if self._index >= len(self._steps):
-                    return
-                step = self._steps[self._index]
-                self._index += 1
-        if self._callback:
+    async def step_once(self):
+        step = None
+        if self._streaming:
+            if not self._stream_queue:
+                return
+            step = self._stream_queue.pop(0)
+        else:
+            if self._index >= len(self._steps):
+                return
+            step = self._steps[self._index]
+            self._index += 1
+            
+        if step is not None and self._callback:
             try:
-                self._callback(*step)
+                if asyncio.iscoroutinefunction(self._callback):
+                    await self._callback(*step)
+                else:
+                    self._callback(*step)
             except Exception:
                 pass
 
-    def stop(self):
+    async def stop(self):
         self._stop_event.set()
-        self._pause_event.set()
-        if self._thread and self._thread.is_alive():
-            self._thread.join(timeout=0.1)
-        with self._lock:
-            self._index = 0
-            self._stream_queue = []
-            self._streaming = False
+        self._pause_event.set() # wake up to finish
+        if self._task:
+            try:
+                await self._task
+            except asyncio.CancelledError:
+                pass
+        self._index = 0
+        self._stream_queue = []
+        self._streaming = False
 
     def is_running(self) -> bool:
-        return self._thread is not None and self._thread.is_alive() and self._pause_event.is_set()
+        return self._task is not None and not self._task.done() and self._pause_event.is_set()
 
     def is_paused(self) -> bool:
-        return self._thread is not None and self._thread.is_alive() and not self._pause_event.is_set()
+        return self._task is not None and not self._task.done() and not self._pause_event.is_set()

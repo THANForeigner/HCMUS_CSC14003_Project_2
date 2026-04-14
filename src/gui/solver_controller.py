@@ -1,6 +1,7 @@
+import asyncio
 import threading
 import time
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Any, Callable
 import multiprocessing
 import queue
 
@@ -79,8 +80,8 @@ def _mp_worker(algorithm, size, grid, h_constraints, v_constraints, q):
             s = BacktrackSolver(size, grid, (h_constraints, v_constraints))
             s.solve_with_history(stream_queue=q)
         elif algorithm == 'brute_force':
-            from src.algorithm.comparing_algorithms.brute_force_and_backtrack.backtrack import BacktrackSolver
-            s = BacktrackSolver(size, grid, (h_constraints, v_constraints))
+            from src.algorithm.comparing_algorithms.brute_force_and_backtrack.brute_force import BruteForceSolver
+            s = BruteForceSolver(size, grid, (h_constraints, v_constraints))
             s.solve_with_history(stream_queue=q)
         elif algorithm.startswith('astar_ac3_h'):
             from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
@@ -136,187 +137,109 @@ def _mp_worker(algorithm, size, grid, h_constraints, v_constraints, q):
 
 class SolverController:
     def __init__(self):
-        self._thread = None
+        self._task: Optional[asyncio.Task] = None
         self._result = None
-        self._lock = threading.Lock()
+        self._lock = asyncio.Lock()
 
-    def run_full(self, size: int, grid: List[List[int]], h_constraints: List[List[int]], v_constraints: List[List[int]], callback=None, algorithm: str = 'backtrack'):
-        def target():
+    async def run_full(self, size: int, grid: List[List[int]], h_constraints: List[List[int]], v_constraints: List[List[int]], callback=None, algorithm: str = 'backtrack'):
+        async def target():
             try:
-                if algorithm == 'backtrack':
-                    s = BacktrackSolverSimple(size, grid, (h_constraints, v_constraints))
-                    solution, stats = s.solve()
-                elif algorithm == 'astar':
-                    from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
-                    s = PureAStarSolver(size, grid, (h_constraints, v_constraints))
-                    solution, nodes_expanded, nodes_generated = s.solve_astar()
-                    stats = {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
-                elif algorithm == 'astar_h1':
-                    from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
-                    s = PureAStarSolver(size, grid, (h_constraints, v_constraints), heuristic='h1')
-                    solution, nodes_expanded, nodes_generated = s.solve_astar()
-                    stats = {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
-                elif algorithm == 'astar_h2':
-                    from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
-                    s = PureAStarSolver(size, grid, (h_constraints, v_constraints), heuristic='h2')
-                    solution, nodes_expanded, nodes_generated = s.solve_astar()
-                    stats = {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
-                elif algorithm == 'astar_h3':
-                    from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
-                    s = PureAStarSolver(size, grid, (h_constraints, v_constraints), heuristic='h3')
-                    solution, nodes_expanded, nodes_generated = s.solve_astar()
-                    stats = {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
-                elif algorithm == 'astar_ac3':
-                    from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
-                    s = AStarFutoshiki(size, grid, (h_constraints, v_constraints))
-                    solution, nodes_expanded, nodes_generated = s.solve_with_ac3()
-                    stats = {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
-                elif algorithm == 'astar_ac3_h1':
-                    from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
-                    s = AStarFutoshiki(size, grid, (h_constraints, v_constraints), heuristic='h1')
-                    solution, nodes_expanded, nodes_generated = s.solve_with_ac3()
-                    stats = {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
-                elif algorithm == 'astar_ac3_h2':
-                    from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
-                    s = AStarFutoshiki(size, grid, (h_constraints, v_constraints), heuristic='h2')
-                    solution, nodes_expanded, nodes_generated = s.solve_with_ac3()
-                    stats = {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
-                elif algorithm == 'astar_ac3_h3':
-                    from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
-                    s = AStarFutoshiki(size, grid, (h_constraints, v_constraints), heuristic='h3')
-                    solution, nodes_expanded, nodes_generated = s.solve_with_ac3()
-                    stats = {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
-                elif algorithm == 'backward_chaining_with_ac3':
-                    from src.algorithm.first_order_logic.backward_chaining_with_ac3 import backward_chaining_with_ac3
-                    s = backward_chaining_with_ac3(size, grid, (h_constraints, v_constraints))
-                    status, domains = s.solve()
-                    solution = s.solution
-                    stats = {'nodes_expanded': 0, 'nodes_generated': 0}
-                elif algorithm == 'backward_chaining':
-                    from src.algorithm.first_order_logic.backward_chaining import backward_chaining
-                    s = backward_chaining(size, grid, (h_constraints, v_constraints))
-                    status, domains = s.solve()
-                    solution = s.solution
-                    stats = {'nodes_expanded': 0, 'nodes_generated': 0}
-                elif algorithm == 'bc_no_backtrack':
-                    from src.algorithm.first_order_logic.bc_no_backtrack import bc_no_backtrack
-                    s = bc_no_backtrack(size, grid, (h_constraints, v_constraints))
-                    status, domains = s.solve()
-                    solution = s.solution
-                    stats = {'nodes_expanded': 0, 'nodes_generated': 0}
-                elif algorithm == 'forward_chaining':
-                    from src.algorithm.first_order_logic.forward_chaining import fc_no_backtrack
-                    s = fc_no_backtrack(size, grid, (h_constraints, v_constraints))
-                    status, domains = s.solve()
-                    solution = s.solution
-                    stats = {'nodes_expanded': 0, 'nodes_generated': 0}
-                elif algorithm == 'fc_with_backtrack':
-                    from src.algorithm.first_order_logic.fc_with_backtrack import forward_chaining
-                    s = forward_chaining(size, grid, (h_constraints, v_constraints))
-                    status, domains = s.solve()
-                    solution = s.solution
-                    stats = {'nodes_expanded': 0, 'nodes_generated': 0}
-                elif algorithm == 'dancing_links':
-                    from src.algorithm.comparing_algorithms.dancing_links.dlx_futoshiki import DLXFutoshiki
-                    s = DLXFutoshiki(size, grid, (h_constraints, v_constraints))
-                    solution = s.solve()
-                    stats = {'nodes_expanded': 0, 'nodes_generated': 0}
-                else:
-                    # default to backtrack
-                    s = BacktrackSolverSimple(size, grid, (h_constraints, v_constraints))
-                    solution, stats = s.solve()
+                def sync_solve():
+                    if algorithm == 'backtrack':
+                        s = BacktrackSolverSimple(size, grid, (h_constraints, v_constraints))
+                        return s.solve()
+                    elif algorithm == 'astar':
+                        from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
+                        s = PureAStarSolver(size, grid, (h_constraints, v_constraints))
+                        solution, nodes_expanded, nodes_generated = s.solve_astar()
+                        return solution, {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
+                    elif algorithm == 'astar_h1':
+                        from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
+                        s = PureAStarSolver(size, grid, (h_constraints, v_constraints), heuristic='h1')
+                        solution, nodes_expanded, nodes_generated = s.solve_astar()
+                        return solution, {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
+                    elif algorithm == 'astar_h2':
+                        from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
+                        s = PureAStarSolver(size, grid, (h_constraints, v_constraints), heuristic='h2')
+                        solution, nodes_expanded, nodes_generated = s.solve_astar()
+                        return solution, {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
+                    elif algorithm == 'astar_h3':
+                        from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
+                        s = PureAStarSolver(size, grid, (h_constraints, v_constraints), heuristic='h3')
+                        solution, nodes_expanded, nodes_generated = s.solve_astar()
+                        return solution, {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
+                    elif algorithm == 'astar_ac3':
+                        from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
+                        s = AStarFutoshiki(size, grid, (h_constraints, v_constraints))
+                        solution, nodes_expanded, nodes_generated = s.solve_with_ac3()
+                        return solution, {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
+                    elif algorithm == 'backward_chaining_with_ac3':
+                        from src.algorithm.first_order_logic.backward_chaining_with_ac3 import backward_chaining_with_ac3
+                        s = backward_chaining_with_ac3(size, grid, (h_constraints, v_constraints))
+                        s.solve()
+                        return s.solution, {'nodes_expanded': 0, 'nodes_generated': 0}
+                    elif algorithm == 'dancing_links':
+                        from src.algorithm.comparing_algorithms.dancing_links.dlx_futoshiki import DLXFutoshiki
+                        s = DLXFutoshiki(size, grid, (h_constraints, v_constraints))
+                        solution = s.solve()
+                        return solution, {'nodes_expanded': 0, 'nodes_generated': 0}
+                    else:
+                        s = BacktrackSolverSimple(size, grid, (h_constraints, v_constraints))
+                        return s.solve()
+
+                solution, stats = await asyncio.to_thread(sync_solve)
             except Exception as e:
                 import sys
                 print(f"ERROR in run_full target: {e}", file=sys.stderr)
-                import traceback
-                traceback.print_exc(file=sys.stderr)
                 solution, stats = None, {}
 
-            with self._lock:
+            async with self._lock:
                 self._result = (solution, stats)
             if callback:
-                callback(solution, stats)
-        t = threading.Thread(target=target, daemon=True)
-        t.start()
-        self._thread = t
-        return t
+                if asyncio.iscoroutinefunction(callback):
+                    await callback(solution, stats)
+                else:
+                    callback(solution, stats)
 
-    def run_with_history(self, size: int, grid: List[List[int]], h_constraints: List[List[int]], v_constraints: List[List[int]], callback=None, algorithm: str = 'backtrack', step_player=None):
+        self._task = asyncio.create_task(target())
+        return self._task
+
+    async def run_with_history(self, size: int, grid: List[List[int]], h_constraints: List[List[int]], v_constraints: List[List[int]], callback=None, algorithm: str = 'backtrack', step_player=None):
         """Run solver and stream events to step_player via multiprocessing.
-
-        When done, callback(solution, stats, []) is called.
         """
         q = multiprocessing.Queue()
         p = multiprocessing.Process(target=_mp_worker, args=(algorithm, size, grid, h_constraints, v_constraints, q))
         p.daemon = True
         p.start()
 
-        def consumer():
+        async def consumer():
             while True:
                 try:
-                    step = q.get(timeout=0.05)
+                    # Blocking call in thread to avoid event loop block
+                    step = await asyncio.to_thread(q.get, timeout=0.05)
                     if step[0] == 'done':
                         if callback:
-                            callback(step[1], step[2], [])
+                            if asyncio.iscoroutinefunction(callback):
+                                await callback(step[1], step[2], [])
+                            else:
+                                callback(step[1], step[2], [])
                         break
                     if step_player:
                         step_player.push_event(step)
                 except queue.Empty:
                     if not p.is_alive():
                         if callback:
-                            callback(None, {}, [])
+                            if asyncio.iscoroutinefunction(callback):
+                                await callback(None, {}, [])
+                            else:
+                                callback(None, {}, [])
                         break
+                except Exception:
+                    break
         
-        t = threading.Thread(target=consumer, daemon=True)
-        t.start()
-        self._thread = p
+        self._task = asyncio.create_task(consumer())
         return p
 
-    def run_with_event_stream(self, size: int, grid: List[List[int]], h_constraints: List[List[int]], v_constraints: List[List[int]], event_callback=None, algorithm: str = 'backtrack'):
-        """Run solver in streaming mode and forward events to event_callback(action, r, c, value).
-
-        event_callback is called for each step as it occurs. When solver finishes, it will also call event_callback('final', -1, -1, 0).
-        """
-        def target():
-            try:
-                # We reuse the multiprocessing logic for consistency
-                q = multiprocessing.Queue()
-                p = multiprocessing.Process(target=_mp_worker, args=(algorithm, size, grid, h_constraints, v_constraints, q))
-                p.daemon = True
-                p.start()
-                
-                while True:
-                    try:
-                        step = q.get(timeout=0.05)
-                        if step[0] == 'done':
-                            break
-                        if event_callback:
-                            event_callback(*step)
-                    except queue.Empty:
-                        if not p.is_alive():
-                            break
-                # final
-                if event_callback:
-                    event_callback('final', -1, -1, 0)
-            except Exception:
-                if event_callback:
-                    event_callback('final', -1, -1, 0)
-        t = threading.Thread(target=target, daemon=True)
-        t.start()
-        self._thread = t
-        return t
-
-    def get_result(self) -> Optional[Tuple[List[List[int]], dict]]:
-        with self._lock:
+    async def get_result(self) -> Optional[Tuple[List[List[int]], dict]]:
+        async with self._lock:
             return self._result
-
-    def run_step_reveal(self, solution: List[List[int]], original_grid: List[List[int]], step_callback=None, delay: float = 0.3):
-        """Reveal solution values for empty cells in row-major order with delay."""
-        n = len(solution)
-        for r in range(n):
-            for c in range(n):
-                if original_grid[r][c] == 0:
-                    val = solution[r][c]
-                    if step_callback:
-                        step_callback(r, c, val)
-                    time.sleep(delay)
