@@ -6,6 +6,7 @@ class FutoshikiSolver:
     def __init__(self, size: int, grid, constraint):
         self.size = size
         self.grid = np.array(grid)
+        self.constraint = constraint
         self.h_constraints = np.array(constraint[0])
         self.v_constraints = np.array(constraint[1])
         self.solution = None
@@ -59,3 +60,7 @@ class FutoshikiState:
     def get_blank_positions(self) -> List[Tuple[int, int]]:
         return [(i, j) for i in range(self.size) 
                 for j in range(self.size) if self.grid[i, j] == 0]
+
+
+# Alias for backward compatibility with FOL algorithms
+futoshiki_solver = FutoshikiSolver

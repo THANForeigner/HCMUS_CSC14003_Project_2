@@ -45,7 +45,7 @@ class AC3Solver:
         
         return neighbors
     
-    def revise(self, x: Tuple[int, int], y: Tuple[int, int]) -> bool:
+    def revise(self, x: Tuple[int, int], y: Tuple[int, int], steps: list = None) -> bool:
         revised = False
         constraint_type = self._get_constraint(x, y)
         
@@ -69,6 +69,12 @@ class AC3Solver:
             if not valid:
                 to_remove.add(val_x)
                 revised = True
+        
+        if revised:
+            # report revised domain removal
+            if steps is not None:
+                # pass list of removed values as the value field
+                steps.append(('revise', x[0], x[1], list(to_remove)))
         
         self.domains[x] -= to_remove
         return revised
@@ -118,7 +124,7 @@ class AC3Solver:
         while queue:
             (x, y) = queue.popleft()
             
-            if self.revise(x, y):
+            if self.revise(x, y, None):
                 if len(self.domains[x]) == 0:
                     return False
                 
@@ -219,7 +225,7 @@ class AStarFutoshiki(FutoshikiSolver):
         
         return best_pos
     
-    def get_successors(self, state: FutoshikiState, use_mrv: bool = True) -> List[FutoshikiState]:
+    def get_successors(self, state: FutoshikiState, use_mrv: bool = True, steps: list = None) -> List[FutoshikiState]:
         successors = []
         self.nodes_expanded += 1
         
@@ -234,6 +240,9 @@ class AStarFutoshiki(FutoshikiSolver):
         
         if row == -1:
             return successors
+
+        if steps is not None:
+            steps.append(('expand', row, col, 0))
         
         row_used = set(state.grid[row, :])
         col_used = set(state.grid[:, col])
@@ -245,6 +254,8 @@ class AStarFutoshiki(FutoshikiSolver):
                 new_state.grid[row, col] = value
                 successors.append(new_state)
                 self.nodes_generated += 1
+                if steps is not None:
+                    steps.append(('gen', row, col, value))
         
         return successors
     
@@ -402,7 +413,211 @@ class AStarFutoshiki(FutoshikiSolver):
         if result is not None:
             return result.grid, exp, gen
         return None, exp, gen
-    
+
+    def solve_with_history(self, max_nodes: int = 100000, stream_queue=None):
+        """Run the AC3+backtrack or plain A* while recording step events.
+
+        Returns: (solution, stats, steps)
+        """
+        class StreamList(list):
+            def __init__(self, q):
+                self.q = q
+            def append(self, item):
+                if self.q:
+                    self.q.put(item)
+                else:
+                    super().append(item)
+                    
+        steps = StreamList(stream_queue)
+        # if heuristic h3 prefer AC3 variant
+        if self.heuristic == 'h3':
+            # instrumented version of solve_with_ac3
+            self.nodes_expanded = 0
+            self.nodes_generated = 0
+
+            ac3 = AC3Solver(self.size, self.grid, self.h_constraints, self.v_constraints)
+            # we won't instrument deep AC3 steps for now
+            if not ac3.ac3():
+                stats = {'nodes_expanded': 0, 'nodes_generated': 1}
+                if stream_queue: stream_queue.put(('done', None, stats))
+                return None, stats, steps
+
+            initial_domains = {k: v.copy() for k, v in ac3.domains.items()}
+            initial_state = FutoshikiState(self.grid, initial_domains)
+            initial_state.set_constraints(self.h_constraints, self.v_constraints)
+
+            for key in list(initial_state.domains.keys()):
+                if len(initial_state.domains[key]) == 1:
+                    val = list(initial_state.domains[key])[0]
+                    r, c = key
+                    if self.grid[r, c] == 0:
+                        initial_state.grid[r, c] = val
+                        steps.append(('assign', r, c, val))
+
+            def backtrack(state: FutoshikiState, domains: Dict) -> Tuple[Optional[FutoshikiState], int, int]:
+                if len(state.get_blank_positions()) == 0:
+                    return state, self.nodes_expanded, self.nodes_generated
+
+                self.nodes_expanded += 1
+                if self.nodes_expanded > max_nodes:
+                    return None, self.nodes_expanded, self.nodes_generated
+
+                row, col = self.find_best_blank(state)
+                if row == -1:
+                    return None, self.nodes_expanded, self.nodes_generated
+
+                row_used = set(state.grid[row, :])
+                col_used = set(state.grid[:, col])
+                used = row_used | col_used
+
+                values_to_try = [v for v in range(1, self.size + 1) if v not in used]
+
+                for value in values_to_try:
+                    self.nodes_generated += 1
+                    new_state = state.copy()
+                    new_state.grid[row, col] = value
+                    steps.append(('assign', row, col, value))
+                    new_domains = {k: v.copy() for k, v in domains.items()}
+                    new_domains[(row, col)] = {value}
+
+                    new_ac3 = AC3Solver(self.size, new_state.grid, self.h_constraints, self.v_constraints)
+                    new_ac3.domains = new_domains
+
+                    if new_ac3.ac3():
+                        new_state.domains = new_ac3.domains
+
+                        assigned = True
+                        for key in new_state.domains:
+                            if len(new_state.domains[key]) == 1:
+                                val = list(new_state.domains[key])[0]
+                                r, c = key
+                                if new_state.grid[r, c] == 0:
+                                    new_state.grid[r, c] = val
+                                    steps.append(('assign', r, c, val))
+                            elif len(new_state.domains[key]) == 0:
+                                assigned = False
+                                break
+
+                        if assigned and len(new_state.get_blank_positions()) == 0:
+                            if self.check_constraints(new_state) == 0:
+                                return new_state, self.nodes_expanded, self.nodes_generated
+
+                        result, exp, gen = backtrack(new_state, new_ac3.domains)
+                        self.nodes_expanded = exp
+                        self.nodes_generated = gen
+                        if result is not None:
+                            return result, self.nodes_expanded, self.nodes_generated
+
+                    # backtrack from this assignment
+                    steps.append(('backtrack', row, col, 0))
+
+                return None, self.nodes_expanded, self.nodes_generated
+
+            if len(initial_state.get_blank_positions()) == 0:
+                if self.check_constraints(initial_state) == 0:
+                    stats = {'nodes_expanded': 0, 'nodes_generated': 1}
+                    if stream_queue: stream_queue.put(('done', initial_state.grid, stats))
+                    return initial_state.grid, stats, steps
+
+            result, exp, gen = backtrack(initial_state, ac3.domains)
+            
+            stats = {'nodes_expanded': exp, 'nodes_generated': gen}
+            sol = result.grid if result is not None else None
+            if stream_queue: stream_queue.put(('done', sol, stats))
+            return sol, stats, steps
+        else:
+            # use A* flow instrumented
+            sol, stats, steps_astar = self._solve_astar_with_steps(max_nodes=max_nodes, stream_queue=stream_queue)
+            return sol, stats, steps_astar
+
+    def _solve_astar_with_steps(self, max_nodes: int = 500000, stream_queue=None):
+        # reuse code from solve_astar but collect steps
+        self.nodes_expanded = 0
+        self.nodes_generated = 0
+        
+        class StreamList(list):
+            def __init__(self, q):
+                self.q = q
+            def append(self, item):
+                if self.q:
+                    self.q.put(item)
+                else:
+                    super().append(item)
+                    
+        steps = StreamList(stream_queue)
+
+        heuristic_map = {
+            'h1': (self.h1_hamming, False),
+            'h2': (self.h2_constraint_violations, True),
+            'h3': (self.h3_mrv_domain_size, True)
+        }
+        heuristic_fn, use_mrv = heuristic_map[self.heuristic]
+
+        initial_state = FutoshikiState(self.grid)
+        initial_state.set_constraints(self.h_constraints, self.v_constraints)
+
+        if np.all(self.grid != 0):
+            if self.check_constraints(initial_state) == 0:
+                stats = {'nodes_expanded': 0, 'nodes_generated': 1}
+                if stream_queue: stream_queue.put(('done', self.grid, stats))
+                return self.grid, stats, steps
+
+        if self.has_conflict(initial_state):
+            stats = {'nodes_expanded': 0, 'nodes_generated': 1}
+            if stream_queue: stream_queue.put(('done', None, stats))
+            return None, stats, steps
+
+        open_set = []
+        g_cost = 0
+        h_cost = heuristic_fn(initial_state)
+        f_cost = g_cost + h_cost
+
+        counter = 0
+        heapq.heappush(open_set, (f_cost, g_cost, h_cost, counter, initial_state))
+
+        closed_set = set()
+        closed_set.add(hash(initial_state))
+
+        while open_set:
+            if self.nodes_expanded > max_nodes:
+                stats = {'nodes_expanded': self.nodes_expanded, 'nodes_generated': self.nodes_generated}
+                if stream_queue: stream_queue.put(('done', None, stats))
+                return None, stats, steps
+
+            f, g, h, _, current_state = heapq.heappop(open_set)
+            row, col = self.find_best_blank(current_state)
+            steps.append(('expand', row, col, 0))
+
+            if len(current_state.get_blank_positions()) == 0:
+                if self.check_constraints(current_state) == 0:
+                    steps.append(('final', -1, -1, 0))
+                    stats = {'nodes_expanded': self.nodes_expanded, 'nodes_generated': self.nodes_generated}
+                    if stream_queue: stream_queue.put(('done', current_state.grid, stats))
+                    return current_state.grid, stats, steps
+
+            if self.has_conflict(current_state):
+                continue
+
+            successors = self.get_successors(current_state, use_mrv, steps)
+            for successor in successors:
+                if self.has_conflict(successor):
+                    continue
+
+                state_hash = hash(successor)
+
+                if state_hash not in closed_set:
+                    new_g = g + 1
+                    new_h = heuristic_fn(successor)
+                    new_f = new_g + new_h
+
+                    counter += 1
+                    heapq.heappush(open_set, (new_f, new_g, new_h, counter, successor))
+                    closed_set.add(state_hash)
+
+        stats = {'nodes_expanded': self.nodes_expanded, 'nodes_generated': self.nodes_generated}
+        if stream_queue: stream_queue.put(('done', None, stats))
+        return None, stats, steps
+
     def get_stats(self) -> Dict:
         return {
             'nodes_expanded': self.nodes_expanded,

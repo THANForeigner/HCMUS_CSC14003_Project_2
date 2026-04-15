@@ -1,4 +1,5 @@
 import sys
+import time
 from pathlib import Path
 
 # Add project root to sys.path to allow running as script or importing
@@ -59,7 +60,7 @@ class bc_no_backtrack(futoshiki_solver):
         table[goal] = False
         return False
 
-    def sld_no_backtrack(self, current_facts):
+    def sld_no_backtrack(self, current_facts, stream_queue=None):
         """
         Chạy Backward Chaining (SLD/SLG) liên tục chỉ khi TÌM ĐƯỢC CHẮC CHẮN NGIỆM (options = 1).
         Không có Branching/Backtracking. Gặp ngõ cụt sẽ dừng ngay lập tức.
@@ -97,6 +98,9 @@ class bc_no_backtrack(futoshiki_solver):
             valid_options_for_target = []
             
             for r, c, valid_vals in results:
+                if stream_queue:
+                    for v in valid_vals:
+                        stream_queue.put(('check', r, c, v))
                 if len(valid_vals) == 0:
                     return "Contradiction", current_facts
                     
@@ -111,10 +115,31 @@ class bc_no_backtrack(futoshiki_solver):
                 r, c = target_cell
                 val = valid_options_for_target[0]
                 current_facts.add(("Value", r, c, val))
+                if stream_queue:
+                    stream_queue.put(('assign', r, c, val))
                 # Tiếp tục vòng lặp While với current_facts mới
             else:
                 # Nhiều hơn 1 lựa chọn -> Cần rẽ nhánh, nhưng ta không dùng backtracking ở mode này.
                 return "Unresolved (Needs Backtracking)", current_facts
+
+    def solve_with_history(self, stream_queue=None):
+        start = time.time()
+        old_limit = sys.getrecursionlimit()
+        sys.setrecursionlimit(max(old_limit, 100000))
+        try:
+            current_facts_set = set(self.kb.facts)
+            status, final_facts = self.sld_no_backtrack(current_facts_set, stream_queue)
+            self.solution = [[0 for _ in range(self.size)] for _ in range(self.size)]
+            for fact in final_facts:
+                if fact[0] == "Value":
+                    _, r, c, v = fact
+                    self.solution[r][c] = v
+            stats = {'nodes_expanded': 0, 'nodes_generated': 0, 'time': time.time() - start}
+            if stream_queue:
+                stream_queue.put(('done', self.solution, stats))
+            return self.solution, stats, []
+        finally:
+            sys.setrecursionlimit(old_limit)
 
     def solve(self):
         # Thiết lập giới hạn đệ quy cao hơn để chứa SLD Resolution Tree

@@ -1,4 +1,5 @@
 import sys
+import time
 from pathlib import Path
 
 # Add project root to sys.path to allow running as script or importing
@@ -13,7 +14,7 @@ class fc_no_backtrack(futoshiki_solver):
         h_constraints, v_constraints = constraint[0], constraint[1]
         self.kb = FutoshikiKB.from_input(size, grid, h_constraints, v_constraints)
 
-    def forward_chain(self, current_facts):
+    def forward_chain(self, current_facts, stream_queue=None):
         """
         Thuật toán Forward Chaining thuần túy không có logic quay lui (backtracking).
         Áp dụng cơ chế suy diễn trên tập luật Horn.
@@ -38,6 +39,9 @@ class fc_no_backtrack(futoshiki_solver):
                             return False, current_facts
                         fact_set.add(conclusion)
                         current_facts.append(conclusion)
+                        if stream_queue and conclusion[0] == "Value":
+                            _, r, c, v = conclusion
+                            stream_queue.put(('assign', r, c, v))
                         changed = True
                         
         for fact in current_facts:
@@ -54,6 +58,20 @@ class fc_no_backtrack(futoshiki_solver):
             if fact[0] == "Value":
                 count += 1
         return count == self.size * self.size
+
+    def solve_with_history(self, stream_queue=None):
+        start = time.time()
+        initial_facts = self.kb.facts.copy()
+        success, final_facts = self.forward_chain(initial_facts, stream_queue)
+        self.solution = [[0 for _ in range(self.size)] for _ in range(self.size)]
+        for fact in final_facts:
+            if fact[0] == "Value":
+                _, r, c, v = fact
+                self.solution[r][c] = v
+        stats = {'nodes_expanded': 0, 'nodes_generated': 0, 'time': time.time() - start}
+        if stream_queue:
+            stream_queue.put(('done', self.solution, stats))
+        return self.solution, stats, []
 
     def solve(self):
         initial_facts = self.kb.facts.copy()

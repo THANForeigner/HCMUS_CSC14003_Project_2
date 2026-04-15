@@ -1,4 +1,5 @@
 import sys
+import time
 from pathlib import Path
 import copy
 
@@ -15,7 +16,7 @@ class forward_chaining(futoshiki_solver):
         self.kb = FutoshikiKB.from_input(size, grid, h_constraints, v_constraints)
         self.solved = False
 
-    def forward_chain(self, current_facts):
+    def forward_chain(self, current_facts, stream_queue=None):
         """
         Thuật toán Forward Chaining áp dụng cơ chế suy diễn trên tập luật Horn.
         Sử dụng fact_set (kiểu set của Python) để đạt O(1) tra cứu, thay vì duyệt List.
@@ -42,6 +43,9 @@ class forward_chaining(futoshiki_solver):
                     if all_premises_met:
                         fact_set.add(conclusion)
                         current_facts.append(conclusion)
+                        if stream_queue and conclusion[0] == "Value":
+                            _, r, c, v = conclusion
+                            stream_queue.put(('assign', r, c, v))
                         changed = True
                         
         # POST-CHECK: Kiểm tra xem có sinh ra mâu thuẫn logic nào không
@@ -62,13 +66,13 @@ class forward_chaining(futoshiki_solver):
         # Lưới giải thành công khi số lượng mốc hoàn thành đúng bằng tổng số ô (N x N)
         return count == self.size * self.size
 
-    def backtrack(self, current_facts):
+    def backtrack(self, current_facts, stream_queue=None):
         """
         Logic Backtracking kết hợp Forward Chaining.
         Nều FC tắc (chưa ra kết quả cuối nhưng hết luật suy diễn), ta đoán 1 biến và chạy FC tiếp.
         """
         # Bước 1: Suy diễn Forward Chaining trên thực tại đang có
-        success, derived_facts = self.forward_chain(current_facts)
+        success, derived_facts = self.forward_chain(current_facts, stream_queue)
         if not success:
             return False, derived_facts
             
@@ -113,14 +117,35 @@ class forward_chaining(futoshiki_solver):
         # Bước 3: Phỏng đoán và chạy nhánh mới dựa trên FC 
         for val in valid_options_for_best:
             # COPY môi trường biến để Backtracking không phá hỏng thực tại cũ cùa DFS
+            if stream_queue:
+                stream_queue.put(('assign', r, c, val))
             new_facts = derived_facts.copy() 
             new_facts.append(("Value", r, c, val))
             
-            success, final_facts = self.backtrack(new_facts)
+            success, final_facts = self.backtrack(new_facts, stream_queue)
             if success:
                 return True, final_facts
+            
+            if stream_queue:
+                stream_queue.put(('backtrack', r, c, 0))
                 
         return False, derived_facts
+
+    def solve_with_history(self, stream_queue=None):
+        import time
+        start = time.time()
+        initial_facts = self.kb.facts.copy()
+        success, final_facts = self.backtrack(initial_facts, stream_queue)
+        self.solution = [[0 for _ in range(self.size)] for _ in range(self.size)]
+        if success:
+            for fact in final_facts:
+                if fact[0] == "Value":
+                    _, r, c, v = fact
+                    self.solution[r][c] = v
+        stats = {'nodes_expanded': 0, 'nodes_generated': 0, 'time': time.time() - start}
+        if stream_queue:
+            stream_queue.put(('done', self.solution, stats))
+        return self.solution, stats, []
 
     def solve(self):
         # Gọi engine bắt nguồn từ các sự kiện ban đầu của Base (từ lưới câu đố)

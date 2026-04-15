@@ -1,4 +1,5 @@
 import numpy as np
+import time
 from .dancing_links import DancingLink, Node, ColumnNode
 from ...futoshiki_solver import futoshiki_solver
 
@@ -98,15 +99,75 @@ class DLXFutoshiki(futoshiki_solver, DancingLink):
             self.current_board[r][c] = 0
 
     def print_smart_solution(self, solution_nodes):
-        self.solution = np.zeros((self.size, self.size), dtype=int)
+        self.solution = np.zeros((self.size, self.size), dtype=int).tolist()
         for node in solution_nodes:
             if hasattr(node, 'rcv'):
                 r, c, v = node.rcv
             else:
                 parts = node.row_id.split('_')
                 r, c, v = int(parts[0][1:]), int(parts[1][1:]), int(parts[2][1:])
-            self.solution[r, c] = v
+            self.solution[r][c] = v
         raise StopIteration
+
+    def search_with_history(self, k, stack, stream_queue=None):
+        if self.root.R == self.root:
+            self.print_smart_solution(stack)
+            return
+
+        c = self.choose_column()
+        self.cover(c)
+        col = c.D
+        while col != c:
+            stack.append(col)
+            
+            # Extract R, C, V from row_id
+            parts = col.row_id.split('_')
+            r_idx, c_idx, v_val = int(parts[0][1:]), int(parts[1][1:]), int(parts[2][1:])
+            
+            if stream_queue:
+                stream_queue.put(('assign', r_idx, c_idx, v_val))
+
+            # Kiểm tra class DLXFutoshiki có hàm 'check_futoshiki' không và kiểm tra điều kiện cộng thêm này
+            if self.check_futoshiki(stack) == False:
+                stack.pop()
+                if stream_queue:
+                    stream_queue.put(('backtrack', r_idx, c_idx, 0))
+                col = col.D
+                continue
+
+            row = col.R
+            while row != col:
+                self.cover(row.C)
+                row = row.R
+
+            self.search_with_history(k + 1, stack, stream_queue)
+
+            last_node = stack.pop()
+            self.uncheck_futoshiki(last_node)
+            
+            if stream_queue:
+                stream_queue.put(('backtrack', r_idx, c_idx, 0))
+
+            row = col.L
+            while row != col:
+                self.uncover(row.C)
+                row = row.L
+
+            col = col.D
+        self.uncover(c)
+
+    def solve_with_history(self, stream_queue=None):
+        start = time.time()
+        self.solution = None
+        try:
+            self.search_with_history(0, [], stream_queue)
+        except StopIteration:
+            pass
+        
+        stats = {'nodes_expanded': 0, 'nodes_generated': 0, 'time': time.time() - start}
+        if stream_queue:
+            stream_queue.put(('done', self.solution, stats))
+        return self.solution, stats, []
 
     def solve(self):
         self.solution = None
