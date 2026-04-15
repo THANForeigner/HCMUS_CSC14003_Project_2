@@ -80,7 +80,7 @@ def format_output(solution, h_constraints, v_constraints):
         # Add the grid row with horizontal constraints
         row_str = ""
         for col_idx in range(n):
-            row_str += str(solution[row_idx, col_idx])
+            row_str += str(solution[row_idx][col_idx])
 
             # Add horizontal constraint if not the last column
             if col_idx < n - 1:

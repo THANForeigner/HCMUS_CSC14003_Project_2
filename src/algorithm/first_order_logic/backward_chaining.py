@@ -116,7 +116,7 @@ class backward_chaining(futoshiki_solver):
     def solve(self):
         # Thiết lập giới hạn đệ quy cao hơn để chứa SLD Resolution Tree
         old_limit = sys.getrecursionlimit()
-        sys.setrecursionlimit(max(old_limit, 100000))
+        sys.setrecursionlimit(max(old_limit, 5000))
         
         try:
             # Khởi tạo SLD Resolution Engine từ Given clues a9
