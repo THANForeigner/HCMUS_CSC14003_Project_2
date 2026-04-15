@@ -1,7 +1,7 @@
 import numpy as np
 import random
 from copy import deepcopy
-from ..futoshiki_solver import FutoshikiSolver
+from ...futoshiki_solver import FutoshikiSolver
 
 class ABC(FutoshikiSolver):
     def __init__(self, size, grid, constraint, swarm_size=-1, limit=-1, max_iteration=-1):
