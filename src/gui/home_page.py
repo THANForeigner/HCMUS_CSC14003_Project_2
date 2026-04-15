@@ -5,6 +5,7 @@ def home_page(page: ft.Page):
     return ft.View(
         route="/",
         bgcolor=Win7Theme.BG,
+        scroll=ft.ScrollMode.AUTO,
         controls=[
             ft.Container(
                 content=ft.Column(

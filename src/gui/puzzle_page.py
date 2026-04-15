@@ -21,7 +21,7 @@ from src.gui.theme import Win7Theme
 
 class PuzzlePage(ft.View):
     def __init__(self, page: ft.Page):
-        super().__init__(route="/puzzle", bgcolor=Win7Theme.BG)
+        super().__init__(route="/puzzle", bgcolor=Win7Theme.BG, scroll=ft.ScrollMode.AUTO)
         self._page = page
         self._is_initialized = False
         self.size = 0
@@ -147,6 +147,7 @@ class PuzzlePage(ft.View):
         self._original_grid = None
         self._active_cell = None # (r, c)
         self._bottom_sheet = None
+        self.cell_colors = [] # To store colors for hover restoration
 
         if self.file_dropdown.options:
             self.file_dropdown.value = self.file_dropdown.options[0].key
@@ -204,6 +205,7 @@ class PuzzlePage(ft.View):
 
     def build_board(self):
         self.cells = []
+        self.cell_colors = [[Win7Theme.CELL_EMPTY_BG for _ in range(self.size)] for _ in range(self.size)]
         board_rows = []
         for r in range(self.size):
             row_controls = []
@@ -212,6 +214,9 @@ class PuzzlePage(ft.View):
                 val = self.grid_data[r][c]
                 is_fixed = val != 0
                 
+                initial_bg = Win7Theme.CELL_FIXED_BG if is_fixed else Win7Theme.CELL_EMPTY_BG
+                self.cell_colors[r][c] = initial_bg
+
                 cell_content = ft.Text(
                     value=str(val) if is_fixed else "",
                     size=22, weight=ft.FontWeight.BOLD,
@@ -222,7 +227,7 @@ class PuzzlePage(ft.View):
                     content=cell_content,
                     alignment=ft.alignment.Alignment(0, 0),
                     width=55, height=55,
-                    bgcolor=Win7Theme.CELL_FIXED_BG if is_fixed else Win7Theme.CELL_EMPTY_BG,
+                    bgcolor=initial_bg,
                     border_radius=4,
                     border=ft.border.all(1, Win7Theme.PANEL_BG),
                     data=(r, c),
@@ -264,12 +269,12 @@ class PuzzlePage(ft.View):
             if i != c:
                 cell = self.cells[r][i]
                 if not target_color:
-                    cell.bgcolor = Win7Theme.CELL_FIXED_BG if self.grid_data[r][i] != 0 else Win7Theme.CELL_EMPTY_BG
+                    cell.bgcolor = self.cell_colors[r][i]
                 else: cell.bgcolor = target_color
             if i != r:
                 cell = self.cells[i][c]
                 if not target_color:
-                    cell.bgcolor = Win7Theme.CELL_FIXED_BG if self.grid_data[i][c] != 0 else Win7Theme.CELL_EMPTY_BG
+                    cell.bgcolor = self.cell_colors[i][c]
                 else: cell.bgcolor = target_color
         
         self.cells[r][c].scale = 1.1 if is_hover else 1.0
@@ -353,27 +358,40 @@ class PuzzlePage(ft.View):
         has_error = False
         for r in range(self.size):
             for c in range(self.size):
-                self.cells[r][c].bgcolor = Win7Theme.CELL_FIXED_BG if self.grid_data[r][c] != 0 else Win7Theme.CELL_EMPTY_BG
+                color = Win7Theme.CELL_FIXED_BG if self.grid_data[r][c] != 0 else Win7Theme.CELL_EMPTY_BG
+                self.cells[r][c].bgcolor = color
+                self.cell_colors[r][c] = color
         
         for r in range(self.size):
             for c in range(self.size):
                 val = current[r][c]
                 if val == 0: continue
                 if current[r].count(val) > 1 or [current[i][c] for i in range(self.size)].count(val) > 1:
-                    self.cells[r][c].bgcolor = Win7Theme.ERROR; self.cells[r][c].content.color = Win7Theme.TEXT_INVERSE
+                    color = Win7Theme.ERROR
+                    self.cells[r][c].bgcolor = color
+                    self.cell_colors[r][c] = color
+                    self.cells[r][c].content.color = Win7Theme.TEXT_INVERSE
                     has_error = True
                 if c < self.size - 1:
                     h = self.h_constraints[r][c]
                     if h == 1 and current[r][c+1] != 0 and not (val < current[r][c+1]):
-                        self.cells[r][c].bgcolor = self.cells[r][c+1].bgcolor = Win7Theme.WARNING; has_error = True
+                        self.cells[r][c].bgcolor = self.cells[r][c+1].bgcolor = Win7Theme.WARNING
+                        self.cell_colors[r][c] = self.cell_colors[r][c+1] = Win7Theme.WARNING
+                        has_error = True
                     if h == -1 and current[r][c+1] != 0 and not (val > current[r][c+1]):
-                        self.cells[r][c].bgcolor = self.cells[r][c+1].bgcolor = Win7Theme.WARNING; has_error = True
+                        self.cells[r][c].bgcolor = self.cells[r][c+1].bgcolor = Win7Theme.WARNING
+                        self.cell_colors[r][c] = self.cell_colors[r][c+1] = Win7Theme.WARNING
+                        has_error = True
                 if r < self.size - 1:
                     v = self.v_constraints[r][c]
                     if v == 1 and current[r+1][c] != 0 and not (val < current[r+1][c]):
-                        self.cells[r][c].bgcolor = self.cells[r+1][c].bgcolor = Win7Theme.WARNING; has_error = True
+                        self.cells[r][c].bgcolor = self.cells[r+1][c].bgcolor = Win7Theme.WARNING
+                        self.cell_colors[r][c] = self.cell_colors[r+1][c] = Win7Theme.WARNING
+                        has_error = True
                     if v == -1 and current[r+1][c] != 0 and not (val > current[r+1][c]):
-                        self.cells[r][c].bgcolor = self.cells[r+1][c].bgcolor = Win7Theme.WARNING; has_error = True
+                        self.cells[r][c].bgcolor = self.cells[r+1][c].bgcolor = Win7Theme.WARNING
+                        self.cell_colors[r][c] = self.cell_colors[r+1][c] = Win7Theme.WARNING
+                        has_error = True
         
         self.status_text.value = "Conflict detected" if has_error else ""
         self.status_text.color = Win7Theme.ERROR
@@ -401,6 +419,7 @@ class PuzzlePage(ft.View):
                         if self._original_grid[r][c] == 0:
                             self.cells[r][c].content.value = str(solution[r][c])
                             self.cells[r][c].bgcolor = Win7Theme.SUCCESS
+                            self.cell_colors[r][c] = Win7Theme.SUCCESS
             self.page.update()
 
         self.status_text.value = "Solving..."; self.status_text.color = Win7Theme.PRIMARY; self.page.update()
@@ -415,25 +434,40 @@ class PuzzlePage(ft.View):
                         if grid[r][c] != self._last_grid[r][c] and grid[r][c] != 0:
                             self.cells[r][c].content.value = str(grid[r][c])
                             self.cells[r][c].bgcolor = Win7Theme.SUCCESS
+                            self.cell_colors[r][c] = Win7Theme.SUCCESS
                             self.cells[r][c].content.color = Win7Theme.TEXT_INVERSE
                         elif grid[r][c] == 0 and self._last_grid[r][c] != 0:
                             self.cells[r][c].content.value = ""
                             self.cells[r][c].bgcolor = Win7Theme.CELL_EMPTY_BG
+                            self.cell_colors[r][c] = Win7Theme.CELL_EMPTY_BG
                 self._last_grid = [row[:] for row in grid]
                 self.page.update()
             elif action == 'check': 
                 r, c, val = grid_or_r, c_or_val, val_or_none
                 self.cells[r][c].bgcolor = Win7Theme.CHECK
+                # Don't save CHECK to cell_colors as it's transient
                 self.page.update()
             elif action == 'assign':
                 r, c, val = grid_or_r, c_or_val, val_or_none
                 self.cells[r][c].content.value = str(val); self.cells[r][c].bgcolor = Win7Theme.SUCCESS; self.cells[r][c].content.color = Win7Theme.TEXT_INVERSE; self.cells[r][c].scale = 1.1
+                self.cell_colors[r][c] = Win7Theme.SUCCESS
                 await asyncio.sleep(0.05); self.cells[r][c].scale = 1.0
                 self.page.update()
             elif action == 'backtrack':
                 r, c, val = grid_or_r, c_or_val, val_or_none
                 if self._original_grid[r][c] == 0: self.cells[r][c].content.value = ""
                 self.cells[r][c].bgcolor = Win7Theme.ERROR; self.cells[r][c].content.color = Win7Theme.TEXT_INVERSE
+                self.cell_colors[r][c] = Win7Theme.ERROR
+                self.page.update()
+            elif action == 'expand':
+                r, c = grid_or_r, c_or_val
+                self.cells[r][c].bgcolor = Win7Theme.SKY_LIGHT
+                # Transient, don't save to cell_colors
+                self.page.update()
+            elif action == 'gen':
+                r, c, val = grid_or_r, c_or_val, val_or_none
+                self.cells[r][c].content.value = str(val); self.cells[r][c].bgcolor = Win7Theme.WARNING; self.cells[r][c].content.color = Win7Theme.TEXT_INVERSE
+                self.cell_colors[r][c] = Win7Theme.WARNING
                 self.page.update()
 
         await self.step_player.start_streaming(event_callback, delay=self.speed_slider.value)
@@ -466,6 +500,7 @@ class PuzzlePage(ft.View):
                         if self._original_grid[r][c] == 0:
                             self.cells[r][c].content.value = str(solution[r][c])
                             self.cells[r][c].bgcolor = Win7Theme.SUCCESS
+                            self.cell_colors[r][c] = Win7Theme.SUCCESS
             self.page.update()
         
         await self.solver.run_full(self.size, self.grid_data, self.h_constraints, self.v_constraints, callback=on_result, algorithm=self.algorithm_dropdown.value)
