@@ -330,3 +330,89 @@ class AStarFutoshiki(FutoshikiSolver):
 
         result, exp, gen = backtrack(initial_state, ac3.domains)
         return result.grid if result else None, exp, gen
+
+    def solve_with_history(self, stream_queue=None):
+        import time
+        self.nodes_expanded = 0
+        self.nodes_generated = 0
+        start = time.time()
+        
+        ac3 = AC3Solver(self.size, self.grid, self.h_constraints, self.v_constraints)
+        if not ac3.ac3():
+            duration = time.time() - start
+            stats = {'nodes_expanded': 0, 'nodes_generated': 1, 'time': duration}
+            if stream_queue:
+                stream_queue.put(('done', None, stats))
+            return (None, stats, [])
+        
+        initial_state = FutoshikiState(self.grid)
+        for key, val_set in ac3.domains.items():
+            if len(val_set) == 1:
+                initial_state.grid[key] = list(val_set)[0]
+        
+        if stream_queue:
+            stream_queue.put(('step', initial_state.grid.tolist(), self.nodes_expanded))
+        
+        def backtrack(state: FutoshikiState, current_domains: Dict):
+            if len(state.get_blank_positions()) == 0:
+                return state
+            
+            self.nodes_expanded += 1
+            if self.nodes_expanded > 100000:
+                return None
+            
+            row, col = self.find_best_blank(state, current_domains)
+            if row == -1:
+                return None
+            
+            for value in list(current_domains[(row, col)]):
+                if self.is_valid_move(state, row, col, value):
+                    self.nodes_generated += 1
+                    new_state = state.copy()
+                    new_state.grid[row, col] = value
+                    
+                    if stream_queue:
+                        stream_queue.put(('step', new_state.grid.tolist(), self.nodes_expanded))
+                    
+                    new_domains = {k: v.copy() for k, v in current_domains.items()}
+                    new_domains[(row, col)] = {value}
+                    
+                    new_ac3 = AC3Solver(
+                        self.size,
+                        new_state.grid,
+                        self.h_constraints,
+                        self.v_constraints,
+                        initial_domains=new_domains,
+                    )
+                    
+                    if new_ac3.ac3():
+                        assigned_valid = True
+                        for key, val_set in new_ac3.domains.items():
+                            if len(val_set) == 1:
+                                r, c = key
+                                if new_state.grid[r, c] == 0:
+                                    val = list(val_set)[0]
+                                    if self.is_valid_move(new_state, r, c, val):
+                                        new_state.grid[r, c] = val
+                                    else:
+                                        assigned_valid = False
+                                        break
+                            elif len(val_set) == 0:
+                                assigned_valid = False
+                                break
+                        
+                        if assigned_valid:
+                            result = backtrack(new_state, new_ac3.domains)
+                            if result is not None:
+                                return result
+            
+            return None
+        
+        result = backtrack(initial_state, ac3.domains)
+        duration = time.time() - start
+        stats = {'nodes_expanded': self.nodes_expanded, 'nodes_generated': self.nodes_generated, 'time': duration}
+        
+        sol_list = result.grid.tolist() if result is not None else None
+        if stream_queue:
+            stream_queue.put(('done', sol_list, stats))
+        return (sol_list, stats, [])

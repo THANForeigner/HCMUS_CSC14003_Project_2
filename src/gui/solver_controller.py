@@ -148,31 +148,24 @@ class SolverController:
                     if algorithm == 'backtrack':
                         s = BacktrackSolverSimple(size, grid, (h_constraints, v_constraints))
                         return s.solve()
+                    elif algorithm.startswith('astar_h'):
+                        from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
+                        heuristic = algorithm.split('_')[1]
+                        s = PureAStarSolver(size, grid, (h_constraints, v_constraints), heuristic=heuristic)
+                        solution = s.solve()
+                        stats = s.get_stats()
+                        return solution.tolist() if solution is not None else None, stats
                     elif algorithm == 'astar':
                         from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
                         s = PureAStarSolver(size, grid, (h_constraints, v_constraints))
-                        solution, nodes_expanded, nodes_generated = s.solve_astar()
-                        return solution, {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
-                    elif algorithm == 'astar_h1':
-                        from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
-                        s = PureAStarSolver(size, grid, (h_constraints, v_constraints), heuristic='h1')
-                        solution, nodes_expanded, nodes_generated = s.solve_astar()
-                        return solution, {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
-                    elif algorithm == 'astar_h2':
-                        from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
-                        s = PureAStarSolver(size, grid, (h_constraints, v_constraints), heuristic='h2')
-                        solution, nodes_expanded, nodes_generated = s.solve_astar()
-                        return solution, {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
-                    elif algorithm == 'astar_h3':
-                        from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
-                        s = PureAStarSolver(size, grid, (h_constraints, v_constraints), heuristic='h3')
-                        solution, nodes_expanded, nodes_generated = s.solve_astar()
-                        return solution, {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
+                        solution = s.solve()
+                        stats = s.get_stats()
+                        return solution.tolist() if solution is not None else None, stats
                     elif algorithm == 'astar_ac3':
                         from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
                         s = AStarFutoshiki(size, grid, (h_constraints, v_constraints))
                         solution, nodes_expanded, nodes_generated = s.solve_with_ac3()
-                        return solution, {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
+                        return solution.tolist() if solution is not None else None, {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
                     elif algorithm == 'backward_chaining_with_ac3':
                         from src.algorithm.first_order_logic.backward_chaining_with_ac3 import backward_chaining_with_ac3
                         s = backward_chaining_with_ac3(size, grid, (h_constraints, v_constraints))

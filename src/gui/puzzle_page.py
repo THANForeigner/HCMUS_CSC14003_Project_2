@@ -52,12 +52,14 @@ class PuzzlePage(ft.View):
         
         self.algorithm_dropdown = ft.Dropdown(
             width=180,
-            value='backtrack',
+            value='astar_ac3',
             options=[
                 ft.dropdown.Option('backtrack', text='Backtracking'),
                 ft.dropdown.Option('brute_force', text='Brute Force'),
-                ft.dropdown.Option('astar', text="A* (heuristic h3)"),
-                ft.dropdown.Option('astar_ac3', text='A* + AC3')
+                ft.dropdown.Option('astar_h1', text="A* + h1 (Hamming)"),
+                ft.dropdown.Option('astar_h2', text="A* + h2 (FC)"),
+                ft.dropdown.Option('astar_h3', text="A* + h3 (MRV)"),
+                ft.dropdown.Option('astar_ac3', text='A* + AC-3')
             ],
             bgcolor=Win7Theme.CARD_BG,
             color=Win7Theme.TEXT_PRIMARY,
@@ -68,6 +70,7 @@ class PuzzlePage(ft.View):
         self.play_button = ft.IconButton(icon=ft.Icons.PLAY_ARROW, on_click=self.on_play_pause, icon_color=Win7Theme.PRIMARY, tooltip="Play/Pause")
         self.step_button = ft.IconButton(icon=ft.Icons.SKIP_NEXT, on_click=self.on_manual_step, icon_color=Win7Theme.PRIMARY, tooltip="Next Step")
         self.speed_slider = ft.Slider(min=0.01, max=1.0, value=0.1, width=120, on_change=self.on_speed_change, active_color=Win7Theme.PRIMARY)
+        self.solve_instantly_button = ft.IconButton(icon=ft.Icons.FAST_FORWARD, on_click=self.on_solve_instantly, icon_color=Win7Theme.PRIMARY, tooltip="Solve Instantly (No Delay)")
 
         # Control panel
         self.controls = [
@@ -89,6 +92,7 @@ class PuzzlePage(ft.View):
                     ft.VerticalDivider(width=1, color=Win7Theme.PANEL_BG),
                     self.play_button,
                     self.step_button,
+                    self.solve_instantly_button,
                     ft.Row([ft.Text("Speed", size=12, color=Win7Theme.TEXT_PRIMARY), self.speed_slider], spacing=5),
                     ft.Container(expand=True),
                     ft.TextButton("Clear", on_click=self.clear_board, style=ft.ButtonStyle(color=Win7Theme.ERROR))
@@ -392,18 +396,45 @@ class PuzzlePage(ft.View):
                 self.status_text.value = "No solution found"; self.status_text.color = Win7Theme.ERROR
             else:
                 self.status_text.value = f"Solved: {stats.get('nodes_generated','?')} nodes"; self.status_text.color = Win7Theme.SUCCESS
+                for r in range(self.size):
+                    for c in range(self.size):
+                        if self._original_grid[r][c] == 0:
+                            self.cells[r][c].content.value = str(solution[r][c])
+                            self.cells[r][c].bgcolor = Win7Theme.SUCCESS
             self.page.update()
 
         self.status_text.value = "Solving..."; self.status_text.color = Win7Theme.PRIMARY; self.page.update()
-        async def event_callback(action, r, c, val):
-            if action == 'check': self.cells[r][c].bgcolor = Win7Theme.CHECK
+        
+        self._last_grid = [row[:] for row in self._original_grid]
+        
+        async def event_callback(action, grid_or_r, c_or_val=None, val_or_none=None):
+            if action == 'step' and isinstance(grid_or_r, list):
+                grid = grid_or_r
+                for r in range(self.size):
+                    for c in range(self.size):
+                        if grid[r][c] != self._last_grid[r][c] and grid[r][c] != 0:
+                            self.cells[r][c].content.value = str(grid[r][c])
+                            self.cells[r][c].bgcolor = Win7Theme.SUCCESS
+                            self.cells[r][c].content.color = Win7Theme.TEXT_INVERSE
+                        elif grid[r][c] == 0 and self._last_grid[r][c] != 0:
+                            self.cells[r][c].content.value = ""
+                            self.cells[r][c].bgcolor = Win7Theme.CELL_EMPTY_BG
+                self._last_grid = [row[:] for row in grid]
+                self.page.update()
+            elif action == 'check': 
+                r, c, val = grid_or_r, c_or_val, val_or_none
+                self.cells[r][c].bgcolor = Win7Theme.CHECK
+                self.page.update()
             elif action == 'assign':
+                r, c, val = grid_or_r, c_or_val, val_or_none
                 self.cells[r][c].content.value = str(val); self.cells[r][c].bgcolor = Win7Theme.SUCCESS; self.cells[r][c].content.color = Win7Theme.TEXT_INVERSE; self.cells[r][c].scale = 1.1
                 await asyncio.sleep(0.05); self.cells[r][c].scale = 1.0
+                self.page.update()
             elif action == 'backtrack':
+                r, c, val = grid_or_r, c_or_val, val_or_none
                 if self._original_grid[r][c] == 0: self.cells[r][c].content.value = ""
                 self.cells[r][c].bgcolor = Win7Theme.ERROR; self.cells[r][c].content.color = Win7Theme.TEXT_INVERSE
-            self.page.update()
+                self.page.update()
 
         await self.step_player.start_streaming(event_callback, delay=self.speed_slider.value)
         await self.solver.run_with_history(self.size, self.grid_data, self.h_constraints, self.v_constraints, callback=on_result, algorithm=self.algorithm_dropdown.value, step_player=self.step_player)
@@ -421,6 +452,23 @@ class PuzzlePage(ft.View):
 
     async def on_manual_step(self, e):
         await self.step_player.step_once(); self.page.update()
+
+    async def on_solve_instantly(self, e):
+        self.status_text.value = "Solving..."; self.status_text.color = Win7Theme.PRIMARY; self.page.update()
+        
+        async def on_result(solution, stats):
+            if solution is None:
+                self.status_text.value = "No solution found"; self.status_text.color = Win7Theme.ERROR
+            else:
+                self.status_text.value = f"Solved: {stats.get('nodes_generated','?')} nodes | {stats.get('time',0):.3f}s"; self.status_text.color = Win7Theme.SUCCESS
+                for r in range(self.size):
+                    for c in range(self.size):
+                        if self._original_grid[r][c] == 0:
+                            self.cells[r][c].content.value = str(solution[r][c])
+                            self.cells[r][c].bgcolor = Win7Theme.SUCCESS
+            self.page.update()
+        
+        await self.solver.run_full(self.size, self.grid_data, self.h_constraints, self.v_constraints, callback=on_result, algorithm=self.algorithm_dropdown.value)
 
     async def on_speed_change(self, e):
         self.step_player._delay = float(self.speed_slider.value)
