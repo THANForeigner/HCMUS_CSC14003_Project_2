@@ -12,11 +12,12 @@ sys.path.insert(0, repo_root)
 from gui.home_page import home_page
 from gui.puzzle_page import PuzzlePage
 from gui.demo_page import DemoPage
+from gui.theme import Win7Theme
 
 async def main(page: ft.Page):
     # Setup main window properties
     page.title = "Futoshiki"
-    page.theme_mode = ft.ThemeMode.DARK
+    page.theme_mode = ft.ThemeMode.LIGHT
     page.window_width = 900
     page.window_height = 800
     page.window_min_width = 700

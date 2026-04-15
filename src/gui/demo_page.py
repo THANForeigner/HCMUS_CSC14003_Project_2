@@ -22,26 +22,11 @@ try:
 except ImportError:
     from gui.step_player import StepPlayer
 
-# Nord Theme Palette
-POLAR_NIGHT_0 = "#2E3440"
-POLAR_NIGHT_1 = "#3B4252"
-POLAR_NIGHT_2 = "#434C5E"
-POLAR_NIGHT_3 = "#4C566A"
-SNOW_STORM_0 = "#D8DEE9"
-SNOW_STORM_1 = "#E5E9F0"
-SNOW_STORM_2 = "#ECEFF4"
-FROST_0 = "#8FBCBB"
-FROST_1 = "#88C0D0"
-FROST_2 = "#81A1C1"
-FROST_3 = "#5E81AC"
-AURORA_RED = "#BF616A"
-AURORA_ORANGE = "#D08770"
-AURORA_YELLOW = "#EBCB8B"
-AURORA_GREEN = "#A3BE8C"
+from src.gui.theme import Win7Theme
 
 class DemoPage(ft.View):
     def __init__(self, page: ft.Page):
-        super().__init__(route="/demo", bgcolor=POLAR_NIGHT_0)
+        super().__init__(route="/demo", bgcolor=Win7Theme.BG)
         self._page = page
         self._is_initialized = False
         self.size = 5
@@ -49,13 +34,13 @@ class DemoPage(ft.View):
         self.h_constraints = []
         self.v_constraints = []
         self.cells = []
-        self.status = ft.Text("", size=16, color=SNOW_STORM_0, weight=ft.FontWeight.BOLD)
+        self.status = ft.Text("", size=16, color=Win7Theme.TEXT_PRIMARY, weight=ft.FontWeight.BOLD)
 
         # Dropdowns
         self.file_dropdown = ft.Dropdown(
             width=180,
             on_select=self.on_file_selected,
-            bgcolor=POLAR_NIGHT_1, color=SNOW_STORM_2, border_color=POLAR_NIGHT_3
+            bgcolor=Win7Theme.CARD_BG, color=Win7Theme.TEXT_PRIMARY, border_color=Win7Theme.PANEL_BG
         )
         self.load_available_files()
 
@@ -78,10 +63,10 @@ class DemoPage(ft.View):
                 ft.dropdown.Option('astar_ac3_h2', text='A* AC3 (h2)'),
                 ft.dropdown.Option('astar_ac3_h3', text='A* AC3 (h3)'),
             ],
-            bgcolor=POLAR_NIGHT_1, color=SNOW_STORM_2, border_color=POLAR_NIGHT_3
+            bgcolor=Win7Theme.CARD_BG, color=Win7Theme.TEXT_PRIMARY, border_color=Win7Theme.PANEL_BG
         )
 
-        self.speed_slider = ft.Slider(min=0.01, max=1.0, value=0.1, active_color=FROST_1, width=150, on_change=self.on_speed_change)
+        self.speed_slider = ft.Slider(min=0.01, max=1.0, value=0.1, active_color=Win7Theme.PRIMARY, width=150, on_change=self.on_speed_change)
 
         self.board_container = ft.Container(
             content=ft.Column([], alignment=ft.MainAxisAlignment.CENTER, horizontal_alignment=ft.CrossAxisAlignment.CENTER),
@@ -93,20 +78,20 @@ class DemoPage(ft.View):
         self.controls = [
             ft.Container(
                 content=ft.Row([
-                    ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda _: page.go("/"), icon_color=SNOW_STORM_0),
-                    ft.Text("Test:", size=14, color=FROST_2),
+                    ft.IconButton(ft.Icons.ARROW_BACK, on_click=lambda _: page.go("/"), icon_color=Win7Theme.TEXT_PRIMARY),
+                    ft.Text("Test:", size=14, color=Win7Theme.TEXT_SECONDARY),
                     self.file_dropdown,
-                    ft.IconButton(icon=ft.Icons.REFRESH, on_click=lambda _: self.load_puzzle(self.file_dropdown.value), icon_color=FROST_1),
-                    ft.Text("Algo:", size=14, color=FROST_2),
+                    ft.IconButton(icon=ft.Icons.REFRESH, on_click=lambda _: self.load_puzzle(self.file_dropdown.value), icon_color=Win7Theme.PRIMARY),
+                    ft.Text("Algo:", size=14, color=Win7Theme.TEXT_SECONDARY),
                     self.algorithm_dropdown,
                     ft.ElevatedButton(
                         content=ft.Text("Demonstrate"),
                         on_click=self.on_compute_solution,
-                        style=ft.ButtonStyle(bgcolor=FROST_3, color=SNOW_STORM_2)
+                        style=ft.ButtonStyle(bgcolor=Win7Theme.PRIMARY, color=Win7Theme.TEXT_INVERSE)
                     ),
-                    ft.Row([ft.Text("Speed", size=12, color=SNOW_STORM_0), self.speed_slider], spacing=5)
+                    ft.Row([ft.Text("Speed", size=12, color=Win7Theme.TEXT_PRIMARY), self.speed_slider], spacing=5)
                 ], alignment=ft.MainAxisAlignment.START, wrap=True),
-                padding=15, bgcolor=POLAR_NIGHT_1, border_radius=15, margin=10
+                padding=15, bgcolor=Win7Theme.HEADER_BG, border_radius=10, margin=10, border=ft.border.all(1, Win7Theme.PANEL_BG)
             ),
             ft.Row([self.status], alignment=ft.MainAxisAlignment.CENTER),
             self.board_container
@@ -146,7 +131,7 @@ class DemoPage(ft.View):
             self._original_grid = [row[:] for row in self.grid]
             self._render_board()
         except Exception as e:
-            self.status.value = f"Error: {e}"; self.status.color = AURORA_RED
+            self.status.value = f"Error: {e}"; self.status.color = Win7Theme.ERROR
 
     def build_empty_board(self):
         n = self.size
@@ -168,10 +153,11 @@ class DemoPage(ft.View):
                 is_fixed = val != 0
                 
                 cell_container = ft.Container(
-                    content=ft.Text(str(val) if is_fixed else "", size=22, weight=ft.FontWeight.BOLD, color=SNOW_STORM_2 if is_fixed else FROST_1),
+                    content=ft.Text(str(val) if is_fixed else "", size=22, weight=ft.FontWeight.BOLD, color=Win7Theme.CELL_TEXT_FIXED if is_fixed else Win7Theme.CELL_TEXT_EMPTY),
                     alignment=ft.Alignment(0, 0),
-                    width=55, height=55, bgcolor=POLAR_NIGHT_1 if is_fixed else POLAR_NIGHT_2,
-                    border_radius=8,
+                    width=55, height=55, bgcolor=Win7Theme.CELL_FIXED_BG if is_fixed else Win7Theme.CELL_EMPTY_BG,
+                    border_radius=4,
+                    border=ft.border.all(1, Win7Theme.PANEL_BG),
                     animate=ft.Animation(300, ft.AnimationCurve.EASE_OUT_QUART),
                     animate_scale=ft.Animation(200, ft.AnimationCurve.EASE_OUT)
                 )
@@ -180,7 +166,7 @@ class DemoPage(ft.View):
                 if c < n-1:
                     h_val = self.h_constraints[r][c]
                     txt = "<" if h_val == 1 else ">" if h_val == -1 else ""
-                    row_controls.append(ft.Container(content=ft.Text(txt, size=18, color=FROST_3, weight=ft.FontWeight.BOLD), alignment=ft.Alignment(0, 0), width=25))
+                    row_controls.append(ft.Container(content=ft.Text(txt, size=18, color=Win7Theme.CONSTRAINT, weight=ft.FontWeight.BOLD), alignment=ft.Alignment(0, 0), width=25))
             self.cells.append(row_cells)
             board_rows.append(ft.Row(controls=row_controls, alignment=ft.MainAxisAlignment.CENTER, spacing=5))
             if r < n-1:
@@ -188,7 +174,7 @@ class DemoPage(ft.View):
                 for c in range(n):
                     v_val = self.v_constraints[r][c]
                     txt = "^" if v_val == 1 else "v" if v_val == -1 else ""
-                    v_controls.append(ft.Container(content=ft.Text(txt, size=18, color=FROST_3, weight=ft.FontWeight.BOLD), alignment=ft.Alignment(0, 0), width=55))
+                    v_controls.append(ft.Container(content=ft.Text(txt, size=18, color=Win7Theme.CONSTRAINT, weight=ft.FontWeight.BOLD), alignment=ft.Alignment(0, 0), width=55))
                     if c < n-1: v_controls.append(ft.Container(width=25))
                 board_rows.append(ft.Row(controls=v_controls, alignment=ft.MainAxisAlignment.CENTER, spacing=5))
 
@@ -198,30 +184,30 @@ class DemoPage(ft.View):
 
     async def on_compute_solution(self, e):
         async def callback(solution, stats, steps=None):
-            if solution is None: self.status.value = "No solution found"; self.status.color = AURORA_RED
-            else: self.status.value = f"Demo Finished. {stats.get('nodes_generated','?')} nodes."; self.status.color = AURORA_GREEN
+            if solution is None: self.status.value = "No solution found"; self.status.color = Win7Theme.ERROR
+            else: self.status.value = f"Demo Finished. {stats.get('nodes_generated','?')} nodes."; self.status.color = Win7Theme.SUCCESS
             self._page.update()
 
-        self.status.value = "Demonstrating..."; self.status.color = FROST_1; self._page.update()
+        self.status.value = "Demonstrating..."; self.status.color = Win7Theme.PRIMARY; self._page.update()
         
         # Reset board visuals
         for r in range(self.size):
             for c in range(self.size):
                 val = self._original_grid[r][c]
                 self.cells[r][c].content.value = str(val) if val != 0 else ""
-                self.cells[r][c].bgcolor = POLAR_NIGHT_1 if val != 0 else POLAR_NIGHT_2
+                self.cells[r][c].bgcolor = Win7Theme.CELL_FIXED_BG if val != 0 else Win7Theme.CELL_EMPTY_BG
         self._page.update()
         
         async def event_callback(action, r, c, val):
-            if action == 'check': self.cells[r][c].bgcolor = AURORA_YELLOW
+            if action == 'check': self.cells[r][c].bgcolor = Win7Theme.CHECK
             elif action == 'assign':
-                self.cells[r][c].content.value = str(val); self.cells[r][c].bgcolor = AURORA_GREEN; self.cells[r][c].scale = 1.1
+                self.cells[r][c].content.value = str(val); self.cells[r][c].bgcolor = Win7Theme.SUCCESS; self.cells[r][c].content.color = Win7Theme.TEXT_INVERSE; self.cells[r][c].scale = 1.1
                 await asyncio.sleep(0.05); self.cells[r][c].scale = 1.0
             elif action == 'backtrack':
                 if self._original_grid[r][c] == 0: self.cells[r][c].content.value = ""
-                self.cells[r][c].bgcolor = AURORA_RED
-            elif action == 'expand': self.cells[r][c].bgcolor = "#8FBCBB" # Frost 0
-            elif action == 'gen': self.cells[r][c].content.value = str(val); self.cells[r][c].bgcolor = AURORA_ORANGE
+                self.cells[r][c].bgcolor = Win7Theme.ERROR; self.cells[r][c].content.color = Win7Theme.TEXT_INVERSE
+            elif action == 'expand': self.cells[r][c].bgcolor = Win7Theme.SKY_LIGHT
+            elif action == 'gen': self.cells[r][c].content.value = str(val); self.cells[r][c].bgcolor = Win7Theme.WARNING; self.cells[r][c].content.color = Win7Theme.TEXT_INVERSE
             self._page.update()
 
         await self.step_player.start_streaming(event_callback, delay=self.speed_slider.value)
