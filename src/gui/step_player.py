@@ -44,6 +44,15 @@ class StepPlayer:
         
         self._task = asyncio.create_task(self._run())
 
+    async def run_streaming(self, callback: Callable, delay: float = 0.1):
+        """Structured version of start_streaming for TaskGroup."""
+        self._streaming = True
+        self._callback = callback
+        self._delay = delay
+        self._stop_event.clear()
+        self._pause_event.set()
+        await self._run()
+
     def push_event(self, step: tuple):
         """Push a single step tuple into the streaming queue."""
         self._stream_queue.append(step)
@@ -96,6 +105,14 @@ class StepPlayer:
             return
             
         self._task = asyncio.create_task(self._run())
+
+    async def run_auto(self, delay: float = 0.25):
+        """Structured version of start_auto for TaskGroup."""
+        self._delay = delay
+        self._user_paused = False
+        self._pause_event.set()
+        self._stop_event.clear()
+        await self._run()
 
     def pause(self):
         self._user_paused = True

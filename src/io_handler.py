@@ -1,3 +1,166 @@
+import os
+import re
+
+data = {
+    4: {
+        'trivial': {
+                1: "test/input/size4_trivial_1.txt",
+                2: "test/input/size4_trivial_2.txt",
+                3: "test/input/size4_trivial_3.txt",
+            },
+        'easy':
+            {
+                1: "test/input/size4_easy_1.txt",
+                2: "test/input/size4_easy_2.txt",
+                3: "test/input/size4_easy_3.txt",
+            },
+        'tricky': {
+                1: "test/input/size4_tricky_1.txt",
+                2: "test/input/size4_tricky_2.txt",
+                3: "test/input/size4_tricky_3.txt",
+            },
+        'extreme': {
+                1: "test/input/size4_extreme_1.txt",
+                2: "test/input/size4_extreme_2.txt",
+                3: "test/input/size4_extreme_3.txt",
+            }
+    },
+    5:{
+        'trivial': {
+                1: "test/input/size5_trivial_1.txt",
+                2: "test/input/size5_trivial_2.txt",
+                3: "test/input/size5_trivial_3.txt",
+            },
+        'easy': {
+                1: "test/input/size5_easy_1.txt",
+                2: "test/input/size5_easy_2.txt",
+                3: "test/input/size5_easy_3.txt",
+            },
+        'tricky': {
+                1: "test/input/size5_tricky_1.txt",
+                2: "test/input/size5_tricky_2.txt",
+                3: "test/input/size5_tricky_3.txt",
+            },
+        'extreme': {
+                1: "test/input/size5_extreme_1.txt",
+                2: "test/input/size5_extreme_2.txt",
+                3: "test/input/size5_extreme_3.txt",
+            }
+    },
+    6: {
+        'trivial': {
+                1: "test/input/size6_trivial_1.txt",
+                2: "test/input/size6_trivial_2.txt",
+                3: "test/input/size6_trivial_3.txt",
+            },
+        'easy': {
+                1: "test/input/size6_easy_1.txt",
+                2: "test/input/size6_easy_2.txt",
+                3: "test/input/size6_easy_3.txt",
+            },
+        'tricky': {
+                1: "test/input/size6_tricky_1.txt",
+                2: "test/input/size6_tricky_2.txt",
+                3: "test/input/size6_tricky_3.txt",
+            },
+        'extreme': {
+                1: "test/input/size6_extreme_1.txt",
+                2: "test/input/size6_extreme_2.txt",
+                3: "test/input/size6_extreme_3.txt",
+            }
+    },
+    7: {
+        'trivial': {
+                1: "test/input/size7_trivial_1.txt",
+                2: "test/input/size7_trivial_2.txt",
+                3: "test/input/size7_trivial_3.txt",
+            },
+        'easy': {
+                1: "test/input/size7_easy_1.txt",
+                2: "test/input/size7_easy_2.txt",
+                3: "test/input/size7_easy_3.txt",
+            },
+        'tricky': {
+                1: "test/input/size7_tricky_1.txt",
+                2: "test/input/size7_tricky_2.txt",
+                3: "test/input/size7_tricky_3.txt",
+            },
+        'extreme': {
+                1: "test/input/size7_extreme_1.txt",
+                2: "test/input/size7_extreme_2.txt",
+                3: "test/input/size7_extreme_3.txt",
+            }
+    },
+    8: {
+        'trivial': {
+                1: "test/input/size8_trivial_1.txt",
+                2: "test/input/size8_trivial_2.txt",
+                3: "test/input/size8_trivial_3.txt",
+            },
+        'easy': {
+                1: "test/input/size8_easy_1.txt",
+                2: "test/input/size8_easy_2.txt",
+                3: "test/input/size8_easy_3.txt",
+            },
+        'tricky': {
+                1: "test/input/size8_tricky_1.txt",
+                2: "test/input/size8_tricky_2.txt",
+                3: "test/input/size8_tricky_3.txt",
+            },
+        'extreme': {
+                1: "test/input/size8_extreme_1.txt",
+                2: "test/input/size8_extreme_2.txt",
+                3: "test/input/size8_extreme_3.txt",
+            }
+    },
+    9: {
+        'trivial': {
+                1: "test/input/size9_trivial_1.txt",
+                2: "test/input/size9_trivial_2.txt",
+                3: "test/input/size9_trivial_3.txt",
+            },
+        'easy': {
+                1: "test/input/size9_easy_1.txt",
+                2: "test/input/size9_easy_2.txt",
+                3: "test/input/size9_easy_3.txt",
+            },
+        'tricky': {
+                1: "test/input/size9_tricky_1.txt",
+                2: "test/input/size9_tricky_2.txt",
+                3: "test/input/size9_tricky_3.txt",
+            },
+        'extreme': {
+                1: "test/input/size9_extreme_1.txt",
+                2: "test/input/size9_extreme_2.txt",
+                3: "test/input/size9_extreme_3.txt",
+            }
+    }
+}
+
+def get_test_inputs():
+    return data
+
+def get_input_filename(size, difficulty, puzzle_id):
+    """
+    Get filename from data dictionary based on components.
+    """
+    try:
+        path = data[int(size)][difficulty][int(puzzle_id)]
+        return os.path.basename(path)
+    except (KeyError, TypeError, ValueError):
+        return f"size{size}_{difficulty}_{puzzle_id}.txt"
+
+def get_input_path(base_dir, size, difficulty, puzzle_id):
+    """
+    Get full path from data dictionary.
+    """
+    try:
+        rel_path = data[int(size)][difficulty][int(puzzle_id)]
+        return os.path.join(base_dir, rel_path)
+    except (KeyError, TypeError, ValueError):
+        filename = f"size{size}_{difficulty}_{puzzle_id}.txt"
+        return os.path.join(base_dir, "test", "input", filename)
+
 def read_input(input_file):
     """
     Read Futoshiki puzzle input from file.
