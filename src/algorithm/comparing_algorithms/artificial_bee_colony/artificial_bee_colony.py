@@ -114,6 +114,7 @@ class ABC(FutoshikiSolver):
         
     def solve(self):
         for iteration in range(self.max_iteration):
+            self.nodes_expanded += 1
             # Phase 1: Employed Bees
             # Each employed bee explores neighborhood of its food source
             partners_idx = np.array([random.choice([idx for idx in range(self.food_size) if idx != i]) 
@@ -145,6 +146,7 @@ class ABC(FutoshikiSolver):
                     new_sources[i, row, col] = new_val
             
             new_fitness = self.calculate_fitness(new_sources, self.constraint)
+            self.nodes_generated += len(new_sources)
             
             # Greedy selection: update if better fitness
             improved = new_fitness > self.fitness
@@ -189,6 +191,7 @@ class ABC(FutoshikiSolver):
                     new_onlooker_sources[i, row, col] = new_val
             
             new_on_fitness = self.calculate_fitness(new_onlooker_sources, self.constraint)
+            self.nodes_generated += len(new_onlooker_sources)
             
             # Update food sources and trials
             for i, s_idx in enumerate(selected_indices):
@@ -209,6 +212,7 @@ class ABC(FutoshikiSolver):
                     self.food_sources[idx] = self.generate_state(self.size, self.grid)
                 
                 abandoned_fitness = self.calculate_fitness(self.food_sources[abandoned], self.constraint)
+                self.nodes_generated += len(abandoned_fitness)
                 self.fitness[abandoned] = abandoned_fitness
                 self.trials[abandoned] = 0
             

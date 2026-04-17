@@ -51,7 +51,9 @@ def log(msg=""):
     logging.getLogger("benchmark").info(msg)
 
 ALL_ALGOS = [
-    "Comparing algorithms",
+    "Backtracking",
+    "Artificial Bee Colony",
+    "Genetic Algorithm",
     "Forward Chaining",
     "Backward Chaining",
     "A* h1 (without AC-3)",
@@ -77,7 +79,9 @@ ASTAR_CONFIGS = {
 
 ALGORITHM_GROUPS = {
     "Group 1: Basic Algorithms": [
-        "Comparing algorithms",
+        "Backtracking",
+        "Artificial Bee Colony",
+        "Genetic Algorithm",
         "Forward Chaining",
         "Backward Chaining",
         "A* h1 (without AC-3)",
@@ -96,7 +100,9 @@ ALGORITHM_GROUPS = {
 }
 
 ALGORITHM_LABELS = {
-    "Comparing algorithms": "Comparing Algorithms",
+    "Backtracking": "Backtracking",
+    "Artificial Bee Colony": "Artificial Bee Colony",
+    "Genetic Algorithm": "Genetic Algorithm",
     "Forward Chaining": "Forward Chaining",
     "Backward Chaining": "Backward Chaining",
     "A* h1 (without AC-3)": "A* h1 (Hamming)",
@@ -224,13 +230,33 @@ def call_algorithm(algo_name, size, grid, h, v):
     LAST_INFERENCES = 1
 
     try:
-        if algo_name == "Comparing algorithms":
+        if algo_name == "Backtracking":
             from src.algorithm.comparing_algorithms.brute_force_and_backtrack.backtrack import BacktrackSolver
             solver = BacktrackSolver(size, grid_copy, constraint)
             ACTIVE_SOLVER = solver
             res = solver.solve()
             if res is not None: solution = solver.solution
             inferences = getattr(solver, 'nodes_expanded', 1)
+            LAST_INFERENCES = inferences
+
+        elif algo_name == "Artificial Bee Colony":
+            from src.algorithm.comparing_algorithms.artificial_bee_colony.artificial_bee_colony import ABC
+            solver = ABC(size, grid_copy, constraint)
+            ACTIVE_SOLVER = solver
+            res = solver.solve()
+            if res is not None:
+                solution = res.tolist()
+            inferences = max(1, getattr(solver, 'nodes_expanded', 0))
+            LAST_INFERENCES = inferences
+
+        elif algo_name == "Genetic Algorithm":
+            from src.algorithm.comparing_algorithms.genetic_algorithm.genetic_algorithm import GA
+            solver = GA(size, grid_copy, constraint)
+            ACTIVE_SOLVER = solver
+            res = solver.solve()
+            if res is not None:
+                solution = res.tolist()
+            inferences = max(1, getattr(solver, 'nodes_expanded', 0))
             LAST_INFERENCES = inferences
 
         elif algo_name == "Forward Chaining":

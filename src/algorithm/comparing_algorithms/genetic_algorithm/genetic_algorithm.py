@@ -221,6 +221,7 @@ class GA(futoshiki_solver):
         
         
         for iteration in range(self.max_iteration):
+            self.nodes_expanded += 1
             if self.best_fitness >= 1.0:
                 break
 
@@ -284,6 +285,7 @@ class GA(futoshiki_solver):
             
             # ----- Step 5: Replacement -----
             self.population = np.array(new_population[:self.pop_size], dtype=np.int32)
+            self.nodes_generated += len(self.population)
             self.fitness = self.calculate_fitness(self.population, self.constraint)
             
             # ----- Step 6: Update best -----
@@ -296,7 +298,7 @@ class GA(futoshiki_solver):
             else:
                 stagnant_generations += 1
 
-            if iteration % 100 == 0:
-                print(f"Gen {iteration}: Best Fitness = {self.best_fitness:.4f}")
+            # if iteration % 100 == 0:
+            #     print(f"Gen {iteration}: Best Fitness = {self.best_fitness:.4f}")
         
         return self.best_solution
