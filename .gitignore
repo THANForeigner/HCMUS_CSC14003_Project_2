@@ -17,7 +17,7 @@ __pycache__/
 # Ignore large input datasets or generated logs/plots
 output/logs/
 output/plots/
-*.log
+#*.log
 
 # --- OS Generated Files ---
 .DS_Store
