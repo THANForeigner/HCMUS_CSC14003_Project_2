@@ -82,14 +82,30 @@ class PureAStarSolver(FutoshikiSolver):
     def h1_hamming(self, state: FutoshikiState) -> int:
         return len(state.get_blank_positions())
 
-    def h2_forward_checking(self, state: FutoshikiState) -> int:
-        blanks = state.get_blank_positions()
-        eliminated = 0
-        for r, c in blanks:
-            row_used = set(state.grid[r, :])
-            col_used = set(state.grid[:, c])
-            eliminated += len((row_used | col_used) - {0})
-        return -eliminated
+    def h2_inequality_violations(self, state: FutoshikiState) -> int:
+        violations = 0
+        for i in range(self.size):
+            for j in range(self.size - 1):
+                if self.h_constraints[i, j] != 0:
+                    left = state.grid[i, j]
+                    right = state.grid[i, j + 1]
+                    if left != 0 and right != 0:
+                        if self.h_constraints[i, j] == 1 and not (left < right):
+                            violations += 1
+                        elif self.h_constraints[i, j] == -1 and not (left > right):
+                            violations += 1
+
+        for i in range(self.size - 1):
+            for j in range(self.size):
+                if self.v_constraints[i, j] != 0:
+                    top = state.grid[i, j]
+                    bottom = state.grid[i + 1, j]
+                    if top != 0 and bottom != 0:
+                        if self.v_constraints[i, j] == 1 and not (top < bottom):
+                            violations += 1
+                        elif self.v_constraints[i, j] == -1 and not (top > bottom):
+                            violations += 1
+        return violations
 
     def h3_mrv_domain_size(self, state: FutoshikiState) -> int:
         blanks = state.get_blank_positions()
@@ -159,7 +175,7 @@ class PureAStarSolver(FutoshikiSolver):
         
         heuristic_map = {
             "h1": (self.h1_hamming, False),
-            "h2": (self.h2_forward_checking, True),
+            "h2": (self.h2_inequality_violations, True),
             "h3": (self.h3_mrv_domain_size, True),
         }
         heuristic_fn, use_mrv = heuristic_map.get(self.heuristic, (self.h3_mrv_domain_size, True))
