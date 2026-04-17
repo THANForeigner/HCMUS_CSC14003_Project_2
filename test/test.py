@@ -30,7 +30,7 @@ from src.io_handler import read_input
 
 def setup_logging(log_dir):
     os.makedirs(log_dir, exist_ok=True)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now().strftime("%Y-%m-%d_%Hh%Mm%Ss")
     log_file = os.path.join(log_dir, f"benchmark_{timestamp}.log")
 
     logger = logging.getLogger("benchmark")
@@ -54,27 +54,44 @@ ALL_ALGOS = [
     "Comparing algorithms",
     "Forward Chaining",
     "Backward Chaining",
-    "A* (Không kết hợp AC-3)",
+    "A* h1 (without AC-3)",
+    "A* h2 (without AC-3)",
+    "A* h3 (without AC-3)",
     "Dancing Links",
-    "A* kết hợp AC-3",
-    "Forward Chaining kết hợp Backtracking",
-    "Backward Chaining (bản cải tiến)",
-    "Backward Chaining kết hợp AC-3",
+    "A* h1 with AC-3",
+    "A* h2 with AC-3",
+    "A* h3 with AC-3",
+    "Forward Chaining + Backtracking",
+    "Advanced Backward Chaining",
+    "Backward Chaining + AC-3",
 ]
+
+ASTAR_CONFIGS = {
+    "A* h1 (without AC-3)": (False, "h1"),
+    "A* h2 (without AC-3)": (False, "h2"),
+    "A* h3 (without AC-3)": (False, "h3"),
+    "A* h1 with AC-3": (True, "h1"),
+    "A* h2 with AC-3": (True, "h2"),
+    "A* h3 with AC-3": (True, "h3"),
+}
 
 ALGORITHM_GROUPS = {
     "Group 1: Basic Algorithms": [
         "Comparing algorithms",
         "Forward Chaining",
         "Backward Chaining",
-        "A* (Không kết hợp AC-3)",
+        "A* h1 (without AC-3)",
+        "A* h2 (without AC-3)",
+        "A* h3 (without AC-3)",
     ],
     "Group 2: Extended / Advanced Algorithms": [
         "Dancing Links",
-        "A* kết hợp AC-3",
-        "Forward Chaining kết hợp Backtracking",
-        "Backward Chaining (bản cải tiến)",
-        "Backward Chaining kết hợp AC-3",
+        "A* h1 with AC-3",
+        "A* h2 with AC-3",
+        "A* h3 with AC-3",
+        "Forward Chaining + Backtracking",
+        "Advanced Backward Chaining",
+        "Backward Chaining + AC-3",
     ],
 }
 
@@ -82,37 +99,41 @@ ALGORITHM_LABELS = {
     "Comparing algorithms": "Comparing Algorithms",
     "Forward Chaining": "Forward Chaining",
     "Backward Chaining": "Backward Chaining",
-    "A* (Không kết hợp AC-3)": "A* (without AC-3)",
+    "A* h1 (without AC-3)": "A* h1 (Hamming)",
+    "A* h2 (without AC-3)": "A* h2 (Forward Checking)",
+    "A* h3 (without AC-3)": "A* h3 (MRV)",
     "Dancing Links": "Dancing Links",
-    "A* kết hợp AC-3": "A* with AC-3",
-    "Forward Chaining kết hợp Backtracking": "Forward Chaining + Backtracking",
-    "Backward Chaining (bản cải tiến)": "Advanced Backward Chaining",
-    "Backward Chaining kết hợp AC-3": "Backward Chaining + AC-3",
+    "A* h1 with AC-3": "A* + AC-3 h1 (Hamming)",
+    "A* h2 with AC-3": "A* + AC-3 h2 (Forward Checking)",
+    "A* h3 with AC-3": "A* + AC-3 h3 (MRV)",
+    "Forward Chaining + Backtracking": "Forward Chaining + Backtracking",
+    "Advanced Backward Chaining": "Advanced Backward Chaining",
+    "Backward Chaining + AC-3": "Backward Chaining + AC-3",
 }
 
 def choose_benchmark_algorithms():
     while True:
         print("\n" + "=" * 60)
-        print("CHỌN THUẬT TOÁN BENCHMARK")
+        print("SELECT BENCHMARK ALGORITHMS")
         print("=" * 60)
 
         for idx, algo in enumerate(ALL_ALGOS, start=1):
-            print(f"  {idx}. {algo}")
+            print(f"  {idx}. {ALGORITHM_LABELS.get(algo, algo)}")
 
         all_choice = len(ALL_ALGOS) + 1
         print("-" * 60)
-        print(f"  {all_choice}. Chạy tất cả")
+        print(f"  {all_choice}. Run all")
         print("=" * 60)
-        print("Có thể nhập nhiều số, ví dụ: 1 3 hoặc 1,3")
-        print("Bỏ trống để chạy tất cả")
+        print("You can enter multiple numbers, for example: 1 3 or 1,3")
+        print("Press Enter to run all")
 
-        raw_choice = input("Nhập lựa chọn: ").strip()
+        raw_choice = input("Selection: ").strip()
         if not raw_choice:
             return list(ALL_ALGOS)
 
         choices = raw_choice.replace(",", " ").split()
         if not all(c.isdigit() for c in choices):
-            print("Lựa chọn không hợp lệ. Vui lòng chỉ nhập số.")
+            print("Invalid selection. Please enter numbers only.")
             continue
 
         selected_numbers = [int(c) for c in choices]
@@ -120,7 +141,7 @@ def choose_benchmark_algorithms():
             return list(ALL_ALGOS)
 
         if any(n < 1 or n > len(ALL_ALGOS) for n in selected_numbers):
-            print(f"Lựa chọn không hợp lệ. Vui lòng nhập số từ 1 đến {all_choice}.")
+            print(f"Invalid selection. Please enter numbers from 1 to {all_choice}.")
             continue
 
         seen = set()
@@ -136,17 +157,17 @@ def choose_benchmark_algorithms():
 def choose_run_mode():
     while True:
         print("\n" + "=" * 60)
-        print("CHỌN CHẾ ĐỘ CHẠY")
+        print("SELECT RUN MODE")
         print("=" * 60)
-        print("  1. Test thử  — chỉ chạy file có kích thước ≤ 6x6")
-        print("  2. Chạy thật — chạy toàn bộ file input")
+        print("  1. Quick test - only run puzzles up to 6x6")
+        print("  2. Full run   - run all input files")
         print("=" * 60)
-        raw = input("Nhập lựa chọn (mặc định 1): ").strip()
+        raw = input("Selection (default 1): ").strip()
         if raw == "" or raw == "1":
             return "test"
         if raw == "2":
             return "full"
-        print("Vui lòng chỉ nhập 1 hoặc 2.")
+        print("Please enter 1 or 2.")
 
 
 DIFFICULTIES = ["trivial", "easy", "tricky", "extreme"]
@@ -189,9 +210,9 @@ def validate_solution(size, original_grid, solved_grid, h, v):
 
 import copy
 
-def create_futoshiki_evaluator(size, grid, h, v):
+def create_futoshiki_evaluator(size, grid, h, v, heuristic="h3"):
     from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
-    return AStarFutoshiki(size, grid, [h, v])
+    return AStarFutoshiki(size, grid, [h, v], heuristic=heuristic)
 
 def call_algorithm(algo_name, size, grid, h, v):
     global ACTIVE_SOLVER, LAST_INFERENCES
@@ -230,13 +251,23 @@ def call_algorithm(algo_name, size, grid, h, v):
             inferences = getattr(solver, 'nodes_expanded', 1)
             LAST_INFERENCES = inferences
 
-        elif algo_name == "A* (Không kết hợp AC-3)":
-            evaluator = create_futoshiki_evaluator(size, grid_copy, h, v)
-            ACTIVE_SOLVER = evaluator
-            sol, expanded, generated = evaluator.solve_astar()
-            if sol is not None:
-                solution = sol.tolist()
-            inferences = expanded
+        elif algo_name in ASTAR_CONFIGS:
+            use_ac3, heuristic = ASTAR_CONFIGS[algo_name]
+            if use_ac3:
+                evaluator = create_futoshiki_evaluator(size, grid_copy, h, v, heuristic=heuristic)
+                ACTIVE_SOLVER = evaluator
+                sol, expanded, generated = evaluator.solve_with_ac3()
+                if sol is not None:
+                    solution = sol.tolist()
+                inferences = expanded
+            else:
+                from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
+                solver = PureAStarSolver(size, grid_copy, constraint, heuristic=heuristic)
+                ACTIVE_SOLVER = solver
+                sol, stats, history = solver.solve_with_history()
+                if sol is not None:
+                    solution = sol
+                inferences = stats.get('nodes_expanded', solver.nodes_expanded)
             LAST_INFERENCES = inferences
 
         elif algo_name == "Dancing Links":
@@ -248,16 +279,7 @@ def call_algorithm(algo_name, size, grid, h, v):
             inferences = getattr(solver, 'nodes_expanded', 1)
             LAST_INFERENCES = inferences
 
-        elif algo_name == "A* kết hợp AC-3":
-            evaluator = create_futoshiki_evaluator(size, grid_copy, h, v)
-            ACTIVE_SOLVER = evaluator
-            sol, expanded, generated = evaluator.solve_with_ac3()
-            if sol is not None:
-                solution = sol.tolist()
-            inferences = expanded
-            LAST_INFERENCES = inferences
-
-        elif algo_name == "Forward Chaining kết hợp Backtracking":
+        elif algo_name == "Forward Chaining + Backtracking":
             from src.algorithm.first_order_logic.fc_with_backtrack import forward_chaining as FC
             solver = FC(size, grid_copy, constraint)
             ACTIVE_SOLVER = solver
@@ -266,7 +288,7 @@ def call_algorithm(algo_name, size, grid, h, v):
             inferences = getattr(solver, 'nodes_expanded', 1)
             LAST_INFERENCES = inferences
 
-        elif algo_name == "Backward Chaining (bản cải tiến)":
+        elif algo_name == "Advanced Backward Chaining":
             from src.algorithm.first_order_logic.backward_chaining import backward_chaining as BC_adv
             solver = BC_adv(size, grid_copy, constraint)
             ACTIVE_SOLVER = solver
@@ -275,7 +297,7 @@ def call_algorithm(algo_name, size, grid, h, v):
             inferences = getattr(solver, 'nodes_expanded', 1)
             LAST_INFERENCES = inferences
 
-        elif algo_name == "Backward Chaining kết hợp AC-3":
+        elif algo_name == "Backward Chaining + AC-3":
             from src.algorithm.first_order_logic.backward_chaining_with_ac3 import backward_chaining_with_ac3 as BC_AC3
             solver = BC_AC3(size, grid_copy, constraint)
             ACTIVE_SOLVER = solver
@@ -338,13 +360,17 @@ def plot_metrics(results_by_diff, all_algos, plot_dir):
                     data = results[algo]
                     linewidth = max(2.0, 6.0 - algo_idx * (4.0 / total_lines))
                     markersize = max(5.0, 9.0 - algo_idx * (4.0 / total_lines))
+                    x_values = np.array(data["sizes"], dtype=float)
+                    x_offset = (algo_idx - (total_lines - 1) / 2) * 0.025
                     ax.plot(
-                        data["sizes"], data[key],
+                        x_values + x_offset, data[key],
                         marker=MARKERS[algo_idx % len(MARKERS)],
                         markersize=markersize,
                         linewidth=linewidth,
                         linestyle=LINESTYLES[algo_idx % len(LINESTYLES)],
                         alpha=0.9,
+                        markerfacecolor="white",
+                        markeredgewidth=1.2,
                         label=ALGORITHM_LABELS.get(algo, algo)
                     )
 
@@ -360,7 +386,7 @@ def plot_metrics(results_by_diff, all_algos, plot_dir):
             save_path = os.path.join(plot_dir, f"{diff}_{key}.png")
             plt.savefig(save_path, dpi=150)
             plt.close()
-            log(f"  Đã lưu: {save_path}")
+            log(f"  Saved: {save_path}")
 
 def run_benchmark():
     base_dir   = os.path.dirname(__file__)
@@ -368,7 +394,7 @@ def run_benchmark():
     if not os.path.exists(input_dir):
         input_dir = os.path.join(base_dir, "inputs")
     if not os.path.exists(input_dir):
-        print(f"Không tìm thấy thư mục input: {input_dir}")
+        print(f"Input directory not found: {input_dir}")
         return
 
     plot_dir = os.path.join(base_dir, "plot")
@@ -398,13 +424,13 @@ def run_benchmark():
         files = all_files
 
     log("=" * 60)
-    log("BẮT ĐẦU CHẠY BENCHMARK")
+    log("BENCHMARK STARTED")
     log(f"Log file: {log_file}")
-    log(f"Chế độ  : {'TEST (size ≤ 6x6)' if run_mode == 'test' else 'FULL (tất cả)'}")
-    log("Thuật toán đã chọn:")
+    log(f"Run mode: {'QUICK TEST (size <= 6x6)' if run_mode == 'test' else 'FULL RUN (all files)'}")
+    log("Selected algorithms:")
     for algo in all_algos:
-        log(f"  - {algo}")
-    log(f"Số file sẽ chạy: {len(files)}")
+        log(f"  - {ALGORITHM_LABELS.get(algo, algo)}")
+    log(f"Files to run: {len(files)}")
     log("=" * 60)
 
     for filename in files:
@@ -442,11 +468,12 @@ def run_benchmark():
             agg[difficulty][algo][size]["a"].append(accuracy)
             agg[difficulty][algo][size]["i"].append(inferences)
 
-            status_icon = "✓" if is_correct else "✗"
-            log(f"  {status_icon} {algo:<38} Time={exec_time:.4f}s  Mem={mem_usage:.2f}MB  Inf={inferences}")
+            status = "True" if is_correct else "False"
+            algo_label = ALGORITHM_LABELS.get(algo, algo)
+            log(f"  {status:<5} {algo_label:<40} Time={exec_time:.4f}s  Mem={mem_usage:.2f}MB  Inf={inferences}")
 
     log("\n" + "=" * 60)
-    log("VẼ BIỂU ĐỒ THEO ĐỘ KHÓ")
+    log("GENERATING CHARTS BY DIFFICULTY")
     log("=" * 60)
 
     results_by_diff = {}
@@ -464,8 +491,8 @@ def run_benchmark():
 
     plot_metrics(results_by_diff, all_algos, plot_dir)
 
-    log("\n✅ BENCHMARK HOÀN TẤT!")
-    log(f"   Biểu đồ: {plot_dir}/")
+    log("\nBENCHMARK COMPLETED")
+    log(f"   Charts: {plot_dir}/")
     log(f"   Log:     {log_file}")
 
 if __name__ == "__main__":
