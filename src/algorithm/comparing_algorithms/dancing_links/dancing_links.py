@@ -101,10 +101,14 @@ class DancingLink:
             self.print_smart_solution(stack)
             return
 
+        if hasattr(self, 'nodes_expanded'):
+            self.nodes_expanded += 1
         c = self.choose_column()
         self.cover(c)
         col = c.D
         while col != c:
+            if hasattr(self, 'nodes_generated'):
+                self.nodes_generated += 1
             stack.append(col)
 
             # Kiểm tra class DLXFutoshiki có hàm 'check_futoshiki' không và kiểm tra điều kiện cộng thêm này

@@ -18,6 +18,7 @@ class backward_chaining(futoshiki_solver):
         """
         Prolog-style Backward Chaining engine (SLD Resolution).
         """
+        self.nodes_expanded += 1
         if visited is None:
             visited = set()
         if memo is None:
@@ -111,6 +112,7 @@ class backward_chaining(futoshiki_solver):
                 stream_queue.put(('assign', r, c, val))
             new_facts = current_facts.copy()
             new_facts.append(("Value", r, c, val))
+            self.nodes_generated += 1
             
             success, final_facts = self.sld_backtrack(new_facts, stream_queue)
             if success:
@@ -123,6 +125,8 @@ class backward_chaining(futoshiki_solver):
 
     def solve_with_history(self, stream_queue=None):
         start = time.time()
+        self.nodes_expanded = 0
+        self.nodes_generated = 0
         old_limit = sys.getrecursionlimit()
         sys.setrecursionlimit(max(old_limit, 100000))
         
@@ -136,7 +140,7 @@ class backward_chaining(futoshiki_solver):
                         _, r, c, v = fact
                         self.solution[r][c] = v
             
-            stats = {'nodes_expanded': 0, 'nodes_generated': 0, 'time': time.time() - start}
+            stats = {'nodes_expanded': self.nodes_expanded, 'nodes_generated': self.nodes_generated, 'time': time.time() - start}
             if stream_queue:
                 stream_queue.put(('done', self.solution, stats))
             return self.solution, stats, []
@@ -145,6 +149,8 @@ class backward_chaining(futoshiki_solver):
 
     def solve(self):
         # Thiết lập giới hạn đệ quy cao hơn để chứa SLD Resolution Tree
+        self.nodes_expanded = 0
+        self.nodes_generated = 0
         old_limit = sys.getrecursionlimit()
         sys.setrecursionlimit(max(old_limit, 5000))
         

@@ -114,10 +114,12 @@ class DLXFutoshiki(futoshiki_solver, DancingLink):
             self.print_smart_solution(stack)
             return
 
+        self.nodes_expanded += 1
         c = self.choose_column()
         self.cover(c)
         col = c.D
         while col != c:
+            self.nodes_generated += 1
             stack.append(col)
             
             # Extract R, C, V from row_id
@@ -158,18 +160,22 @@ class DLXFutoshiki(futoshiki_solver, DancingLink):
 
     def solve_with_history(self, stream_queue=None):
         start = time.time()
+        self.nodes_expanded = 0
+        self.nodes_generated = 0
         self.solution = None
         try:
             self.search_with_history(0, [], stream_queue)
         except StopIteration:
             pass
         
-        stats = {'nodes_expanded': 0, 'nodes_generated': 0, 'time': time.time() - start}
+        stats = {'nodes_expanded': self.nodes_expanded, 'nodes_generated': self.nodes_generated, 'time': time.time() - start}
         if stream_queue:
             stream_queue.put(('done', self.solution, stats))
         return self.solution, stats, []
 
     def solve(self):
+        self.nodes_expanded = 0
+        self.nodes_generated = 0
         self.solution = None
         try:
             self.search(0, [])

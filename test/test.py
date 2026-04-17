@@ -3,6 +3,8 @@ import sys
 import time
 import logging
 import tracemalloc
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import signal
@@ -12,7 +14,15 @@ from collections import defaultdict
 class TimeoutException(BaseException):
     pass
 
+ACTIVE_SOLVER = None
+LAST_INFERENCES = 1
+
 def timeout_handler(signum, frame):
+    global LAST_INFERENCES
+    if ACTIVE_SOLVER is not None:
+        nested_solver = getattr(ACTIVE_SOLVER, '_fallback_solver', None)
+        nested_nodes = getattr(nested_solver, 'nodes_expanded', 0) if nested_solver is not None else 0
+        LAST_INFERENCES = max(1, getattr(ACTIVE_SOLVER, 'nodes_expanded', 1) + nested_nodes)
     raise TimeoutException("Timeout")
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -46,6 +56,97 @@ def log(msg=""):
     logging.getLogger("benchmark").info(msg)
 
 # ============================================================
+# MENU CHỌN THUẬT TOÁN BENCHMARK
+# ============================================================
+ALL_ALGOS = [
+    "Comparing algorithms",
+    "Forward Chaining",
+    "Backward Chaining",
+    "A* (Không kết hợp AC-3)",
+    "Dancing Links",
+    "A* kết hợp AC-3",
+    "Forward Chaining kết hợp Backtracking",
+    "Backward Chaining (bản cải tiến)",
+    "Backward Chaining kết hợp AC-3",
+]
+
+ALGORITHM_GROUPS = {
+    "Nhóm 1: Thuật toán cơ bản": [
+        "Comparing algorithms",
+        "Forward Chaining",
+        "Backward Chaining",
+        "A* (Không kết hợp AC-3)",
+    ],
+    "Nhóm 2: Thuật toán mở rộng/nâng cao": [
+        "Dancing Links",
+        "A* kết hợp AC-3",
+        "Forward Chaining kết hợp Backtracking",
+        "Backward Chaining (bản cải tiến)",
+        "Backward Chaining kết hợp AC-3",
+    ],
+}
+
+def choose_benchmark_algorithms():
+    while True:
+        print("\n" + "=" * 60)
+        print("CHỌN THUẬT TOÁN BENCHMARK")
+        print("=" * 60)
+
+        for idx, algo in enumerate(ALL_ALGOS, start=1):
+            print(f"  {idx}. {algo}")
+
+        all_choice = len(ALL_ALGOS) + 1
+        print("-" * 60)
+        print(f"  {all_choice}. Chạy tất cả")
+        print("=" * 60)
+        print("Có thể nhập nhiều số, ví dụ: 1 3 hoặc 1,3")
+        print("Bỏ trống để chạy tất cả")
+
+        raw_choice = input("Nhập lựa chọn: ").strip()
+        if not raw_choice:
+            return list(ALL_ALGOS)
+
+        choices = raw_choice.replace(",", " ").split()
+        if not all(c.isdigit() for c in choices):
+            print("Lựa chọn không hợp lệ. Vui lòng chỉ nhập số.")
+            continue
+
+        selected_numbers = [int(c) for c in choices]
+        if all_choice in selected_numbers:
+            return list(ALL_ALGOS)
+
+        if any(n < 1 or n > len(ALL_ALGOS) for n in selected_numbers):
+            print(f"Lựa chọn không hợp lệ. Vui lòng nhập số từ 1 đến {all_choice}.")
+            continue
+
+        # Giữ thứ tự gốc, loại trùng
+        seen = set()
+        selected_algos = []
+        for n in selected_numbers:
+            algo = ALL_ALGOS[n - 1]
+            if algo not in seen:
+                seen.add(algo)
+                selected_algos.append(algo)
+
+        return selected_algos
+
+def choose_run_mode():
+    """Chọn chế độ chạy: test thử (only size ≤ 6) hoặc chạy thật (all sizes)."""
+    while True:
+        print("\n" + "=" * 60)
+        print("CHỌN CHẾ ĐỘ CHẠY")
+        print("=" * 60)
+        print("  1. Test thử  — chỉ chạy file có kích thước ≤ 6x6")
+        print("  2. Chạy thật — chạy toàn bộ file input")
+        print("=" * 60)
+        raw = input("Nhập lựa chọn (mặc định 1): ").strip()
+        if raw == "" or raw == "1":
+            return "test"
+        if raw == "2":
+            return "full"
+        print("Vui lòng chỉ nhập 1 hoặc 2.")
+
+
 # PARSE ĐỘ KHÓ TỪ TÊN FILE
 # Format: size4_easy_1.txt → difficulty = "easy"
 # ============================================================
@@ -93,84 +194,110 @@ def validate_solution(size, original_grid, solved_grid, h, v):
 # GỌI THUẬT TOÁN
 # ============================================================
 import copy
-from test_futoshiki import FutoshikiEvaluator
+
+def create_futoshiki_evaluator(size, grid, h, v):
+    from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
+    return AStarFutoshiki(size, grid, [h, v])
 
 def call_algorithm(algo_name, size, grid, h, v):
+    global ACTIVE_SOLVER, LAST_INFERENCES
     grid_copy = copy.deepcopy(grid)
     inferences = 1
     solution = None
     constraint = [h, v]
+    ACTIVE_SOLVER = None
+    LAST_INFERENCES = 1
 
     try:
         # NHÓM 1
         if algo_name == "Comparing algorithms":
-            from src.algorithm.comparing_algorithms.brute_force_and_backtrack.backtrack import Backtrack
-            solver = Backtrack(size, grid_copy, constraint)
+            from src.algorithm.comparing_algorithms.brute_force_and_backtrack.backtrack import BacktrackSolver
+            solver = BacktrackSolver(size, grid_copy, constraint)
+            ACTIVE_SOLVER = solver
             res = solver.solve()
-            if res != "Contradiction": solution = solver.solution
-            inferences = getattr(solver, 'nodes_explored', 1)
+            if res is not None: solution = solver.solution
+            inferences = getattr(solver, 'nodes_expanded', 1)
+            LAST_INFERENCES = inferences
 
         elif algo_name == "Forward Chaining":
-            from src.algorithm.first_order_logic.fc_no_backtrack import forward_chaining as FC_no_bt
+            from src.algorithm.first_order_logic.forward_chaining import fc_no_backtrack as FC_no_bt
             solver = FC_no_bt(size, grid_copy, constraint)
+            ACTIVE_SOLVER = solver
             res = solver.solve()
             if res[0] == "Solved": solution = solver.solution
-            inferences = getattr(solver, 'nodes_explored', 1)
+            inferences = getattr(solver, 'nodes_expanded', 1)
+            LAST_INFERENCES = inferences
 
         elif algo_name == "Backward Chaining":
             from src.algorithm.first_order_logic.bc_no_backtrack import bc_no_backtrack as BC_std
             solver = BC_std(size, grid_copy, constraint)
+            ACTIVE_SOLVER = solver
             res = solver.solve()
             if res[0] == "Solved": solution = solver.solution
-            inferences = getattr(solver, 'nodes_explored', 1)
+            inferences = getattr(solver, 'nodes_expanded', 1)
+            LAST_INFERENCES = inferences
 
         elif algo_name == "A* (Không kết hợp AC-3)":
-            evaluator = FutoshikiEvaluator(size, grid_copy, h, v)
-            res = evaluator.solve_astar(use_ac3=False)
-            if res.get("solved"):
-                solution = [[list(evaluator.domains[r][c])[0] for c in range(size)] for r in range(size)]
-            inferences = res.get("nodes", 1)
+            evaluator = create_futoshiki_evaluator(size, grid_copy, h, v)
+            ACTIVE_SOLVER = evaluator
+            sol, expanded, generated = evaluator.solve_astar()
+            if sol is not None:
+                solution = sol.tolist()
+            inferences = expanded
+            LAST_INFERENCES = inferences
 
         # NHÓM 2
         elif algo_name == "Dancing Links":
             from src.algorithm.comparing_algorithms.dancing_links.dlx_futoshiki import DLXFutoshiki
             solver = DLXFutoshiki(size, grid_copy, constraint)
+            ACTIVE_SOLVER = solver
             res = solver.solve()
             solution = getattr(solver, "solution", None)
-            inferences = getattr(solver, 'nodes_explored', 1)
+            inferences = getattr(solver, 'nodes_expanded', 1)
+            LAST_INFERENCES = inferences
 
         elif algo_name == "A* kết hợp AC-3":
-            evaluator = FutoshikiEvaluator(size, grid_copy, h, v)
-            res = evaluator.solve_astar(use_ac3=True)
-            if res.get("solved"):
-                solution = [[list(evaluator.domains[r][c])[0] for c in range(size)] for r in range(size)]
-            inferences = res.get("nodes", 1)
+            evaluator = create_futoshiki_evaluator(size, grid_copy, h, v)
+            ACTIVE_SOLVER = evaluator
+            sol, expanded, generated = evaluator.solve_with_ac3()
+            if sol is not None:
+                solution = sol.tolist()
+            inferences = expanded
+            LAST_INFERENCES = inferences
 
         elif algo_name == "Forward Chaining kết hợp Backtracking":
-            from src.algorithm.first_order_logic.forward_chaining import forward_chaining as FC
+            from src.algorithm.first_order_logic.fc_with_backtrack import forward_chaining as FC
             solver = FC(size, grid_copy, constraint)
+            ACTIVE_SOLVER = solver
             res = solver.solve()
             if res[0] == "Solved": solution = solver.solution
-            inferences = getattr(solver, 'nodes_explored', 1)
+            inferences = getattr(solver, 'nodes_expanded', 1)
+            LAST_INFERENCES = inferences
 
         elif algo_name == "Backward Chaining (bản cải tiến)":
             from src.algorithm.first_order_logic.backward_chaining import backward_chaining as BC_adv
             solver = BC_adv(size, grid_copy, constraint)
+            ACTIVE_SOLVER = solver
             res = solver.solve()
             if res[0] == "Solved": solution = solver.solution
-            inferences = getattr(solver, 'nodes_explored', 1)
+            inferences = getattr(solver, 'nodes_expanded', 1)
+            LAST_INFERENCES = inferences
 
         elif algo_name == "Backward Chaining kết hợp AC-3":
-            evaluator = FutoshikiEvaluator(size, grid_copy, h, v)
-            res = evaluator.solve_bc_ac3()
-            if res.get("solved"):
-                solution = [[list(evaluator.domains[r][c])[0] for c in range(size)] for r in range(size)]
-            inferences = res.get("nodes", 1)
+            from src.algorithm.first_order_logic.backward_chaining_with_ac3 import backward_chaining_with_ac3 as BC_AC3
+            solver = BC_AC3(size, grid_copy, constraint)
+            ACTIVE_SOLVER = solver
+            res = solver.solve()
+            if res[0] == "Solved": solution = solver.solution
+            inferences = getattr(solver, 'nodes_expanded', 1)
+            LAST_INFERENCES = inferences
 
     except RecursionError:
         pass
     except Exception:
         pass
+    finally:
+        ACTIVE_SOLVER = None
 
     return solution, inferences
 
@@ -179,7 +306,7 @@ def call_algorithm(algo_name, size, grid, h, v):
 # ============================================================
 MARKERS = ['o', 's', '^', 'D', 'v', 'P', 'X', '*', 'h']
 
-def plot_metrics(results_by_diff, algorithm_groups, plot_dir):
+def plot_metrics(results_by_diff, all_algos, plot_dir):
     """
     results_by_diff: { difficulty: { algo: { sizes, time, memory, accuracy, inferences } } }
     """
@@ -192,34 +319,37 @@ def plot_metrics(results_by_diff, algorithm_groups, plot_dir):
         "inferences": "Inferences (Nodes)",
     }
 
-    all_algos = algorithm_groups["Nhóm 1"] + algorithm_groups["Nhóm 2"]
+    selected_groups = {
+        group_name: [algo for algo in algos if algo in all_algos]
+        for group_name, algos in ALGORITHM_GROUPS.items()
+    }
+    selected_groups = {name: algos for name, algos in selected_groups.items() if algos}
 
     for diff, results in results_by_diff.items():
-        # Bỏ qua nếu không có dữ liệu nào
         has_data = any(results[a]["sizes"] for a in all_algos)
         if not has_data:
             continue
 
         for key, ylabel in metrics.items():
-            fig, axes = plt.subplots(1, 2, figsize=(15, 6))
+            fig, axes = plt.subplots(1, len(selected_groups), figsize=(8 * len(selected_groups), 6), squeeze=False)
             fig.suptitle(
-                f"[{diff.upper()}] Tương quan {ylabel} theo Grid Size",
+                f"[{diff.upper()}] {ylabel} theo Grid Size",
                 fontsize=14, fontweight="bold"
             )
 
-            for idx, (group_name, algos) in enumerate(algorithm_groups.items()):
-                ax = axes[idx]
-                for m_idx, algo in enumerate(algos):
+            for group_idx, (group_name, algos) in enumerate(selected_groups.items()):
+                ax = axes[0][group_idx]
+                for algo_idx, algo in enumerate(algos):
                     data = results[algo]
-                    if not data["sizes"]:
-                        continue
-                    ax.plot(
-                        data["sizes"], data[key],
-                        marker=MARKERS[m_idx % len(MARKERS)],
-                        lw=2, label=algo
-                    )
+                    if data["sizes"]:
+                        ax.plot(
+                            data["sizes"], data[key],
+                            marker=MARKERS[algo_idx % len(MARKERS)],
+                            lw=2,
+                            label=algo
+                        )
 
-                ax.set_title(group_name, fontsize=12)
+                ax.set_title(group_name, fontsize=11, fontweight="bold")
                 ax.set_xlabel("Grid Size (NxN)")
                 ax.set_ylabel(ylabel)
                 if key in ("time", "inferences"):
@@ -250,38 +380,42 @@ def run_benchmark():
 
     logger, log_file = setup_logging(log_dir)
 
-    algorithms = {
-        "Nhóm 1": [
-            "Comparing algorithms",
-            "Forward Chaining",
-            "Backward Chaining",
-            "A* (Không kết hợp AC-3)",
-        ],
-        "Nhóm 2": [
-            "Dancing Links",
-            "A* kết hợp AC-3",
-            "Forward Chaining kết hợp Backtracking",
-            "Backward Chaining (bản cải tiến)",
-            "Backward Chaining kết hợp AC-3",
-        ],
-    }
-    all_algos = algorithms["Nhóm 1"] + algorithms["Nhóm 2"]
+    all_algos = choose_benchmark_algorithms()
+    run_mode  = choose_run_mode()
+
+    TEST_MAX_SIZE = 6
 
     # agg[difficulty][algo][size] = {t, m, a, i}
     agg = defaultdict(lambda: {a: defaultdict(lambda: {"t":[],"m":[],"a":[],"i":[]}) for a in all_algos})
 
-    files = sorted(f for f in os.listdir(input_dir) if f.endswith(".txt"))
+    all_files = sorted(f for f in os.listdir(input_dir) if f.endswith(".txt"))
+    if run_mode == "test":
+        # Đọc trước size của mỗi file để lọc, không cần đọc toàn bộ
+        files = []
+        for f in all_files:
+            try:
+                s, _, _ = read_input(os.path.join(input_dir, f))
+                if s <= TEST_MAX_SIZE:
+                    files.append(f)
+            except Exception:
+                pass
+    else:
+        files = all_files
 
     log("=" * 60)
     log("BẮT ĐẦU CHẠY BENCHMARK")
     log(f"Log file: {log_file}")
+    log(f"Chế độ  : {'TEST (size ≤ 6x6)' if run_mode == 'test' else 'FULL (tất cả)'}")
+    log("Thuật toán đã chọn:")
+    for algo in all_algos:
+        log(f"  - {algo}")
+    log(f"Số file sẽ chạy: {len(files)}")
     log("=" * 60)
 
     for filename in files:
         filepath   = os.path.join(input_dir, filename)
         difficulty = parse_difficulty(filename)
         size, org_grid, (h, v) = read_input(filepath)
-
         log(f"\n[{difficulty.upper()}] {filename}  (Size {size}x{size})")
 
         for algo in all_algos:
@@ -297,7 +431,7 @@ def run_benchmark():
                 solved_grid, inferences = call_algorithm(algo, size, org_grid, h, v)
                 _nodes_ref[0] = inferences
             except TimeoutException:
-                inferences = _nodes_ref[0]  # lấy giá trị đếm được trước khi bị chém
+                inferences = max(_nodes_ref[0], LAST_INFERENCES)
             finally:
                 signal.alarm(0)
 
@@ -334,7 +468,7 @@ def run_benchmark():
                     results_by_diff[diff][algo]["accuracy"].append(np.mean(d["a"]))
                     results_by_diff[diff][algo]["inferences"].append(np.mean(d["i"]))
 
-    plot_metrics(results_by_diff, algorithms, plot_dir)
+    plot_metrics(results_by_diff, all_algos, plot_dir)
 
     log("\n✅ BENCHMARK HOÀN TẤT!")
     log(f"   Biểu đồ: {plot_dir}/")

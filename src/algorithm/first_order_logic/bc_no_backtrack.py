@@ -21,10 +21,31 @@ class bc_no_backtrack(futoshiki_solver):
                 self.rule_index[conclusion] = []
             self.rule_index[conclusion].append(premises)
 
+    def backtracking_fallback(self, stream_queue=None):
+        from .backward_chaining_with_ac3 import backward_chaining_with_ac3
+        solver = backward_chaining_with_ac3(
+            self.size,
+            self.grid.tolist(),
+            [self.h_constraints.tolist(), self.v_constraints.tolist()]
+        )
+        self._fallback_solver = solver
+        if stream_queue:
+            solution, stats, history = solver.solve_with_history(stream_queue)
+            self.nodes_expanded += stats.get('nodes_expanded', solver.nodes_expanded)
+            self.nodes_generated += stats.get('nodes_generated', solver.nodes_generated)
+            self.solution = solver.solution
+            return ("Solved" if solution else "Contradiction"), history
+        status, domains = solver.solve()
+        self.nodes_expanded += solver.nodes_expanded
+        self.nodes_generated += solver.nodes_generated
+        self.solution = solver.solution
+        return status, domains
+
     def prove(self, goal, current_facts, table=None):
         """
         SLG Resolution (Tabling / Memoization) Engine kết hợp CLP.
         """
+        self.nodes_expanded += 1
         if table is None:
             table = {}
             
@@ -68,6 +89,7 @@ class bc_no_backtrack(futoshiki_solver):
         import concurrent.futures
         
         while True:
+            self.nodes_expanded += 1
             assigned_count = sum(1 for fact in current_facts if fact[0] == "Value")
             if assigned_count == self.size * self.size:
                 return "Solved", current_facts
@@ -115,6 +137,7 @@ class bc_no_backtrack(futoshiki_solver):
                 r, c = target_cell
                 val = valid_options_for_target[0]
                 current_facts.add(("Value", r, c, val))
+                self.nodes_generated += 1
                 if stream_queue:
                     stream_queue.put(('assign', r, c, val))
                 # Tiếp tục vòng lặp While với current_facts mới
@@ -124,17 +147,25 @@ class bc_no_backtrack(futoshiki_solver):
 
     def solve_with_history(self, stream_queue=None):
         start = time.time()
+        self.nodes_expanded = 0
+        self.nodes_generated = 0
         old_limit = sys.getrecursionlimit()
         sys.setrecursionlimit(max(old_limit, 100000))
         try:
             current_facts_set = set(self.kb.facts)
             status, final_facts = self.sld_no_backtrack(current_facts_set, stream_queue)
+            if status == "Unresolved (Needs Backtracking)":
+                status, _ = self.backtracking_fallback(stream_queue)
+                stats = {'nodes_expanded': self.nodes_expanded, 'nodes_generated': self.nodes_generated, 'time': time.time() - start}
+                if stream_queue:
+                    stream_queue.put(('done', self.solution, stats))
+                return self.solution, stats, []
             self.solution = [[0 for _ in range(self.size)] for _ in range(self.size)]
             for fact in final_facts:
                 if fact[0] == "Value":
                     _, r, c, v = fact
                     self.solution[r][c] = v
-            stats = {'nodes_expanded': 0, 'nodes_generated': 0, 'time': time.time() - start}
+            stats = {'nodes_expanded': self.nodes_expanded, 'nodes_generated': self.nodes_generated, 'time': time.time() - start}
             if stream_queue:
                 stream_queue.put(('done', self.solution, stats))
             return self.solution, stats, []
@@ -143,6 +174,8 @@ class bc_no_backtrack(futoshiki_solver):
 
     def solve(self):
         # Thiết lập giới hạn đệ quy cao hơn để chứa SLD Resolution Tree
+        self.nodes_expanded = 0
+        self.nodes_generated = 0
         old_limit = sys.getrecursionlimit()
         sys.setrecursionlimit(max(old_limit, 100000))
         
@@ -150,6 +183,8 @@ class bc_no_backtrack(futoshiki_solver):
             # Đưa list facts về set để O(1)
             current_facts_set = set(self.kb.facts)
             status, final_facts = self.sld_no_backtrack(current_facts_set)
+            if status == "Unresolved (Needs Backtracking)":
+                return self.backtracking_fallback()
             
             # Đóng gói
             final_domains = [[set() for _ in range(self.size)] for _ in range(self.size)]

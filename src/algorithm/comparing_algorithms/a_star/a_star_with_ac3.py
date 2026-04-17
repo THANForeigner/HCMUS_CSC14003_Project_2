@@ -25,6 +25,8 @@ class AC3Solver:
         else:
             self.domains: Dict[Tuple[int, int], Set[int]] = {}
             self._init_domains()
+        self.nodes_expanded = 0
+        self.nodes_generated = 0
 
     def _init_domains(self):
         for i in range(self.size):
@@ -74,6 +76,7 @@ class AC3Solver:
                 revised = True
 
         if revised:
+            self.nodes_generated += len(to_remove)
             self.domains[x] -= to_remove
         return revised
 
@@ -115,6 +118,7 @@ class AC3Solver:
                         queue.append(((i, j), (ni, nj)))
 
         while queue:
+            self.nodes_expanded += 1
             (x, y) = queue.popleft()
             if self.revise(x, y):
                 if len(self.domains[x]) == 0:
@@ -264,7 +268,11 @@ class AStarFutoshiki(FutoshikiSolver):
 
         ac3 = AC3Solver(self.size, self.grid, self.h_constraints, self.v_constraints)
         if not ac3.ac3():
-            return None, 0, 1
+            self.nodes_expanded += ac3.nodes_expanded
+            self.nodes_generated += ac3.nodes_generated
+            return None, self.nodes_expanded, self.nodes_generated
+        self.nodes_expanded += ac3.nodes_expanded
+        self.nodes_generated += ac3.nodes_generated
 
         initial_state = FutoshikiState(self.grid)
         for key, val_set in ac3.domains.items():
@@ -304,6 +312,8 @@ class AStarFutoshiki(FutoshikiSolver):
                     )
 
                     if new_ac3.ac3():
+                        self.nodes_expanded += new_ac3.nodes_expanded
+                        self.nodes_generated += new_ac3.nodes_generated
                         assigned_valid = True
                         for key, val_set in new_ac3.domains.items():
                             if len(val_set) == 1:
@@ -326,6 +336,10 @@ class AStarFutoshiki(FutoshikiSolver):
                             if result is not None:
                                 return result, self.nodes_expanded, self.nodes_generated
 
+                    else:
+                        self.nodes_expanded += new_ac3.nodes_expanded
+                        self.nodes_generated += new_ac3.nodes_generated
+
             return None, self.nodes_expanded, self.nodes_generated
 
         result, exp, gen = backtrack(initial_state, ac3.domains)
@@ -339,11 +353,15 @@ class AStarFutoshiki(FutoshikiSolver):
         
         ac3 = AC3Solver(self.size, self.grid, self.h_constraints, self.v_constraints)
         if not ac3.ac3():
+            self.nodes_expanded += ac3.nodes_expanded
+            self.nodes_generated += ac3.nodes_generated
             duration = time.time() - start
-            stats = {'nodes_expanded': 0, 'nodes_generated': 1, 'time': duration}
+            stats = {'nodes_expanded': self.nodes_expanded, 'nodes_generated': self.nodes_generated, 'time': duration}
             if stream_queue:
                 stream_queue.put(('done', None, stats))
             return (None, stats, [])
+        self.nodes_expanded += ac3.nodes_expanded
+        self.nodes_generated += ac3.nodes_generated
         
         initial_state = FutoshikiState(self.grid)
         for key, val_set in ac3.domains.items():
@@ -386,6 +404,8 @@ class AStarFutoshiki(FutoshikiSolver):
                     )
                     
                     if new_ac3.ac3():
+                        self.nodes_expanded += new_ac3.nodes_expanded
+                        self.nodes_generated += new_ac3.nodes_generated
                         assigned_valid = True
                         for key, val_set in new_ac3.domains.items():
                             if len(val_set) == 1:
@@ -405,6 +425,9 @@ class AStarFutoshiki(FutoshikiSolver):
                             result = backtrack(new_state, new_ac3.domains)
                             if result is not None:
                                 return result
+                    else:
+                        self.nodes_expanded += new_ac3.nodes_expanded
+                        self.nodes_generated += new_ac3.nodes_generated
             
             return None
         
