@@ -28,9 +28,6 @@ def timeout_handler(signum, frame):
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.io_handler import read_input
 
-# ============================================================
-# SETUP LOGGING: in ra cả console lẫn file .log
-# ============================================================
 def setup_logging(log_dir):
     os.makedirs(log_dir, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -40,12 +37,10 @@ def setup_logging(log_dir):
     logger.setLevel(logging.INFO)
     logger.handlers.clear()
 
-    # Ghi ra file
     fh = logging.FileHandler(log_file, encoding="utf-8")
     fh.setFormatter(logging.Formatter("%(message)s"))
     logger.addHandler(fh)
 
-    # Hiển thị ra console
     ch = logging.StreamHandler(sys.stdout)
     ch.setFormatter(logging.Formatter("%(message)s"))
     logger.addHandler(ch)
@@ -55,9 +50,6 @@ def setup_logging(log_dir):
 def log(msg=""):
     logging.getLogger("benchmark").info(msg)
 
-# ============================================================
-# MENU CHỌN THUẬT TOÁN BENCHMARK
-# ============================================================
 ALL_ALGOS = [
     "Comparing algorithms",
     "Forward Chaining",
@@ -71,19 +63,31 @@ ALL_ALGOS = [
 ]
 
 ALGORITHM_GROUPS = {
-    "Nhóm 1: Thuật toán cơ bản": [
+    "Group 1: Basic Algorithms": [
         "Comparing algorithms",
         "Forward Chaining",
         "Backward Chaining",
         "A* (Không kết hợp AC-3)",
     ],
-    "Nhóm 2: Thuật toán mở rộng/nâng cao": [
+    "Group 2: Extended / Advanced Algorithms": [
         "Dancing Links",
         "A* kết hợp AC-3",
         "Forward Chaining kết hợp Backtracking",
         "Backward Chaining (bản cải tiến)",
         "Backward Chaining kết hợp AC-3",
     ],
+}
+
+ALGORITHM_LABELS = {
+    "Comparing algorithms": "Comparing Algorithms",
+    "Forward Chaining": "Forward Chaining",
+    "Backward Chaining": "Backward Chaining",
+    "A* (Không kết hợp AC-3)": "A* (without AC-3)",
+    "Dancing Links": "Dancing Links",
+    "A* kết hợp AC-3": "A* with AC-3",
+    "Forward Chaining kết hợp Backtracking": "Forward Chaining + Backtracking",
+    "Backward Chaining (bản cải tiến)": "Advanced Backward Chaining",
+    "Backward Chaining kết hợp AC-3": "Backward Chaining + AC-3",
 }
 
 def choose_benchmark_algorithms():
@@ -119,7 +123,6 @@ def choose_benchmark_algorithms():
             print(f"Lựa chọn không hợp lệ. Vui lòng nhập số từ 1 đến {all_choice}.")
             continue
 
-        # Giữ thứ tự gốc, loại trùng
         seen = set()
         selected_algos = []
         for n in selected_numbers:
@@ -131,7 +134,6 @@ def choose_benchmark_algorithms():
         return selected_algos
 
 def choose_run_mode():
-    """Chọn chế độ chạy: test thử (only size ≤ 6) hoặc chạy thật (all sizes)."""
     while True:
         print("\n" + "=" * 60)
         print("CHỌN CHẾ ĐỘ CHẠY")
@@ -147,9 +149,6 @@ def choose_run_mode():
         print("Vui lòng chỉ nhập 1 hoặc 2.")
 
 
-# PARSE ĐỘ KHÓ TỪ TÊN FILE
-# Format: size4_easy_1.txt → difficulty = "easy"
-# ============================================================
 DIFFICULTIES = ["trivial", "easy", "tricky", "extreme"]
 
 def parse_difficulty(filename):
@@ -159,9 +158,7 @@ def parse_difficulty(filename):
             return diff
     return "unknown"
 
-# ============================================================
-# VALIDATOR
-# ============================================================
+# Validate a completed grid against Latin-square and inequality constraints.
 def validate_solution(size, original_grid, solved_grid, h, v):
     if solved_grid is None or len(solved_grid) != size or len(solved_grid[0]) != size:
         return False
@@ -190,9 +187,6 @@ def validate_solution(size, original_grid, solved_grid, h, v):
 
     return True
 
-# ============================================================
-# GỌI THUẬT TOÁN
-# ============================================================
 import copy
 
 def create_futoshiki_evaluator(size, grid, h, v):
@@ -209,7 +203,6 @@ def call_algorithm(algo_name, size, grid, h, v):
     LAST_INFERENCES = 1
 
     try:
-        # NHÓM 1
         if algo_name == "Comparing algorithms":
             from src.algorithm.comparing_algorithms.brute_force_and_backtrack.backtrack import BacktrackSolver
             solver = BacktrackSolver(size, grid_copy, constraint)
@@ -246,7 +239,6 @@ def call_algorithm(algo_name, size, grid, h, v):
             inferences = expanded
             LAST_INFERENCES = inferences
 
-        # NHÓM 2
         elif algo_name == "Dancing Links":
             from src.algorithm.comparing_algorithms.dancing_links.dlx_futoshiki import DLXFutoshiki
             solver = DLXFutoshiki(size, grid_copy, constraint)
@@ -301,22 +293,18 @@ def call_algorithm(algo_name, size, grid, h, v):
 
     return solution, inferences
 
-# ============================================================
-# VẼ BIỂU ĐỒ (theo từng độ khó)
-# ============================================================
 MARKERS = ['o', 's', '^', 'D', 'v', 'P', 'X', '*', 'h']
+LINESTYLES = ['-', '--', ':', '-.']
 
 def plot_metrics(results_by_diff, all_algos, plot_dir):
-    """
-    results_by_diff: { difficulty: { algo: { sizes, time, memory, accuracy, inferences } } }
-    """
+    """Plot one chart per difficulty and metric, split by algorithm group."""
     os.makedirs(plot_dir, exist_ok=True)
 
     metrics = {
         "time":       "Execution Time (s)",
         "memory":     "Memory Usage (MB)",
         "accuracy":   "Accuracy (%)",
-        "inferences": "Inferences (Nodes)",
+        "inferences": "Number of Inferences",
     }
 
     selected_groups = {
@@ -333,24 +321,35 @@ def plot_metrics(results_by_diff, all_algos, plot_dir):
         for key, ylabel in metrics.items():
             fig, axes = plt.subplots(1, len(selected_groups), figsize=(8 * len(selected_groups), 6), squeeze=False)
             fig.suptitle(
-                f"[{diff.upper()}] {ylabel} theo Grid Size",
+                f"[{diff.upper()}] {ylabel} vs Grid Size",
                 fontsize=14, fontweight="bold"
             )
 
             for group_idx, (group_name, algos) in enumerate(selected_groups.items()):
                 ax = axes[0][group_idx]
-                for algo_idx, algo in enumerate(algos):
+                drawable_algos = [
+                    algo for algo in algos
+                    if results[algo]["sizes"] and results[algo][key]
+                ]
+                drawable_algos.sort(key=lambda algo: np.mean(results[algo][key]))
+                total_lines = max(1, len(drawable_algos))
+
+                for algo_idx, algo in enumerate(drawable_algos):
                     data = results[algo]
-                    if data["sizes"]:
-                        ax.plot(
-                            data["sizes"], data[key],
-                            marker=MARKERS[algo_idx % len(MARKERS)],
-                            lw=2,
-                            label=algo
-                        )
+                    linewidth = max(2.0, 6.0 - algo_idx * (4.0 / total_lines))
+                    markersize = max(5.0, 9.0 - algo_idx * (4.0 / total_lines))
+                    ax.plot(
+                        data["sizes"], data[key],
+                        marker=MARKERS[algo_idx % len(MARKERS)],
+                        markersize=markersize,
+                        linewidth=linewidth,
+                        linestyle=LINESTYLES[algo_idx % len(LINESTYLES)],
+                        alpha=0.9,
+                        label=ALGORITHM_LABELS.get(algo, algo)
+                    )
 
                 ax.set_title(group_name, fontsize=11, fontweight="bold")
-                ax.set_xlabel("Grid Size (NxN)")
+                ax.set_xlabel("Grid Size (N x N)")
                 ax.set_ylabel(ylabel)
                 if key in ("time", "inferences"):
                     ax.set_yscale("log")
@@ -363,9 +362,6 @@ def plot_metrics(results_by_diff, all_algos, plot_dir):
             plt.close()
             log(f"  Đã lưu: {save_path}")
 
-# ============================================================
-# MAIN BENCHMARK
-# ============================================================
 def run_benchmark():
     base_dir   = os.path.dirname(__file__)
     input_dir  = os.path.join(base_dir, "input")
@@ -376,7 +372,7 @@ def run_benchmark():
         return
 
     plot_dir = os.path.join(base_dir, "plot")
-    log_dir  = base_dir  # file .log nằm cùng thư mục test/
+    log_dir  = base_dir
 
     logger, log_file = setup_logging(log_dir)
 
@@ -385,12 +381,11 @@ def run_benchmark():
 
     TEST_MAX_SIZE = 6
 
-    # agg[difficulty][algo][size] = {t, m, a, i}
+    # Store raw runs before averaging by difficulty, algorithm, and grid size.
     agg = defaultdict(lambda: {a: defaultdict(lambda: {"t":[],"m":[],"a":[],"i":[]}) for a in all_algos})
 
     all_files = sorted(f for f in os.listdir(input_dir) if f.endswith(".txt"))
     if run_mode == "test":
-        # Đọc trước size của mỗi file để lọc, không cần đọc toàn bộ
         files = []
         for f in all_files:
             try:
@@ -424,7 +419,7 @@ def run_benchmark():
 
             solved_grid = None
             inferences  = 1
-            _nodes_ref  = [1]   # list để truyền nodes_explored ra khỏi timeout
+            _nodes_ref  = [1]
             signal.signal(signal.SIGALRM, timeout_handler)
             signal.alarm(60)
             try:
@@ -450,7 +445,6 @@ def run_benchmark():
             status_icon = "✓" if is_correct else "✗"
             log(f"  {status_icon} {algo:<38} Time={exec_time:.4f}s  Mem={mem_usage:.2f}MB  Inf={inferences}")
 
-    # ── Tính trung bình & vẽ biểu đồ ──
     log("\n" + "=" * 60)
     log("VẼ BIỂU ĐỒ THEO ĐỘ KHÓ")
     log("=" * 60)
