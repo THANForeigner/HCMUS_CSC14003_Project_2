@@ -88,12 +88,12 @@ class DemoPage(ft.View):
                 ft.dropdown.Option("bc_no_backtrack", text="BC No Backtrack"),
                 ft.dropdown.Option("forward_chaining", text="Forward Chaining"),
                 ft.dropdown.Option("fc_with_backtrack", text="FC with Backtrack"),
-                ft.dropdown.Option("dancing_links", text="Dancing Links"),
             ],
             bgcolor=Win7Theme.CARD_BG,
             color=Win7Theme.TEXT_PRIMARY,
             border_color=Win7Theme.PANEL_BG,
         )
+        self.algorithm_dropdown.on_change = self.on_algorithm_selected
 
         self.play_button = ft.IconButton(
             icon=ft.Icons.PLAY_ARROW,
@@ -129,11 +129,24 @@ class DemoPage(ft.View):
             on_change=self.on_unlimited_nodes_change,
             tooltip="Disable node limit",
         )
+        self.max_nodes_container = ft.Container(
+            content=ft.Row(
+                [
+                    ft.Text("Max Nodes:", size=12, color=Win7Theme.TEXT_PRIMARY),
+                    self.max_nodes_field,
+                    self.unlimited_nodes_checkbox,
+                ],
+                spacing=5,
+            ),
+            visible=True,
+        )
+        
         self.solve_instantly_button = ft.IconButton(
             icon=ft.Icons.FAST_FORWARD,
             on_click=self.on_solve_instantly,
             icon_color=Win7Theme.PRIMARY,
             tooltip="Solve Instantly (No Delay)",
+            disabled=True,  # Initially disabled until animation is running with solution ready
         )
 
         self.board_container = ft.Container(
@@ -191,9 +204,7 @@ class DemoPage(ft.View):
                             ],
                             spacing=5,
                         ),
-                        ft.Text("Max Nodes:", size=12, color=Win7Theme.TEXT_PRIMARY),
-                        self.max_nodes_field,
-                        self.unlimited_nodes_checkbox,
+                        self.max_nodes_container,
                     ],
                     alignment=ft.MainAxisAlignment.START,
                     wrap=True,
@@ -600,9 +611,13 @@ class DemoPage(ft.View):
             )
 
     def _update_solve_instantly_button_state(self):
-        """Enable Solve Instantly button always (can solve anytime)."""
-        self.solve_instantly_button.disabled = False
-        self.solve_instantly_button.tooltip = "Solve Instantly (No Delay)"
+        """Enable Solve Instantly button only if animation is running AND solution is ready."""
+        should_enable = self.step_player.is_running() and self._solution_ready
+        self.solve_instantly_button.disabled = not should_enable
+        if should_enable:
+            self.solve_instantly_button.tooltip = "Solve Instantly (stop animation, show solution)"
+        else:
+            self.solve_instantly_button.tooltip = "Solve Instantly (only available during animation with computed solution)"
 
     async def on_play_pause(self, e):
         if not self.step_player.is_running():
@@ -625,36 +640,38 @@ class DemoPage(ft.View):
     async def on_speed_change(self, e):
         self.step_player._delay = float(self.speed_slider.value)
 
+    def on_algorithm_selected(self, e):
+        algo = self.algorithm_dropdown.value
+        show_max_nodes = algo and (algo.startswith('astar') or algo in ['backtrack', 'brute_force'])
+        self.max_nodes_container.visible = show_max_nodes
+        self._page.update()
+
     async def on_unlimited_nodes_change(self, e):
         self.max_nodes_field.disabled = self.unlimited_nodes_checkbox.value
         self._page.update()
 
     async def on_solve_instantly(self, e):
-        self.status.value = "Solving..."
-        self.status.color = Win7Theme.PRIMARY
+        # Only allow if animation is running AND solution is ready
+        if not (self.step_player.is_running() and self._solution_ready and self._final_solution is not None):
+            return
+        
+        # Stop the animation immediately
+        await self.step_player.stop()
+        
+        # Display the final solution
+        if self._final_solution is None:
+            self.status.value = "No solution found"
+            self.status.color = Win7Theme.ERROR
+        else:
+            # Render final solution on board
+            for r in range(self.size):
+                for c in range(self.size):
+                    if self._original_grid[r][c] == 0:
+                        self.cells[r][c].content.value = str(self._final_solution[r][c])
+                        self.cells[r][c].bgcolor = Win7Theme.SUCCESS
+                        self.cells[r][c].content.color = Win7Theme.TEXT_INVERSE
+            self.status.value = "Solution displayed instantly"
+            self.status.color = Win7Theme.SUCCESS
+        
+        self.play_button.icon = ft.Icons.PLAY_ARROW
         self._page.update()
-
-        async def on_result(solution, stats):
-            if solution is None:
-                self.status.value = "No solution found"
-                self.status.color = Win7Theme.ERROR
-            else:
-                self.status.value = f"Solved: {stats.get('nodes_generated', '?')} nodes | {stats.get('time', 0):.3f}s"
-                self.status.color = Win7Theme.SUCCESS
-                for r in range(self.size):
-                    for c in range(self.size):
-                        if self._original_grid[r][c] == 0:
-                            self.cells[r][c].content.value = str(solution[r][c])
-                            self.cells[r][c].bgcolor = Win7Theme.SUCCESS
-                            self.cells[r][c].content.color = Win7Theme.TEXT_INVERSE
-            self._page.update()
-
-        await self.solver.run_full(
-            self.size,
-            self._original_grid,
-            self.h_constraints,
-            self.v_constraints,
-            callback=on_result,
-            algorithm=self.algorithm_dropdown.value,
-            max_nodes=int(self.max_nodes_field.value) if not self.unlimited_nodes_checkbox.value else None,
-        )
