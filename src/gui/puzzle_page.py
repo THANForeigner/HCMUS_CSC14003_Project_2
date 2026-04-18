@@ -327,9 +327,31 @@ class PuzzlePage(ft.View):
         """Perform a hard refresh of the page"""
         state = self._parse_dropdown_state()
         if state["size"] and state["difficulty"] and state["id"]:
+            # Stop any running solver/step_player
+            if self.step_player.is_running() or self.step_player.is_paused():
+                await self.step_player.stop()
+            
+            # Reset UI elements and state
+            self.play_button.icon = ft.Icons.PLAY_ARROW
+            self.status_text.value = ""
+            self._active_cell = None
+            self.numpad_container.content = ft.Text(
+                "Select a cell", color=Win7Theme.TEXT_SECONDARY, italic=True
+            )
+            
+            # Explicitly reset size before loading new puzzle
+            self.size = 0
+            
+            # Reload the puzzle
             await self.on_id_selected(None)
-            self.status_text.value = "Page refreshed"
-            self.status_text.color = Win7Theme.SUCCESS
+            
+            # Verify size was properly updated
+            if self.size == 0:
+                self.status_text.value = "Error: Failed to load puzzle"
+                self.status_text.color = Win7Theme.ERROR
+            else:
+                self.status_text.value = "Page refreshed"
+                self.status_text.color = Win7Theme.SUCCESS
         else:
             self.status_text.value = "Please select Size, Difficulty, and ID"
             self.status_text.color = Win7Theme.ERROR
@@ -459,6 +481,11 @@ class PuzzlePage(ft.View):
                 read_input(filepath)
             )
             self._original_grid = [row[:] for row in self.grid_data]
+            # Reset active cell and numpad when loading new puzzle
+            self._active_cell = None
+            self.numpad_container.content = ft.Text(
+                "Select a cell", color=Win7Theme.TEXT_SECONDARY, italic=True
+            )
             self.build_board()
             if self._is_initialized:
                 self.page.update()
@@ -684,6 +711,8 @@ class PuzzlePage(ft.View):
         if self._active_cell:
             r, c = self._active_cell
             self.cells[r][c].content.value = str(val) if val != 0 else ""
+            # Ensure text color is visible - use primary text color for user-entered values
+            self.cells[r][c].content.color = Win7Theme.TEXT_PRIMARY if val != 0 else Win7Theme.CELL_TEXT_EMPTY
             self.cells[r][c].border = ft.border.all(1, Win7Theme.PANEL_BG)
             self._active_cell = None
 
@@ -706,6 +735,7 @@ class PuzzlePage(ft.View):
             for r in range(self.size)
         ]
         has_error = False
+        # First pass: Reset all backgrounds and text colors to default states
         for r in range(self.size):
             for c in range(self.size):
                 color = (
@@ -715,7 +745,14 @@ class PuzzlePage(ft.View):
                 )
                 self.cells[r][c].bgcolor = color
                 self.cell_colors[r][c] = color
+                # Set text color based on whether cell has content
+                val = current[r][c]
+                if val != 0:
+                    self.cells[r][c].content.color = Win7Theme.TEXT_PRIMARY
+                else:
+                    self.cells[r][c].content.color = Win7Theme.CELL_TEXT_EMPTY
 
+        # Second pass: Check for conflicts and apply error/warning colors
         for r in range(self.size):
             for c in range(self.size):
                 val = current[r][c]

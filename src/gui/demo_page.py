@@ -61,7 +61,7 @@ class DemoPage(ft.View):
 
         self.id_dropdown = ft.Dropdown(
             label="ID",
-            width=70,
+            width=120,
             bgcolor=Win7Theme.CARD_BG,
             color=Win7Theme.TEXT_PRIMARY,
             border_color=Win7Theme.PANEL_BG,
@@ -122,6 +122,7 @@ class DemoPage(ft.View):
             on_click=self.on_solve_instantly,
             icon_color=Win7Theme.PRIMARY,
             tooltip="Solve Instantly (No Delay)",
+            disabled=True,  # Initially disabled until animation is running with solution ready
         )
 
         self.board_container = ft.Container(
@@ -196,6 +197,8 @@ class DemoPage(ft.View):
         self.step_player = StepPlayer()
         self.solver = SolverController()
         self._original_grid = None
+        self._solution_ready = False  # Track if solver has finished
+        self._final_solution = None  # Store final solution for instant display
 
         if self.size_dropdown.options:
             self.size_dropdown.value = "4"
@@ -204,6 +207,9 @@ class DemoPage(ft.View):
             self.build_empty_board()
 
         self._is_initialized = True
+        
+        # Schedule auto-start after initialization
+        asyncio.create_task(self._auto_start_animation())
 
     def load_available_files(self):
         self._test_inputs_data = get_test_inputs()
@@ -311,7 +317,29 @@ class DemoPage(ft.View):
                 self._page.update()
 
     async def refresh_puzzle(self, e):
+        # Stop any running animation and reset state
+        if self.step_player.is_running() or self.step_player.is_paused():
+            await self.step_player.stop()
+        
+        # Reset UI elements
+        self.play_button.icon = ft.Icons.PAUSE
+        self.status.value = ""
+        
+        # Reload the puzzle
         await self.on_id_selected(None)
+
+    async def _auto_start_animation(self):
+        """Auto-start animation after page initialization"""
+        # Wait for cascade to complete puzzle loading
+        # Try with increasing delays if puzzle not loaded yet
+        for attempt in range(10):  # Try up to 10 times with 0.1s each = 1 second total
+            if self._is_initialized and self.grid:
+                await self.step_player.start_auto(delay=self.speed_slider.value)
+                self.play_button.icon = ft.Icons.PAUSE
+                self._update_solve_instantly_button_state()
+                self._page.update()
+                return
+            await asyncio.sleep(0.1)
 
     async def on_file_selected(self, e):
         self.load_puzzle(e.control.value)
@@ -439,7 +467,15 @@ class DemoPage(ft.View):
             self._page.update()
 
     async def on_compute_solution(self, e):
+        # Reset solution tracking state
+        self._solution_ready = False
+        self._final_solution = None
+        
         async def callback(solution, stats, steps=None):
+            # Store the final solution when solver finishes
+            self._final_solution = solution
+            self._solution_ready = True
+            
             if solution is None:
                 self.status.value = "No solution found"
                 self.status.color = Win7Theme.ERROR
@@ -448,6 +484,9 @@ class DemoPage(ft.View):
                     f"Demo Finished. {stats.get('nodes_generated', '?')} nodes."
                 )
                 self.status.color = Win7Theme.SUCCESS
+            
+            # Update button state now that solution is ready
+            self._update_solve_instantly_button_state()
             self._page.update()
 
         self.status.value = "Demonstrating..."
@@ -529,6 +568,15 @@ class DemoPage(ft.View):
                 )
             )
 
+    def _update_solve_instantly_button_state(self):
+        """Enable Solve Instantly button only if animation is running AND solution is ready."""
+        should_enable = self.step_player.is_running() and self._solution_ready
+        self.solve_instantly_button.disabled = not should_enable
+        if should_enable:
+            self.solve_instantly_button.tooltip = "Solve Instantly (stop animation, show solution)"
+        else:
+            self.solve_instantly_button.tooltip = "Solve Instantly (only available during animation with computed solution)"
+
     async def on_play_pause(self, e):
         if not self.step_player.is_running():
             await self.step_player.start_auto(delay=self.speed_slider.value)
@@ -540,6 +588,7 @@ class DemoPage(ft.View):
             else:
                 self.step_player.pause()
                 self.play_button.icon = ft.Icons.PLAY_ARROW
+        self._update_solve_instantly_button_state()
         self._page.update()
 
     async def on_manual_step(self, e):
@@ -550,32 +599,27 @@ class DemoPage(ft.View):
         self.step_player._delay = float(self.speed_slider.value)
 
     async def on_solve_instantly(self, e):
-        self.status.value = "Solving..."
-        self.status.color = Win7Theme.PRIMARY
+        # Only allow if animation is running AND solution is ready
+        if not (self.step_player.is_running() and self._solution_ready and self._final_solution is not None):
+            return
+        
+        # Stop the animation immediately
+        await self.step_player.stop()
+        
+        # Display the final solution
+        if self._final_solution is None:
+            self.status.value = "No solution found"
+            self.status.color = Win7Theme.ERROR
+        else:
+            # Render final solution on board
+            for r in range(self.size):
+                for c in range(self.size):
+                    if self._original_grid[r][c] == 0:
+                        self.cells[r][c].content.value = str(self._final_solution[r][c])
+                        self.cells[r][c].bgcolor = Win7Theme.SUCCESS
+                        self.cells[r][c].content.color = Win7Theme.TEXT_INVERSE
+            self.status.value = "Solution displayed instantly"
+            self.status.color = Win7Theme.SUCCESS
+        
+        self.play_button.icon = ft.Icons.PLAY_ARROW
         self._page.update()
-
-        async def on_result(solution, stats):
-            if solution is None:
-                self.status.value = "No solution found"
-                self.status.color = Win7Theme.ERROR
-            else:
-                self.status.value = f"Solved: {stats.get('nodes_generated', '?')} nodes | {stats.get('time', 0):.3f}s"
-                self.status.color = Win7Theme.SUCCESS
-                for r in range(self.size):
-                    for c in range(self.size):
-                        if self._original_grid[r][c] == 0:
-                            self.cells[r][c].content.value = str(solution[r][c])
-                            self.cells[r][c].bgcolor = Win7Theme.SUCCESS
-            self._page.update()
-
-        async with asyncio.TaskGroup() as tg:
-            tg.create_task(
-                self.solver.run_full(
-                    self.size,
-                    self.grid,
-                    self.h_constraints,
-                    self.v_constraints,
-                    callback=on_result,
-                    algorithm=self.algorithm_dropdown.value,
-                )
-            )

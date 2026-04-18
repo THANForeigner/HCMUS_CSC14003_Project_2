@@ -18,7 +18,7 @@ def home_page(page: ft.Page):
                             italic=True
                         ),
                         ft.Text(
-                            "The Minimalist Logic Puzzle",
+                            "Group - Doryouku",
                             size=20,
                             color=Win7Theme.TEXT_SECONDARY,
                         ),
@@ -54,7 +54,7 @@ def home_page(page: ft.Page):
                         ),
                         ft.Container(height=120),
                         ft.Text(
-                            "Powered by Constraint Satisfaction Algorithms",
+                            "CSC14003: Introduction to Artificial Intelligence",
                             size=12,
                             color=Win7Theme.TEXT_SECONDARY
                         )
