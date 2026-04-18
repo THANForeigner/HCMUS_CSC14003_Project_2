@@ -345,7 +345,7 @@ class AStarFutoshiki(FutoshikiSolver):
         result, exp, gen = backtrack(initial_state, ac3.domains)
         return result.grid if result else None, exp, gen
 
-    def solve_with_history(self, stream_queue=None):
+    def solve_with_history(self, stream_queue=None, max_nodes: int = 999999999):
         import time
         self.nodes_expanded = 0
         self.nodes_generated = 0
@@ -376,7 +376,7 @@ class AStarFutoshiki(FutoshikiSolver):
                 return state
             
             self.nodes_expanded += 1
-            if self.nodes_expanded > 100000:
+            if self.nodes_expanded > max_nodes:
                 return None
             
             row, col = self.find_best_blank(state, current_domains)
@@ -388,9 +388,6 @@ class AStarFutoshiki(FutoshikiSolver):
                     self.nodes_generated += 1
                     new_state = state.copy()
                     new_state.grid[row, col] = value
-                    
-                    if stream_queue:
-                        stream_queue.put(('step', new_state.grid.tolist(), self.nodes_expanded))
                     
                     new_domains = {k: v.copy() for k, v in current_domains.items()}
                     new_domains[(row, col)] = {value}
@@ -406,7 +403,9 @@ class AStarFutoshiki(FutoshikiSolver):
                     if new_ac3.ac3():
                         self.nodes_expanded += new_ac3.nodes_expanded
                         self.nodes_generated += new_ac3.nodes_generated
+                        
                         assigned_valid = True
+                        # Apply AC-3 inferences: assign cells with single-domain
                         for key, val_set in new_ac3.domains.items():
                             if len(val_set) == 1:
                                 r, c = key
@@ -421,6 +420,10 @@ class AStarFutoshiki(FutoshikiSolver):
                                 assigned_valid = False
                                 break
                         
+                        # Emit step AFTER AC-3 inference
+                        if stream_queue:
+                            stream_queue.put(('step', new_state.grid.tolist(), self.nodes_expanded))
+                        
                         if assigned_valid:
                             result = backtrack(new_state, new_ac3.domains)
                             if result is not None:
@@ -433,9 +436,21 @@ class AStarFutoshiki(FutoshikiSolver):
         
         result = backtrack(initial_state, ac3.domains)
         duration = time.time() - start
+        
+        # Check if we hit the max_nodes limit (backtrack returned None but we expanded a lot)
+        hit_limit = result is None and self.nodes_expanded >= max_nodes
+        
         stats = {'nodes_expanded': self.nodes_expanded, 'nodes_generated': self.nodes_generated, 'time': duration}
         
         sol_list = result.grid.tolist() if result is not None else None
+        if sol_list is not None and len([c for row in sol_list for c in row if c == 0]) > 0:
+            stats['incomplete'] = True
+            sol_list = None
+        elif hit_limit:
+            stats['incomplete'] = True
+            stats['hit_limit'] = True
+            sol_list = None
+        
         if stream_queue:
             stream_queue.put(('done', sol_list, stats))
         return (sol_list, stats, [])

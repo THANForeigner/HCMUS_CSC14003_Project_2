@@ -73,7 +73,7 @@ class BacktrackSolverSimple:
         return (self.solution if ok else None, {'nodes_expanded': self.nodes_expanded, 'nodes_generated': self.nodes_generated, 'time': duration})
 
 
-def _mp_worker(algorithm, size, grid, h_constraints, v_constraints, q):
+def _mp_worker(algorithm, size, grid, h_constraints, v_constraints, q, max_nodes=999999999):
     try:
         if algorithm == 'backtrack':
             from src.algorithm.comparing_algorithms.brute_force_and_backtrack.backtrack import BacktrackSolver
@@ -87,20 +87,20 @@ def _mp_worker(algorithm, size, grid, h_constraints, v_constraints, q):
             from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
             heuristic = algorithm.split('_')[2]
             s = AStarFutoshiki(size, grid, (h_constraints, v_constraints), heuristic=heuristic)
-            s.solve_with_history(stream_queue=q)
+            s.solve_with_history(stream_queue=q, max_nodes=max_nodes)
         elif algorithm == 'astar_ac3':
             from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
             s = AStarFutoshiki(size, grid, (h_constraints, v_constraints))
-            s.solve_with_history(stream_queue=q)
+            s.solve_with_history(stream_queue=q, max_nodes=max_nodes)
         elif algorithm.startswith('astar_h'):
             from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
             heuristic = algorithm.split('_')[1]
             s = PureAStarSolver(size, grid, (h_constraints, v_constraints), heuristic=heuristic)
-            s.solve_with_history(stream_queue=q)
+            s.solve_with_history(stream_queue=q, max_nodes=max_nodes)
         elif algorithm == 'astar':
             from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
             s = PureAStarSolver(size, grid, (h_constraints, v_constraints))
-            s.solve_with_history(stream_queue=q)
+            s.solve_with_history(stream_queue=q, max_nodes=max_nodes)
         elif algorithm == 'backward_chaining':
             from src.algorithm.first_order_logic.backward_chaining import backward_chaining
             s = backward_chaining(size, grid, (h_constraints, v_constraints))
@@ -141,7 +141,7 @@ class SolverController:
         self._result = None
         self._lock = asyncio.Lock()
 
-    async def run_full(self, size: int, grid: List[List[int]], h_constraints: List[List[int]], v_constraints: List[List[int]], callback=None, algorithm: str = 'backtrack'):
+    async def run_full(self, size: int, grid: List[List[int]], h_constraints: List[List[int]], v_constraints: List[List[int]], callback=None, algorithm: str = 'backtrack', max_nodes: int = None):
         try:
             def sync_solve():
                 if algorithm == 'backtrack':
@@ -151,20 +151,26 @@ class SolverController:
                     from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
                     heuristic = algorithm.split('_')[1]
                     s = PureAStarSolver(size, grid, (h_constraints, v_constraints), heuristic=heuristic)
-                    solution = s.solve()
+                    max_nodes_arg = max_nodes if max_nodes else 999999999
+                    solution = s.solve_with_history(max_nodes=max_nodes_arg)
                     stats = s.get_stats()
-                    return solution.tolist() if solution is not None else None, stats
+                    return solution[0], stats
                 elif algorithm == 'astar':
                     from src.algorithm.comparing_algorithms.a_star.a_star import PureAStarSolver
                     s = PureAStarSolver(size, grid, (h_constraints, v_constraints))
-                    solution = s.solve()
+                    max_nodes_arg = max_nodes if max_nodes else 999999999
+                    solution = s.solve_with_history(max_nodes=max_nodes_arg)
                     stats = s.get_stats()
-                    return solution.tolist() if solution is not None else None, stats
+                    return solution[0], stats
                 elif algorithm == 'astar_ac3':
                     from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
+                    import time
                     s = AStarFutoshiki(size, grid, (h_constraints, v_constraints))
-                    solution, nodes_expanded, nodes_generated = s.solve_with_ac3()
-                    return solution.tolist() if solution is not None else None, {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
+                    max_nodes_arg = max_nodes if max_nodes else 999999999
+                    start = time.time()
+                    solution, nodes_expanded, nodes_generated = s.solve_with_ac3(max_nodes=max_nodes_arg)
+                    duration = time.time() - start
+                    return solution.tolist() if solution is not None else None, {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated, 'time': duration}
                 elif algorithm == 'backward_chaining_with_ac3':
                     from src.algorithm.first_order_logic.backward_chaining_with_ac3 import backward_chaining_with_ac3
                     s = backward_chaining_with_ac3(size, grid, (h_constraints, v_constraints))
@@ -193,11 +199,12 @@ class SolverController:
             else:
                 callback(solution, stats)
 
-    async def run_with_history(self, size: int, grid: List[List[int]], h_constraints: List[List[int]], v_constraints: List[List[int]], callback=None, algorithm: str = 'backtrack', step_player=None):
+    async def run_with_history(self, size: int, grid: List[List[int]], h_constraints: List[List[int]], v_constraints: List[List[int]], callback=None, algorithm: str = 'backtrack', step_player=None, max_nodes: int = None):
         """Run solver and stream events to step_player via multiprocessing.
         """
         q = multiprocessing.Queue()
-        p = multiprocessing.Process(target=_mp_worker, args=(algorithm, size, grid, h_constraints, v_constraints, q))
+        max_nodes_arg = max_nodes if max_nodes else 999999999
+        p = multiprocessing.Process(target=_mp_worker, args=(algorithm, size, grid, h_constraints, v_constraints, q, max_nodes_arg))
         p.daemon = True
         p.start()
 

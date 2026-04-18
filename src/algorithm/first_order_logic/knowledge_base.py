@@ -195,32 +195,3 @@ class FutoshikiKB:
             enforce_inequality_contradiction(r, c, r + 1, c)
         for r, c in self.greater_v:
             enforce_inequality_contradiction(r + 1, c, r, c)
-
-    def format_output(self, h_constraints, v_constraints, grid=None):
-        output_lines = []
-        for row_idx in range(self.n):
-            row_str = ""
-            for col_idx in range(self.n):
-                val = grid[row_idx][col_idx] if grid else 0
-                row_str += str(val)
-                if col_idx < self.n - 1:
-                    constraint = h_constraints[row_idx][col_idx]
-                    if constraint == 1:
-                        row_str += " < "
-                    elif constraint == -1:
-                        row_str += " > "
-                    else:
-                        row_str += "   "
-            output_lines.append(row_str)
-            if row_idx < self.n - 1:
-                v_row_str = ""
-                for col_idx in range(self.n):
-                    constraint = v_constraints[row_idx][col_idx]
-                    if constraint == 1:
-                        v_row_str += "^   "
-                    elif constraint == -1:
-                        v_row_str += "v   "
-                    else:
-                        v_row_str += "    "
-                output_lines.append(v_row_str)
-        return "\n".join(output_lines)

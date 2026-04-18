@@ -61,7 +61,7 @@ class DemoPage(ft.View):
 
         self.id_dropdown = ft.Dropdown(
             label="ID",
-            width=70,
+            width=120,
             bgcolor=Win7Theme.CARD_BG,
             color=Win7Theme.TEXT_PRIMARY,
             border_color=Win7Theme.PANEL_BG,
@@ -72,18 +72,10 @@ class DemoPage(ft.View):
 
         self.algorithm_dropdown = ft.Dropdown(
             width=200,
-            value="backtrack",
+            value="astar_ac3",
             options=[
                 ft.dropdown.Option("backtrack", text="Backtracking"),
                 ft.dropdown.Option("brute_force", text="Brute Force"),
-                ft.dropdown.Option(
-                    "backward_chaining_with_ac3", text="Backward Chaining with AC3"
-                ),
-                ft.dropdown.Option("backward_chaining", text="Backward Chaining"),
-                ft.dropdown.Option("bc_no_backtrack", text="BC No Backtrack"),
-                ft.dropdown.Option("forward_chaining", text="Forward Chaining"),
-                ft.dropdown.Option("fc_with_backtrack", text="FC with Backtrack"),
-                ft.dropdown.Option("dancing_links", text="Dancing Links"),
                 ft.dropdown.Option("astar_h1", text="A* + h1 (Hamming)"),
                 ft.dropdown.Option("astar_h2", text="A* + h2 "),
                 ft.dropdown.Option("astar_h3", text="A* + h3 (MRV)"),
@@ -91,6 +83,12 @@ class DemoPage(ft.View):
                 ft.dropdown.Option("astar_ac3_h1", text="A* + AC-3 + h1"),
                 ft.dropdown.Option("astar_ac3_h2", text="A* + AC-3 + h2"),
                 ft.dropdown.Option("astar_ac3_h3", text="A* + AC-3 + h3"),
+                ft.dropdown.Option("backward_chaining_with_ac3", text="Backward Chaining + AC-3"),
+                ft.dropdown.Option("backward_chaining", text="Backward Chaining"),
+                ft.dropdown.Option("bc_no_backtrack", text="BC No Backtrack"),
+                ft.dropdown.Option("forward_chaining", text="Forward Chaining"),
+                ft.dropdown.Option("fc_with_backtrack", text="FC with Backtrack"),
+                ft.dropdown.Option("dancing_links", text="Dancing Links"),
             ],
             bgcolor=Win7Theme.CARD_BG,
             color=Win7Theme.TEXT_PRIMARY,
@@ -116,6 +114,20 @@ class DemoPage(ft.View):
             active_color=Win7Theme.PRIMARY,
             width=150,
             on_change=self.on_speed_change,
+        )
+        self.max_nodes_field = ft.TextField(
+            label="Max Nodes",
+            value="500000",
+            width=100,
+            text_align=ft.TextAlign.CENTER,
+            keyboard_type=ft.KeyboardType.NUMBER,
+            tooltip="Max Nodes to Expand",
+        )
+        self.unlimited_nodes_checkbox = ft.Checkbox(
+            label="Unlimited",
+            value=False,
+            on_change=self.on_unlimited_nodes_change,
+            tooltip="Disable node limit",
         )
         self.solve_instantly_button = ft.IconButton(
             icon=ft.Icons.FAST_FORWARD,
@@ -179,6 +191,9 @@ class DemoPage(ft.View):
                             ],
                             spacing=5,
                         ),
+                        ft.Text("Max Nodes:", size=12, color=Win7Theme.TEXT_PRIMARY),
+                        self.max_nodes_field,
+                        self.unlimited_nodes_checkbox,
                     ],
                     alignment=ft.MainAxisAlignment.START,
                     wrap=True,
@@ -196,6 +211,8 @@ class DemoPage(ft.View):
         self.step_player = StepPlayer()
         self.solver = SolverController()
         self._original_grid = None
+        self._solution_ready = False  # Track if solver has finished
+        self._final_solution = None  # Store final solution for instant display
 
         if self.size_dropdown.options:
             self.size_dropdown.value = "4"
@@ -204,6 +221,9 @@ class DemoPage(ft.View):
             self.build_empty_board()
 
         self._is_initialized = True
+        
+        # Schedule auto-start after initialization
+        asyncio.create_task(self._auto_start_animation())
 
     def load_available_files(self):
         self._test_inputs_data = get_test_inputs()
@@ -311,7 +331,29 @@ class DemoPage(ft.View):
                 self._page.update()
 
     async def refresh_puzzle(self, e):
+        # Stop any running animation and reset state
+        if self.step_player.is_running() or self.step_player.is_paused():
+            await self.step_player.stop()
+        
+        # Reset UI elements
+        self.play_button.icon = ft.Icons.PAUSE
+        self.status.value = ""
+        
+        # Reload the puzzle
         await self.on_id_selected(None)
+
+    async def _auto_start_animation(self):
+        """Auto-start animation after page initialization"""
+        # Wait for cascade to complete puzzle loading
+        # Try with increasing delays if puzzle not loaded yet
+        for attempt in range(10):  # Try up to 10 times with 0.1s each = 1 second total
+            if self._is_initialized and self.grid:
+                await self.step_player.start_auto(delay=self.speed_slider.value)
+                self.play_button.icon = ft.Icons.PAUSE
+                self._update_solve_instantly_button_state()
+                self._page.update()
+                return
+            await asyncio.sleep(0.1)
 
     async def on_file_selected(self, e):
         self.load_puzzle(e.control.value)
@@ -439,15 +481,42 @@ class DemoPage(ft.View):
             self._page.update()
 
     async def on_compute_solution(self, e):
+        # Reset solution tracking state
+        self._solution_ready = False
+        self._final_solution = None
+        
         async def callback(solution, stats, steps=None):
-            if solution is None:
-                self.status.value = "No solution found"
+            # Store the final solution when solver finishes
+            self._final_solution = solution
+            self._solution_ready = True
+            
+            # Check if solution is incomplete (hit node limit)
+            is_incomplete = stats.get('incomplete', False)
+            hit_limit = stats.get('hit_limit', False)
+            max_nodes = int(self.max_nodes_field.value) if not self.unlimited_nodes_checkbox.value else None
+            
+            if solution is None or is_incomplete:
+                if hit_limit and max_nodes:
+                    self.status.value = f"Max node limit reached ({stats.get('nodes_expanded', 0)} nodes)"
+                else:
+                    self.status.value = "No solution found"
                 self.status.color = Win7Theme.ERROR
             else:
                 self.status.value = (
                     f"Demo Finished. {stats.get('nodes_generated', '?')} nodes."
                 )
                 self.status.color = Win7Theme.SUCCESS
+                
+                # Update board with final solution
+                for r in range(self.size):
+                    for c in range(self.size):
+                        if self._original_grid[r][c] == 0:
+                            self.cells[r][c].content.value = str(solution[r][c])
+                            self.cells[r][c].bgcolor = Win7Theme.SUCCESS
+                            self.cells[r][c].content.color = Win7Theme.TEXT_INVERSE
+            
+            # Update button state now that solution is ready
+            self._update_solve_instantly_button_state()
             self._page.update()
 
         self.status.value = "Demonstrating..."
@@ -526,8 +595,14 @@ class DemoPage(ft.View):
                     callback=callback,
                     algorithm=self.algorithm_dropdown.value,
                     step_player=self.step_player,
+                    max_nodes=int(self.max_nodes_field.value) if not self.unlimited_nodes_checkbox.value else None,
                 )
             )
+
+    def _update_solve_instantly_button_state(self):
+        """Enable Solve Instantly button always (can solve anytime)."""
+        self.solve_instantly_button.disabled = False
+        self.solve_instantly_button.tooltip = "Solve Instantly (No Delay)"
 
     async def on_play_pause(self, e):
         if not self.step_player.is_running():
@@ -540,6 +615,7 @@ class DemoPage(ft.View):
             else:
                 self.step_player.pause()
                 self.play_button.icon = ft.Icons.PLAY_ARROW
+        self._update_solve_instantly_button_state()
         self._page.update()
 
     async def on_manual_step(self, e):
@@ -548,6 +624,10 @@ class DemoPage(ft.View):
 
     async def on_speed_change(self, e):
         self.step_player._delay = float(self.speed_slider.value)
+
+    async def on_unlimited_nodes_change(self, e):
+        self.max_nodes_field.disabled = self.unlimited_nodes_checkbox.value
+        self._page.update()
 
     async def on_solve_instantly(self, e):
         self.status.value = "Solving..."
@@ -566,16 +646,15 @@ class DemoPage(ft.View):
                         if self._original_grid[r][c] == 0:
                             self.cells[r][c].content.value = str(solution[r][c])
                             self.cells[r][c].bgcolor = Win7Theme.SUCCESS
+                            self.cells[r][c].content.color = Win7Theme.TEXT_INVERSE
             self._page.update()
 
-        async with asyncio.TaskGroup() as tg:
-            tg.create_task(
-                self.solver.run_full(
-                    self.size,
-                    self.grid,
-                    self.h_constraints,
-                    self.v_constraints,
-                    callback=on_result,
-                    algorithm=self.algorithm_dropdown.value,
-                )
-            )
+        await self.solver.run_full(
+            self.size,
+            self._original_grid,
+            self.h_constraints,
+            self.v_constraints,
+            callback=on_result,
+            algorithm=self.algorithm_dropdown.value,
+            max_nodes=int(self.max_nodes_field.value) if not self.unlimited_nodes_checkbox.value else None,
+        )
