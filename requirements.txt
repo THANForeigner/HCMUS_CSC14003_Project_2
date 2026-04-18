@@ -1,3 +1,4 @@
+selenium
 numpy==2.4.3
 pillow==12.1.1
 setuptools==75.6.0

@@ -1,0 +1,1270 @@
+============================================================
+BENCHMARK STARTED
+Log file: /Users/shelterin/Library/CloudStorage/OneDrive-Personal/Study/Nam2/HK1/HCMUS_CSC14003_Project_2/test/benchmark_2026-04-18_08h52m03s.log
+Run mode: FULL RUN (all files)
+Selected algorithms:
+  - Backtracking
+  - Artificial Bee Colony
+  - Genetic Algorithm
+  - Forward Chaining
+  - Backward Chaining
+  - A* h1 (Hamming)
+  - A* h2 (Forward Checking)
+  - A* h3 (MRV)
+  - Dancing Links
+  - A* + AC-3 h1 (Hamming)
+  - A* + AC-3 h2 (Forward Checking)
+  - A* + AC-3 h3 (MRV)
+  - Forward Chaining + Backtracking
+  - Advanced Backward Chaining
+  - Backward Chaining + AC-3
+Files to run: 72
+============================================================
+
+[EASY] size4_easy_1.txt  (Size 4x4)
+  True  Backtracking                             Time=0.0091s  Mem=0.16MB  Inf=143
+  False Artificial Bee Colony                    Time=15.5151s  Mem=0.94MB  Inf=1000
+  False Genetic Algorithm                        Time=22.0469s  Mem=0.14MB  Inf=1000
+  True  Forward Chaining                         Time=0.0103s  Mem=0.45MB  Inf=6
+  True  Backward Chaining                        Time=0.1590s  Mem=0.51MB  Inf=228618
+  True  A* h1 (Hamming)                          Time=0.0107s  Mem=1.03MB  Inf=93
+  True  A* h2 (Forward Checking)                 Time=0.0036s  Mem=0.03MB  Inf=61
+  True  A* h3 (MRV)                              Time=0.0024s  Mem=0.03MB  Inf=63
+  True  Dancing Links                            Time=0.0022s  Mem=0.16MB  Inf=121
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0028s  Mem=0.15MB  Inf=604
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0021s  Mem=0.06MB  Inf=604
+  True  A* + AC-3 h3 (MRV)                       Time=0.0022s  Mem=0.06MB  Inf=604
+  True  Forward Chaining + Backtracking          Time=0.0054s  Mem=0.20MB  Inf=7
+  True  Advanced Backward Chaining               Time=1.1066s  Mem=0.22MB  Inf=228602
+  True  Backward Chaining + AC-3                 Time=0.0611s  Mem=0.39MB  Inf=9187
+
+[EASY] size4_easy_2.txt  (Size 4x4)
+  True  Backtracking                             Time=0.0017s  Mem=0.00MB  Inf=99
+  False Artificial Bee Colony                    Time=15.6087s  Mem=0.03MB  Inf=1000
+  False Genetic Algorithm                        Time=21.4662s  Mem=0.08MB  Inf=1000
+  True  Forward Chaining                         Time=0.0051s  Mem=0.19MB  Inf=5
+  True  Backward Chaining                        Time=0.1571s  Mem=0.27MB  Inf=279059
+  True  A* h1 (Hamming)                          Time=0.0024s  Mem=0.03MB  Inf=33
+  True  A* h2 (Forward Checking)                 Time=0.0023s  Mem=0.03MB  Inf=25
+  True  A* h3 (MRV)                              Time=0.0018s  Mem=0.03MB  Inf=27
+  True  Dancing Links                            Time=0.0011s  Mem=0.06MB  Inf=80
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0010s  Mem=0.01MB  Inf=306
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0010s  Mem=0.01MB  Inf=306
+  True  A* + AC-3 h3 (MRV)                       Time=0.0009s  Mem=0.01MB  Inf=306
+  True  Forward Chaining + Backtracking          Time=0.0050s  Mem=0.19MB  Inf=6
+  True  Advanced Backward Chaining               Time=1.3836s  Mem=0.21MB  Inf=279042
+  True  Backward Chaining + AC-3                 Time=0.0635s  Mem=0.38MB  Inf=9658
+
+[EASY] size4_easy_3.txt  (Size 4x4)
+  True  Backtracking                             Time=0.0017s  Mem=0.00MB  Inf=95
+  False Artificial Bee Colony                    Time=15.4303s  Mem=0.03MB  Inf=1000
+  True  Genetic Algorithm                        Time=0.1197s  Mem=0.08MB  Inf=5
+  True  Forward Chaining                         Time=0.0054s  Mem=0.19MB  Inf=8
+  True  Backward Chaining                        Time=0.1484s  Mem=0.80MB  Inf=154851
+  True  A* h1 (Hamming)                          Time=0.0027s  Mem=0.04MB  Inf=47
+  True  A* h2 (Forward Checking)                 Time=0.0037s  Mem=0.04MB  Inf=50
+  True  A* h3 (MRV)                              Time=0.0016s  Mem=0.04MB  Inf=24
+  True  Dancing Links                            Time=0.0009s  Mem=0.06MB  Inf=83
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0031s  Mem=0.07MB  Inf=928
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0031s  Mem=0.07MB  Inf=928
+  True  A* + AC-3 h3 (MRV)                       Time=0.0031s  Mem=0.07MB  Inf=928
+  True  Forward Chaining + Backtracking          Time=0.0053s  Mem=0.19MB  Inf=9
+  True  Advanced Backward Chaining               Time=1.1572s  Mem=0.21MB  Inf=235555
+  True  Backward Chaining + AC-3                 Time=0.0591s  Mem=0.35MB  Inf=9245
+
+[EXTREME] size4_extreme_1.txt  (Size 4x4)
+  True  Backtracking                             Time=0.0011s  Mem=0.00MB  Inf=67
+  False Artificial Bee Colony                    Time=14.8941s  Mem=0.03MB  Inf=1000
+  False Genetic Algorithm                        Time=21.4754s  Mem=0.08MB  Inf=1000
+  False Forward Chaining                         Time=0.0048s  Mem=0.17MB  Inf=3
+  True  Backward Chaining                        Time=0.0972s  Mem=0.74MB  Inf=71167
+  True  A* h1 (Hamming)                          Time=0.0017s  Mem=0.03MB  Inf=24
+  True  A* h2 (Forward Checking)                 Time=0.0017s  Mem=0.03MB  Inf=19
+  True  A* h3 (MRV)                              Time=0.0013s  Mem=0.03MB  Inf=21
+  True  Dancing Links                            Time=0.0007s  Mem=0.06MB  Inf=24
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0015s  Mem=0.03MB  Inf=424
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0015s  Mem=0.03MB  Inf=424
+  True  A* + AC-3 h3 (MRV)                       Time=0.0015s  Mem=0.03MB  Inf=424
+  True  Forward Chaining + Backtracking          Time=0.0052s  Mem=0.18MB  Inf=13
+  True  Advanced Backward Chaining               Time=1.1590s  Mem=0.19MB  Inf=239089
+  True  Backward Chaining + AC-3                 Time=0.0533s  Mem=0.33MB  Inf=8159
+
+[EXTREME] size4_extreme_2.txt  (Size 4x4)
+  True  Backtracking                             Time=0.0021s  Mem=0.00MB  Inf=113
+  False Artificial Bee Colony                    Time=16.1434s  Mem=0.03MB  Inf=1000
+  False Genetic Algorithm                        Time=21.5379s  Mem=0.08MB  Inf=1000
+  False Forward Chaining                         Time=0.0051s  Mem=0.20MB  Inf=5
+  True  Backward Chaining                        Time=0.1774s  Mem=0.85MB  Inf=202313
+  True  A* h1 (Hamming)                          Time=0.0029s  Mem=0.04MB  Inf=44
+  True  A* h2 (Forward Checking)                 Time=0.0027s  Mem=0.03MB  Inf=31
+  True  A* h3 (MRV)                              Time=0.0021s  Mem=0.03MB  Inf=31
+  True  Dancing Links                            Time=0.0012s  Mem=0.06MB  Inf=117
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0023s  Mem=0.04MB  Inf=664
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0022s  Mem=0.04MB  Inf=664
+  True  A* + AC-3 h3 (MRV)                       Time=0.0022s  Mem=0.04MB  Inf=664
+  True  Forward Chaining + Backtracking          Time=0.0061s  Mem=0.21MB  Inf=18
+  True  Advanced Backward Chaining               Time=1.5250s  Mem=0.23MB  Inf=295788
+  True  Backward Chaining + AC-3                 Time=0.0701s  Mem=0.38MB  Inf=10751
+
+[EXTREME] size4_extreme_3.txt  (Size 4x4)
+  True  Backtracking                             Time=0.0058s  Mem=0.00MB  Inf=382
+  False Artificial Bee Colony                    Time=15.4587s  Mem=0.03MB  Inf=1000
+  True  Genetic Algorithm                        Time=16.6310s  Mem=0.08MB  Inf=776
+  False Forward Chaining                         Time=0.0048s  Mem=0.18MB  Inf=4
+  True  Backward Chaining                        Time=0.1676s  Mem=0.81MB  Inf=176731
+  True  A* h1 (Hamming)                          Time=0.0104s  Mem=0.05MB  Inf=268
+  True  A* h2 (Forward Checking)                 Time=0.0061s  Mem=0.05MB  Inf=104
+  True  A* h3 (MRV)                              Time=0.0043s  Mem=0.05MB  Inf=110
+  True  Dancing Links                            Time=0.0017s  Mem=0.06MB  Inf=317
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0019s  Mem=0.04MB  Inf=555
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0018s  Mem=0.04MB  Inf=555
+  True  A* + AC-3 h3 (MRV)                       Time=0.0018s  Mem=0.04MB  Inf=555
+  True  Forward Chaining + Backtracking          Time=0.0059s  Mem=0.19MB  Inf=17
+  True  Advanced Backward Chaining               Time=1.6533s  Mem=0.21MB  Inf=312769
+  True  Backward Chaining + AC-3                 Time=0.0668s  Mem=0.37MB  Inf=9962
+
+[TRICKY] size4_tricky_1.txt  (Size 4x4)
+  True  Backtracking                             Time=0.0060s  Mem=0.00MB  Inf=364
+  False Artificial Bee Colony                    Time=15.4764s  Mem=0.03MB  Inf=1000
+  True  Genetic Algorithm                        Time=0.1003s  Mem=0.08MB  Inf=4
+  True  Forward Chaining                         Time=0.0052s  Mem=0.19MB  Inf=8
+  True  Backward Chaining                        Time=0.1233s  Mem=0.27MB  Inf=231879
+  True  A* h1 (Hamming)                          Time=0.0050s  Mem=0.04MB  Inf=85
+  True  A* h2 (Forward Checking)                 Time=0.0017s  Mem=0.03MB  Inf=16
+  True  A* h3 (MRV)                              Time=0.0014s  Mem=0.03MB  Inf=17
+  True  Dancing Links                            Time=0.0008s  Mem=0.06MB  Inf=49
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0014s  Mem=0.03MB  Inf=354
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0014s  Mem=0.03MB  Inf=354
+  True  A* + AC-3 h3 (MRV)                       Time=0.0013s  Mem=0.03MB  Inf=354
+  True  Forward Chaining + Backtracking          Time=0.0052s  Mem=0.18MB  Inf=9
+  True  Advanced Backward Chaining               Time=1.2173s  Mem=0.21MB  Inf=231863
+  True  Backward Chaining + AC-3                 Time=0.0596s  Mem=0.36MB  Inf=8798
+
+[TRICKY] size4_tricky_2.txt  (Size 4x4)
+  True  Backtracking                             Time=0.0051s  Mem=0.00MB  Inf=312
+  False Artificial Bee Colony                    Time=15.4187s  Mem=0.03MB  Inf=1000
+  True  Genetic Algorithm                        Time=0.1288s  Mem=0.08MB  Inf=6
+  True  Forward Chaining                         Time=0.0051s  Mem=0.18MB  Inf=5
+  True  Backward Chaining                        Time=0.1721s  Mem=0.25MB  Inf=289044
+  True  A* h1 (Hamming)                          Time=0.0079s  Mem=0.06MB  Inf=144
+  True  A* h2 (Forward Checking)                 Time=0.0067s  Mem=0.05MB  Inf=96
+  True  A* h3 (MRV)                              Time=0.0052s  Mem=0.05MB  Inf=102
+  True  Dancing Links                            Time=0.0018s  Mem=0.06MB  Inf=274
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0011s  Mem=0.01MB  Inf=326
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0011s  Mem=0.01MB  Inf=326
+  True  A* + AC-3 h3 (MRV)                       Time=0.0011s  Mem=0.01MB  Inf=326
+  True  Forward Chaining + Backtracking          Time=0.0051s  Mem=0.18MB  Inf=6
+  True  Advanced Backward Chaining               Time=1.5224s  Mem=0.20MB  Inf=289027
+  True  Backward Chaining + AC-3                 Time=0.0626s  Mem=0.37MB  Inf=9326
+
+[TRICKY] size4_tricky_3.txt  (Size 4x4)
+  True  Backtracking                             Time=0.0098s  Mem=0.00MB  Inf=526
+  False Artificial Bee Colony                    Time=15.0746s  Mem=0.03MB  Inf=1000
+  False Genetic Algorithm                        Time=21.5171s  Mem=0.08MB  Inf=1000
+  False Forward Chaining                         Time=0.0048s  Mem=0.17MB  Inf=3
+  True  Backward Chaining                        Time=0.1202s  Mem=0.76MB  Inf=93044
+  True  A* h1 (Hamming)                          Time=0.0098s  Mem=0.05MB  Inf=217
+  True  A* h2 (Forward Checking)                 Time=0.0103s  Mem=0.05MB  Inf=179
+  True  A* h3 (MRV)                              Time=0.0075s  Mem=0.05MB  Inf=183
+  True  Dancing Links                            Time=0.0027s  Mem=0.06MB  Inf=589
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0023s  Mem=0.04MB  Inf=709
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0023s  Mem=0.04MB  Inf=709
+  True  A* + AC-3 h3 (MRV)                       Time=0.0023s  Mem=0.04MB  Inf=709
+  True  Forward Chaining + Backtracking          Time=0.0057s  Mem=0.17MB  Inf=10
+  True  Advanced Backward Chaining               Time=1.5471s  Mem=0.19MB  Inf=303861
+  True  Backward Chaining + AC-3                 Time=0.0647s  Mem=0.35MB  Inf=9896
+
+[TRIVIAL] size4_trivial_1.txt  (Size 4x4)
+  True  Backtracking                             Time=0.0003s  Mem=0.00MB  Inf=20
+  False Artificial Bee Colony                    Time=3.5682s  Mem=0.03MB  Inf=1000
+  True  Genetic Algorithm                        Time=0.1103s  Mem=0.08MB  Inf=3
+  True  Forward Chaining                         Time=0.0047s  Mem=0.13MB  Inf=4
+  True  Backward Chaining                        Time=0.0705s  Mem=0.20MB  Inf=121370
+  True  A* h1 (Hamming)                          Time=0.0011s  Mem=0.02MB  Inf=17
+  True  A* h2 (Forward Checking)                 Time=0.0009s  Mem=0.01MB  Inf=11
+  True  A* h3 (MRV)                              Time=0.0008s  Mem=0.01MB  Inf=11
+  True  Dancing Links                            Time=0.0006s  Mem=0.05MB  Inf=16
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0005s  Mem=0.01MB  Inf=125
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0005s  Mem=0.01MB  Inf=125
+  True  A* + AC-3 h3 (MRV)                       Time=0.0005s  Mem=0.01MB  Inf=125
+  True  Forward Chaining + Backtracking          Time=0.0057s  Mem=0.13MB  Inf=5
+  True  Advanced Backward Chaining               Time=0.5652s  Mem=0.15MB  Inf=121358
+  True  Backward Chaining + AC-3                 Time=0.0456s  Mem=0.26MB  Inf=6137
+
+[TRIVIAL] size4_trivial_2.txt  (Size 4x4)
+  True  Backtracking                             Time=0.0002s  Mem=0.00MB  Inf=12
+  False Artificial Bee Colony                    Time=3.4384s  Mem=0.03MB  Inf=1000
+  True  Genetic Algorithm                        Time=0.0813s  Mem=0.08MB  Inf=2
+  True  Forward Chaining                         Time=0.0042s  Mem=0.13MB  Inf=4
+  True  Backward Chaining                        Time=0.0706s  Mem=0.20MB  Inf=118032
+  True  A* h1 (Hamming)                          Time=0.0009s  Mem=0.02MB  Inf=11
+  True  A* h2 (Forward Checking)                 Time=0.0008s  Mem=0.01MB  Inf=10
+  True  A* h3 (MRV)                              Time=0.0007s  Mem=0.01MB  Inf=10
+  True  Dancing Links                            Time=0.0006s  Mem=0.05MB  Inf=16
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0005s  Mem=0.01MB  Inf=113
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0004s  Mem=0.01MB  Inf=113
+  True  A* + AC-3 h3 (MRV)                       Time=0.0004s  Mem=0.01MB  Inf=113
+  True  Forward Chaining + Backtracking          Time=0.0044s  Mem=0.13MB  Inf=5
+  True  Advanced Backward Chaining               Time=0.5487s  Mem=0.15MB  Inf=118021
+  True  Backward Chaining + AC-3                 Time=0.0346s  Mem=0.25MB  Inf=5496
+
+[TRIVIAL] size4_trivial_3.txt  (Size 4x4)
+  True  Backtracking                             Time=0.0003s  Mem=0.00MB  Inf=19
+  False Artificial Bee Colony                    Time=3.5681s  Mem=0.03MB  Inf=1000
+  True  Genetic Algorithm                        Time=0.0897s  Mem=0.08MB  Inf=2
+  True  Forward Chaining                         Time=0.0044s  Mem=0.13MB  Inf=4
+  True  Backward Chaining                        Time=0.0720s  Mem=0.20MB  Inf=126464
+  True  A* h1 (Hamming)                          Time=0.0011s  Mem=0.02MB  Inf=16
+  True  A* h2 (Forward Checking)                 Time=0.0009s  Mem=0.01MB  Inf=11
+  True  A* h3 (MRV)                              Time=0.0007s  Mem=0.01MB  Inf=11
+  True  Dancing Links                            Time=0.0005s  Mem=0.05MB  Inf=16
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0005s  Mem=0.01MB  Inf=115
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0004s  Mem=0.01MB  Inf=115
+  True  A* + AC-3 h3 (MRV)                       Time=0.0005s  Mem=0.01MB  Inf=115
+  True  Forward Chaining + Backtracking          Time=0.0042s  Mem=0.13MB  Inf=5
+  True  Advanced Backward Chaining               Time=0.5813s  Mem=0.15MB  Inf=126452
+  True  Backward Chaining + AC-3                 Time=0.0366s  Mem=0.26MB  Inf=5890
+
+[EASY] size5_easy_1.txt  (Size 5x5)
+  True  Backtracking                             Time=0.0186s  Mem=0.00MB  Inf=812
+  False Artificial Bee Colony                    Time=19.2119s  Mem=0.04MB  Inf=1000
+  False Genetic Algorithm                        Time=22.4747s  Mem=0.10MB  Inf=1000
+  True  Forward Chaining                         Time=0.0176s  Mem=0.72MB  Inf=10
+  True  Backward Chaining                        Time=0.5906s  Mem=2.36MB  Inf=349564
+  True  A* h1 (Hamming)                          Time=0.0136s  Mem=0.09MB  Inf=241
+  True  A* h2 (Forward Checking)                 Time=0.0164s  Mem=0.07MB  Inf=199
+  True  A* h3 (MRV)                              Time=0.0073s  Mem=0.06MB  Inf=134
+  True  Dancing Links                            Time=0.0052s  Mem=0.13MB  Inf=1107
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0043s  Mem=0.13MB  Inf=1300
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0041s  Mem=0.12MB  Inf=1300
+  True  A* + AC-3 h3 (MRV)                       Time=0.0041s  Mem=0.13MB  Inf=1300
+  True  Forward Chaining + Backtracking          Time=0.0176s  Mem=0.71MB  Inf=11
+  True  Advanced Backward Chaining               Time=17.5658s  Mem=0.79MB  Inf=1806165
+  True  Backward Chaining + AC-3                 Time=0.3538s  Mem=1.32MB  Inf=31860
+
+[EASY] size5_easy_2.txt  (Size 5x5)
+  True  Backtracking                             Time=0.1907s  Mem=0.00MB  Inf=8532
+  False Artificial Bee Colony                    Time=19.3925s  Mem=0.04MB  Inf=1000
+  False Genetic Algorithm                        Time=22.7274s  Mem=0.10MB  Inf=1000
+  True  Forward Chaining                         Time=0.0184s  Mem=0.74MB  Inf=13
+  True  Backward Chaining                        Time=1.0033s  Mem=2.42MB  Inf=846361
+  True  A* h1 (Hamming)                          Time=0.1996s  Mem=0.36MB  Inf=3901
+  True  A* h2 (Forward Checking)                 Time=0.0954s  Mem=0.25MB  Inf=1317
+  True  A* h3 (MRV)                              Time=0.0877s  Mem=0.28MB  Inf=2338
+  True  Dancing Links                            Time=0.0289s  Mem=0.14MB  Inf=7917
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0059s  Mem=0.15MB  Inf=1882
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0057s  Mem=0.15MB  Inf=1882
+  True  A* + AC-3 h3 (MRV)                       Time=0.0059s  Mem=0.15MB  Inf=1882
+  True  Forward Chaining + Backtracking          Time=0.0190s  Mem=0.73MB  Inf=14
+  True  Advanced Backward Chaining               Time=21.1187s  Mem=0.80MB  Inf=2217149
+  True  Backward Chaining + AC-3                 Time=0.3904s  Mem=1.37MB  Inf=35214
+
+[EASY] size5_easy_3.txt  (Size 5x5)
+  True  Backtracking                             Time=0.3832s  Mem=0.00MB  Inf=15439
+  False Artificial Bee Colony                    Time=19.3663s  Mem=0.04MB  Inf=1000
+  False Genetic Algorithm                        Time=22.7351s  Mem=0.10MB  Inf=1000
+  True  Forward Chaining                         Time=0.0180s  Mem=0.74MB  Inf=9
+  True  Backward Chaining                        Time=1.0452s  Mem=0.88MB  Inf=1901217
+  True  A* h1 (Hamming)                          Time=0.3720s  Mem=0.93MB  Inf=6776
+  True  A* h2 (Forward Checking)                 Time=0.3820s  Mem=0.90MB  Inf=5251
+  True  A* h3 (MRV)                              Time=0.2308s  Mem=0.90MB  Inf=5279
+  True  Dancing Links                            Time=0.0686s  Mem=0.14MB  Inf=15784
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0072s  Mem=0.14MB  Inf=2322
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0070s  Mem=0.14MB  Inf=2322
+  True  A* + AC-3 h3 (MRV)                       Time=0.0069s  Mem=0.14MB  Inf=2322
+  True  Forward Chaining + Backtracking          Time=0.0178s  Mem=0.73MB  Inf=10
+  True  Advanced Backward Chaining               Time=18.0387s  Mem=0.80MB  Inf=1901191
+  True  Backward Chaining + AC-3                 Time=0.4012s  Mem=1.40MB  Inf=36284
+
+[EXTREME] size5_extreme_1.txt  (Size 5x5)
+  True  Backtracking                             Time=0.0277s  Mem=0.00MB  Inf=1209
+  False Artificial Bee Colony                    Time=19.8043s  Mem=0.04MB  Inf=1000
+  False Genetic Algorithm                        Time=22.7262s  Mem=0.10MB  Inf=1000
+  False Forward Chaining                         Time=0.0190s  Mem=0.77MB  Inf=5
+  True  Backward Chaining                        Time=0.9935s  Mem=2.49MB  Inf=1073861
+  True  A* h1 (Hamming)                          Time=0.0278s  Mem=0.14MB  Inf=475
+  True  A* h2 (Forward Checking)                 Time=0.0076s  Mem=0.07MB  Inf=77
+  True  A* h3 (MRV)                              Time=0.0061s  Mem=0.08MB  Inf=98
+  True  Dancing Links                            Time=0.0071s  Mem=0.14MB  Inf=1390
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0059s  Mem=0.19MB  Inf=1912
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0057s  Mem=0.19MB  Inf=1912
+  True  A* + AC-3 h3 (MRV)                       Time=0.0057s  Mem=0.19MB  Inf=1912
+  True  Forward Chaining + Backtracking          Time=0.0184s  Mem=0.77MB  Inf=14
+  True  Advanced Backward Chaining               Time=19.2001s  Mem=0.84MB  Inf=1941590
+  True  Backward Chaining + AC-3                 Time=0.3997s  Mem=1.41MB  Inf=34804
+
+[EXTREME] size5_extreme_2.txt  (Size 5x5)
+  True  Backtracking                             Time=0.0499s  Mem=0.00MB  Inf=2105
+  False Artificial Bee Colony                    Time=20.3359s  Mem=0.04MB  Inf=1000
+  False Genetic Algorithm                        Time=22.6886s  Mem=0.10MB  Inf=1000
+  False Forward Chaining                         Time=0.0179s  Mem=0.79MB  Inf=6
+  True  Backward Chaining                        Time=0.8333s  Mem=2.55MB  Inf=732096
+  True  A* h1 (Hamming)                          Time=0.0270s  Mem=0.14MB  Inf=386
+  True  A* h2 (Forward Checking)                 Time=0.0128s  Mem=0.14MB  Inf=116
+  True  A* h3 (MRV)                              Time=0.0240s  Mem=0.15MB  Inf=476
+  True  Dancing Links                            Time=0.0097s  Mem=0.14MB  Inf=1576
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0049s  Mem=0.16MB  Inf=1568
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0049s  Mem=0.16MB  Inf=1568
+  True  A* + AC-3 h3 (MRV)                       Time=0.0049s  Mem=0.16MB  Inf=1568
+  True  Forward Chaining + Backtracking          Time=0.0189s  Mem=0.79MB  Inf=14
+  True  Advanced Backward Chaining               Time=19.3542s  Mem=0.85MB  Inf=2000705
+  True  Backward Chaining + AC-3                 Time=0.4226s  Mem=1.45MB  Inf=37335
+
+[EXTREME] size5_extreme_3.txt  (Size 5x5)
+  True  Backtracking                             Time=0.0048s  Mem=0.00MB  Inf=209
+  False Artificial Bee Colony                    Time=19.3003s  Mem=0.04MB  Inf=1000
+  True  Genetic Algorithm                        Time=1.6548s  Mem=0.10MB  Inf=77
+  False Forward Chaining                         Time=0.0172s  Mem=0.74MB  Inf=5
+  True  Backward Chaining                        Time=0.5213s  Mem=2.37MB  Inf=327093
+  True  A* h1 (Hamming)                          Time=0.0050s  Mem=0.06MB  Inf=67
+  True  A* h2 (Forward Checking)                 Time=0.0036s  Mem=0.05MB  Inf=28
+  True  A* h3 (MRV)                              Time=0.0024s  Mem=0.05MB  Inf=26
+  True  Dancing Links                            Time=0.0015s  Mem=0.13MB  Inf=78
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0054s  Mem=0.15MB  Inf=1891
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0054s  Mem=0.15MB  Inf=1891
+  True  A* + AC-3 h3 (MRV)                       Time=0.0053s  Mem=0.15MB  Inf=1891
+  True  Forward Chaining + Backtracking          Time=0.0180s  Mem=0.74MB  Inf=13
+  True  Advanced Backward Chaining               Time=14.3971s  Mem=0.80MB  Inf=1503378
+  True  Backward Chaining + AC-3                 Time=0.3456s  Mem=1.31MB  Inf=30797
+
+[TRICKY] size5_tricky_1.txt  (Size 5x5)
+  True  Backtracking                             Time=0.0026s  Mem=0.00MB  Inf=119
+  False Artificial Bee Colony                    Time=19.0724s  Mem=0.04MB  Inf=1000
+  False Genetic Algorithm                        Time=22.6805s  Mem=0.10MB  Inf=1000
+  False Forward Chaining                         Time=0.0166s  Mem=0.72MB  Inf=3
+  True  Backward Chaining                        Time=0.5185s  Mem=2.39MB  Inf=213909
+  True  A* h1 (Hamming)                          Time=0.0058s  Mem=0.14MB  Inf=79
+  True  A* h2 (Forward Checking)                 Time=0.1087s  Mem=0.27MB  Inf=1509
+  True  A* h3 (MRV)                              Time=0.1450s  Mem=0.36MB  Inf=3136
+  True  Dancing Links                            Time=0.0174s  Mem=0.14MB  Inf=3680
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0039s  Mem=0.11MB  Inf=1226
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0037s  Mem=0.11MB  Inf=1226
+  True  A* + AC-3 h3 (MRV)                       Time=0.0038s  Mem=0.11MB  Inf=1226
+  True  Forward Chaining + Backtracking          Time=0.0234s  Mem=0.72MB  Inf=15
+  True  Advanced Backward Chaining               Time=18.0671s  Mem=0.79MB  Inf=1894833
+  True  Backward Chaining + AC-3                 Time=0.3728s  Mem=1.36MB  Inf=33670
+
+[TRICKY] size5_tricky_2.txt  (Size 5x5)
+  True  Backtracking                             Time=0.0422s  Mem=0.00MB  Inf=1816
+  False Artificial Bee Colony                    Time=19.7008s  Mem=0.04MB  Inf=1000
+  False Genetic Algorithm                        Time=22.6962s  Mem=0.10MB  Inf=1000
+  False Forward Chaining                         Time=0.0172s  Mem=0.76MB  Inf=7
+  True  Backward Chaining                        Time=1.1810s  Mem=2.49MB  Inf=1409709
+  True  A* h1 (Hamming)                          Time=0.0343s  Mem=0.17MB  Inf=563
+  True  A* h2 (Forward Checking)                 Time=0.0246s  Mem=0.13MB  Inf=294
+  True  A* h3 (MRV)                              Time=0.0245s  Mem=0.13MB  Inf=561
+  True  Dancing Links                            Time=0.0083s  Mem=0.14MB  Inf=1517
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0124s  Mem=0.20MB  Inf=4106
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0125s  Mem=0.20MB  Inf=4106
+  True  A* + AC-3 h3 (MRV)                       Time=0.0123s  Mem=0.20MB  Inf=4106
+  True  Forward Chaining + Backtracking          Time=0.0190s  Mem=0.76MB  Inf=15
+  True  Advanced Backward Chaining               Time=19.3592s  Mem=0.82MB  Inf=2065643
+  True  Backward Chaining + AC-3                 Time=0.4165s  Mem=1.42MB  Inf=38421
+
+[TRICKY] size5_tricky_3.txt  (Size 5x5)
+  True  Backtracking                             Time=0.0250s  Mem=0.00MB  Inf=1058
+  False Artificial Bee Colony                    Time=18.8578s  Mem=0.04MB  Inf=1000
+  False Genetic Algorithm                        Time=22.6820s  Mem=0.10MB  Inf=1000
+  False Forward Chaining                         Time=0.0165s  Mem=0.71MB  Inf=4
+  True  Backward Chaining                        Time=0.4656s  Mem=2.33MB  Inf=200891
+  True  A* h1 (Hamming)                          Time=0.0189s  Mem=0.11MB  Inf=305
+  True  A* h2 (Forward Checking)                 Time=0.0345s  Mem=0.10MB  Inf=466
+  True  A* h3 (MRV)                              Time=0.0202s  Mem=0.12MB  Inf=465
+  True  Dancing Links                            Time=0.0069s  Mem=0.13MB  Inf=1278
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0082s  Mem=0.21MB  Inf=2751
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0081s  Mem=0.21MB  Inf=2751
+  True  A* + AC-3 h3 (MRV)                       Time=0.0081s  Mem=0.21MB  Inf=2751
+  True  Forward Chaining + Backtracking          Time=0.0185s  Mem=0.70MB  Inf=16
+  True  Advanced Backward Chaining               Time=16.1228s  Mem=0.77MB  Inf=1694556
+  True  Backward Chaining + AC-3                 Time=0.3570s  Mem=1.31MB  Inf=31963
+
+[TRIVIAL] size5_trivial_1.txt  (Size 5x5)
+  True  Backtracking                             Time=0.0010s  Mem=0.00MB  Inf=52
+  False Artificial Bee Colony                    Time=3.5865s  Mem=0.04MB  Inf=1000
+  True  Genetic Algorithm                        Time=0.1584s  Mem=0.10MB  Inf=5
+  True  Forward Chaining                         Time=0.0153s  Mem=0.59MB  Inf=5
+  True  Backward Chaining                        Time=0.5599s  Mem=0.71MB  Inf=942244
+  True  A* h1 (Hamming)                          Time=0.0021s  Mem=0.03MB  Inf=27
+  True  A* h2 (Forward Checking)                 Time=0.0017s  Mem=0.02MB  Inf=17
+  True  A* h3 (MRV)                              Time=0.0014s  Mem=0.02MB  Inf=17
+  True  Dancing Links                            Time=0.0011s  Mem=0.11MB  Inf=25
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0010s  Mem=0.03MB  Inf=302
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0009s  Mem=0.03MB  Inf=302
+  True  A* + AC-3 h3 (MRV)                       Time=0.0009s  Mem=0.03MB  Inf=302
+  True  Forward Chaining + Backtracking          Time=0.0154s  Mem=0.58MB  Inf=6
+  True  Advanced Backward Chaining               Time=8.1429s  Mem=0.65MB  Inf=942226
+  True  Backward Chaining + AC-3                 Time=0.2207s  Mem=1.03MB  Inf=21057
+
+[TRIVIAL] size5_trivial_2.txt  (Size 5x5)
+  True  Backtracking                             Time=0.0004s  Mem=0.00MB  Inf=18
+  False Artificial Bee Colony                    Time=3.5518s  Mem=0.04MB  Inf=1000
+  False Genetic Algorithm                        Time=22.7592s  Mem=0.10MB  Inf=1000
+  True  Forward Chaining                         Time=0.0159s  Mem=0.59MB  Inf=5
+  True  Backward Chaining                        Time=0.5919s  Mem=0.71MB  Inf=986646
+  True  A* h1 (Hamming)                          Time=0.0018s  Mem=0.03MB  Inf=17
+  True  A* h2 (Forward Checking)                 Time=0.0017s  Mem=0.02MB  Inf=17
+  True  A* h3 (MRV)                              Time=0.0013s  Mem=0.02MB  Inf=17
+  True  Dancing Links                            Time=0.0010s  Mem=0.11MB  Inf=25
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0010s  Mem=0.03MB  Inf=302
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0009s  Mem=0.03MB  Inf=302
+  True  A* + AC-3 h3 (MRV)                       Time=0.0010s  Mem=0.03MB  Inf=302
+  True  Forward Chaining + Backtracking          Time=0.0169s  Mem=0.58MB  Inf=6
+  True  Advanced Backward Chaining               Time=8.5045s  Mem=0.65MB  Inf=986628
+  True  Backward Chaining + AC-3                 Time=0.2261s  Mem=1.03MB  Inf=21509
+
+[TRIVIAL] size5_trivial_3.txt  (Size 5x5)
+  True  Backtracking                             Time=0.0008s  Mem=0.00MB  Inf=42
+  False Artificial Bee Colony                    Time=3.4850s  Mem=0.04MB  Inf=1000
+  True  Genetic Algorithm                        Time=0.1276s  Mem=0.10MB  Inf=3
+  True  Forward Chaining                         Time=0.0231s  Mem=0.59MB  Inf=4
+  True  Backward Chaining                        Time=0.5061s  Mem=0.71MB  Inf=827618
+  True  A* h1 (Hamming)                          Time=0.0022s  Mem=0.03MB  Inf=30
+  True  A* h2 (Forward Checking)                 Time=0.0016s  Mem=0.02MB  Inf=16
+  True  A* h3 (MRV)                              Time=0.0013s  Mem=0.02MB  Inf=16
+  True  Dancing Links                            Time=0.0010s  Mem=0.10MB  Inf=25
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0008s  Mem=0.03MB  Inf=259
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0008s  Mem=0.03MB  Inf=259
+  True  A* + AC-3 h3 (MRV)                       Time=0.0008s  Mem=0.03MB  Inf=259
+  True  Forward Chaining + Backtracking          Time=0.0150s  Mem=0.58MB  Inf=5
+  True  Advanced Backward Chaining               Time=7.0480s  Mem=0.64MB  Inf=827601
+  True  Backward Chaining + AC-3                 Time=0.2112s  Mem=1.00MB  Inf=20081
+
+[EASY] size6_easy_1.txt  (Size 6x6)
+  True  Backtracking                             Time=18.1280s  Mem=0.00MB  Inf=563444
+  False Artificial Bee Colony                    Time=23.7196s  Mem=0.05MB  Inf=1000
+  False Genetic Algorithm                        Time=23.7631s  Mem=0.12MB  Inf=1000
+  True  Forward Chaining                         Time=0.0401s  Mem=1.83MB  Inf=10
+  True  Backward Chaining                        Time=5.0816s  Mem=5.33MB  Inf=3768650
+  True  A* h1 (Hamming)                          Time=10.8451s  Mem=17.44MB  Inf=161323
+  True  A* h2 (Forward Checking)                 Time=0.0926s  Mem=0.19MB  Inf=938
+  True  A* h3 (MRV)                              Time=0.0307s  Mem=0.19MB  Inf=613
+  True  Dancing Links                            Time=0.0556s  Mem=0.27MB  Inf=11483
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0222s  Mem=0.35MB  Inf=8124
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0227s  Mem=0.35MB  Inf=8124
+  True  A* + AC-3 h3 (MRV)                       Time=0.0230s  Mem=0.35MB  Inf=8124
+  True  Forward Chaining + Backtracking          Time=0.0424s  Mem=1.81MB  Inf=11
+  False Advanced Backward Chaining               Time=60.0112s  Mem=1.91MB  Inf=3752735
+  True  Backward Chaining + AC-3                 Time=1.5559s  Mem=3.15MB  Inf=86988
+
+[EASY] size6_easy_2.txt  (Size 6x6)
+  True  Backtracking                             Time=0.0751s  Mem=0.00MB  Inf=2644
+  False Artificial Bee Colony                    Time=22.4294s  Mem=0.05MB  Inf=1000
+  False Genetic Algorithm                        Time=23.7724s  Mem=0.12MB  Inf=1000
+  True  Forward Chaining                         Time=0.0383s  Mem=1.71MB  Inf=9
+  True  Backward Chaining                        Time=4.7592s  Mem=2.14MB  Inf=6908137
+  True  A* h1 (Hamming)                          Time=0.0478s  Mem=0.18MB  Inf=682
+  True  A* h2 (Forward Checking)                 Time=0.0052s  Mem=0.06MB  Inf=36
+  True  A* h3 (MRV)                              Time=0.0037s  Mem=0.06MB  Inf=36
+  True  Dancing Links                            Time=0.0035s  Mem=0.26MB  Inf=358
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0029s  Mem=0.05MB  Inf=1092
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0028s  Mem=0.05MB  Inf=1092
+  True  A* + AC-3 h3 (MRV)                       Time=0.0028s  Mem=0.05MB  Inf=1092
+  True  Forward Chaining + Backtracking          Time=0.0383s  Mem=1.69MB  Inf=10
+  False Advanced Backward Chaining               Time=60.0117s  Mem=1.76MB  Inf=3710831
+  True  Backward Chaining + AC-3                 Time=1.3886s  Mem=2.94MB  Inf=78764
+
+[EASY] size6_easy_3.txt  (Size 6x6)
+  True  Backtracking                             Time=6.4561s  Mem=0.00MB  Inf=209653
+  False Artificial Bee Colony                    Time=23.0480s  Mem=0.05MB  Inf=1000
+  False Genetic Algorithm                        Time=23.7021s  Mem=0.12MB  Inf=1000
+  True  Forward Chaining                         Time=0.0415s  Mem=1.76MB  Inf=16
+  True  Backward Chaining                        Time=4.4807s  Mem=5.24MB  Inf=4210389
+  True  A* h1 (Hamming)                          Time=2.3193s  Mem=3.30MB  Inf=32426
+  True  A* h2 (Forward Checking)                 Time=0.4170s  Mem=0.37MB  Inf=4658
+  True  A* h3 (MRV)                              Time=0.1520s  Mem=0.35MB  Inf=3482
+  True  Dancing Links                            Time=0.2411s  Mem=0.28MB  Inf=54834
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0050s  Mem=0.10MB  Inf=1679
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0049s  Mem=0.10MB  Inf=1679
+  True  A* + AC-3 h3 (MRV)                       Time=0.0049s  Mem=0.10MB  Inf=1679
+  True  Forward Chaining + Backtracking          Time=0.0413s  Mem=1.74MB  Inf=17
+  False Advanced Backward Chaining               Time=60.0091s  Mem=1.82MB  Inf=3661286
+  True  Backward Chaining + AC-3                 Time=1.6283s  Mem=3.13MB  Inf=91597
+
+[EXTREME] size6_extreme_1.txt  (Size 6x6)
+  True  Backtracking                             Time=0.6979s  Mem=0.00MB  Inf=22458
+  False Artificial Bee Colony                    Time=24.5989s  Mem=0.05MB  Inf=1000
+  False Genetic Algorithm                        Time=23.6783s  Mem=0.12MB  Inf=1000
+  False Forward Chaining                         Time=0.0387s  Mem=1.89MB  Inf=5
+  True  Backward Chaining                        Time=3.2832s  Mem=5.56MB  Inf=2406876
+  True  A* h1 (Hamming)                          Time=0.4238s  Mem=1.00MB  Inf=6488
+  True  A* h2 (Forward Checking)                 Time=0.9028s  Mem=0.97MB  Inf=8854
+  True  A* h3 (MRV)                              Time=0.1077s  Mem=0.39MB  Inf=2035
+  True  Dancing Links                            Time=0.0244s  Mem=0.29MB  Inf=4517
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0290s  Mem=0.34MB  Inf=10187
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0290s  Mem=0.34MB  Inf=10187
+  True  A* + AC-3 h3 (MRV)                       Time=0.0288s  Mem=0.34MB  Inf=10187
+  True  Forward Chaining + Backtracking          Time=0.0475s  Mem=1.90MB  Inf=25
+  False Advanced Backward Chaining               Time=60.0112s  Mem=1.95MB  Inf=3531847
+  True  Backward Chaining + AC-3                 Time=1.7853s  Mem=3.32MB  Inf=99001
+
+[EXTREME] size6_extreme_2.txt  (Size 6x6)
+  True  Backtracking                             Time=0.2211s  Mem=0.00MB  Inf=6769
+  False Artificial Bee Colony                    Time=24.7438s  Mem=0.05MB  Inf=1000
+  False Genetic Algorithm                        Time=23.7505s  Mem=0.12MB  Inf=1000
+  False Forward Chaining                         Time=0.0385s  Mem=1.89MB  Inf=3
+  True  Backward Chaining                        Time=4.9306s  Mem=5.61MB  Inf=1465133
+  True  A* h1 (Hamming)                          Time=0.1771s  Mem=0.43MB  Inf=2943
+  True  A* h2 (Forward Checking)                 Time=13.3277s  Mem=8.85MB  Inf=125013
+  True  A* h3 (MRV)                              Time=7.0634s  Mem=8.89MB  Inf=126625
+  True  Dancing Links                            Time=0.5737s  Mem=0.29MB  Inf=109590
+  True  A* + AC-3 h1 (Hamming)                   Time=0.2404s  Mem=0.57MB  Inf=87497
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.2410s  Mem=0.57MB  Inf=87497
+  True  A* + AC-3 h3 (MRV)                       Time=0.2402s  Mem=0.57MB  Inf=87497
+  True  Forward Chaining + Backtracking          Time=0.0572s  Mem=1.91MB  Inf=61
+  False Advanced Backward Chaining               Time=59.9352s  Mem=1.92MB  Inf=3611686
+  True  Backward Chaining + AC-3                 Time=4.3723s  Mem=3.37MB  Inf=247283
+
+[EXTREME] size6_extreme_3.txt  (Size 6x6)
+  True  Backtracking                             Time=2.4089s  Mem=0.00MB  Inf=68234
+  False Artificial Bee Colony                    Time=24.7218s  Mem=0.05MB  Inf=1000
+  False Genetic Algorithm                        Time=24.1787s  Mem=0.12MB  Inf=1000
+  False Forward Chaining                         Time=0.0400s  Mem=1.89MB  Inf=6
+  True  Backward Chaining                        Time=5.7995s  Mem=5.56MB  Inf=4217932
+  True  A* h1 (Hamming)                          Time=1.2355s  Mem=1.25MB  Inf=17256
+  True  A* h2 (Forward Checking)                 Time=0.6868s  Mem=0.91MB  Inf=6329
+  True  A* h3 (MRV)                              Time=0.3577s  Mem=0.90MB  Inf=6601
+  True  Dancing Links                            Time=0.6268s  Mem=0.29MB  Inf=116873
+  True  A* + AC-3 h1 (Hamming)                   Time=0.1652s  Mem=0.52MB  Inf=60000
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.1673s  Mem=0.52MB  Inf=60000
+  True  A* + AC-3 h3 (MRV)                       Time=0.1663s  Mem=0.52MB  Inf=60000
+  True  Forward Chaining + Backtracking          Time=0.0482s  Mem=1.90MB  Inf=33
+  False Advanced Backward Chaining               Time=60.0068s  Mem=1.98MB  Inf=3613951
+  True  Backward Chaining + AC-3                 Time=3.1661s  Mem=3.32MB  Inf=178895
+
+[TRICKY] size6_tricky_1.txt  (Size 6x6)
+  True  Backtracking                             Time=0.0729s  Mem=0.00MB  Inf=2342
+  False Artificial Bee Colony                    Time=24.1842s  Mem=0.05MB  Inf=1000
+  False Genetic Algorithm                        Time=23.8564s  Mem=0.12MB  Inf=1000
+  False Forward Chaining                         Time=0.0407s  Mem=1.85MB  Inf=9
+  True  Backward Chaining                        Time=2.3073s  Mem=5.42MB  Inf=700383
+  True  A* h1 (Hamming)                          Time=0.0659s  Mem=0.24MB  Inf=886
+  True  A* h2 (Forward Checking)                 Time=0.0105s  Mem=0.14MB  Inf=74
+  True  A* h3 (MRV)                              Time=0.0078s  Mem=0.16MB  Inf=111
+  True  Dancing Links                            Time=0.1996s  Mem=0.28MB  Inf=41570
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0157s  Mem=0.38MB  Inf=5395
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0154s  Mem=0.38MB  Inf=5395
+  True  A* + AC-3 h3 (MRV)                       Time=0.0154s  Mem=0.38MB  Inf=5395
+  True  Forward Chaining + Backtracking          Time=0.0470s  Mem=1.84MB  Inf=19
+  False Advanced Backward Chaining               Time=60.0060s  Mem=1.91MB  Inf=3589864
+  True  Backward Chaining + AC-3                 Time=1.9710s  Mem=3.22MB  Inf=108273
+
+[TRICKY] size6_tricky_2.txt  (Size 6x6)
+  True  Backtracking                             Time=0.1918s  Mem=0.00MB  Inf=5807
+  False Artificial Bee Colony                    Time=23.6869s  Mem=0.05MB  Inf=1000
+  False Genetic Algorithm                        Time=23.5995s  Mem=0.12MB  Inf=1000
+  False Forward Chaining                         Time=0.0385s  Mem=1.80MB  Inf=6
+  True  Backward Chaining                        Time=3.7642s  Mem=5.33MB  Inf=2699167
+  True  A* h1 (Hamming)                          Time=0.1653s  Mem=0.29MB  Inf=2442
+  True  A* h2 (Forward Checking)                 Time=0.0990s  Mem=0.15MB  Inf=1000
+  True  A* h3 (MRV)                              Time=0.0485s  Mem=0.15MB  Inf=1002
+  True  Dancing Links                            Time=0.2126s  Mem=0.28MB  Inf=39951
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0177s  Mem=0.40MB  Inf=6179
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0173s  Mem=0.40MB  Inf=6179
+  True  A* + AC-3 h3 (MRV)                       Time=0.0173s  Mem=0.40MB  Inf=6179
+  True  Forward Chaining + Backtracking          Time=0.0469s  Mem=1.81MB  Inf=33
+  False Advanced Backward Chaining               Time=60.0065s  Mem=1.88MB  Inf=3631377
+  True  Backward Chaining + AC-3                 Time=2.0223s  Mem=3.18MB  Inf=113382
+
+[TRICKY] size6_tricky_3.txt  (Size 6x6)
+  True  Backtracking                             Time=6.3553s  Mem=0.00MB  Inf=183203
+  False Artificial Bee Colony                    Time=24.7373s  Mem=0.05MB  Inf=1000
+  False Genetic Algorithm                        Time=23.7652s  Mem=0.12MB  Inf=1000
+  False Forward Chaining                         Time=0.0395s  Mem=1.89MB  Inf=5
+  True  Backward Chaining                        Time=4.9621s  Mem=5.56MB  Inf=2998224
+  True  A* h1 (Hamming)                          Time=3.2061s  Mem=3.81MB  Inf=45800
+  True  A* h2 (Forward Checking)                 Time=7.6733s  Mem=4.77MB  Inf=75111
+  True  A* h3 (MRV)                              Time=4.2464s  Mem=5.13MB  Inf=78120
+  True  Dancing Links                            Time=0.7709s  Mem=0.29MB  Inf=153704
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0522s  Mem=0.37MB  Inf=19453
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0519s  Mem=0.37MB  Inf=19453
+  True  A* + AC-3 h3 (MRV)                       Time=0.0517s  Mem=0.37MB  Inf=19453
+  True  Forward Chaining + Backtracking          Time=0.0439s  Mem=1.89MB  Inf=21
+  False Advanced Backward Chaining               Time=60.0097s  Mem=1.95MB  Inf=3627818
+  True  Backward Chaining + AC-3                 Time=3.1429s  Mem=3.31MB  Inf=175841
+
+[TRIVIAL] size6_trivial_1.txt  (Size 6x6)
+  True  Backtracking                             Time=0.0019s  Mem=0.00MB  Inf=71
+  False Artificial Bee Colony                    Time=3.4902s  Mem=0.05MB  Inf=1000
+  True  Genetic Algorithm                        Time=1.2858s  Mem=0.12MB  Inf=56
+  True  Forward Chaining                         Time=0.0370s  Mem=1.53MB  Inf=5
+  True  Backward Chaining                        Time=2.7969s  Mem=1.91MB  Inf=4085938
+  True  A* h1 (Hamming)                          Time=0.0033s  Mem=0.05MB  Inf=28
+  True  A* h2 (Forward Checking)                 Time=0.0029s  Mem=0.03MB  Inf=23
+  True  A* h3 (MRV)                              Time=0.0022s  Mem=0.03MB  Inf=23
+  True  Dancing Links                            Time=0.0018s  Mem=0.21MB  Inf=36
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0016s  Mem=0.04MB  Inf=533
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0015s  Mem=0.04MB  Inf=533
+  True  A* + AC-3 h3 (MRV)                       Time=0.0015s  Mem=0.04MB  Inf=533
+  True  Forward Chaining + Backtracking          Time=0.0355s  Mem=1.52MB  Inf=6
+  False Advanced Backward Chaining               Time=60.0096s  Mem=1.63MB  Inf=4053434
+  True  Backward Chaining + AC-3                 Time=0.9179s  Mem=2.45MB  Inf=56268
+
+[TRIVIAL] size6_trivial_2.txt  (Size 6x6)
+  True  Backtracking                             Time=0.0017s  Mem=0.00MB  Inf=71
+  False Artificial Bee Colony                    Time=3.4818s  Mem=0.05MB  Inf=1000
+  True  Genetic Algorithm                        Time=2.5491s  Mem=0.12MB  Inf=109
+  True  Forward Chaining                         Time=0.0366s  Mem=1.53MB  Inf=7
+  True  Backward Chaining                        Time=2.5323s  Mem=1.88MB  Inf=3640267
+  True  A* h1 (Hamming)                          Time=0.0036s  Mem=0.05MB  Inf=37
+  True  A* h2 (Forward Checking)                 Time=0.0028s  Mem=0.03MB  Inf=23
+  True  A* h3 (MRV)                              Time=0.0021s  Mem=0.03MB  Inf=23
+  True  Dancing Links                            Time=0.0018s  Mem=0.21MB  Inf=36
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0017s  Mem=0.04MB  Inf=587
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0017s  Mem=0.04MB  Inf=587
+  True  A* + AC-3 h3 (MRV)                       Time=0.0016s  Mem=0.04MB  Inf=587
+  True  Forward Chaining + Backtracking          Time=0.0419s  Mem=1.52MB  Inf=8
+  True  Advanced Backward Chaining               Time=54.6934s  Mem=1.63MB  Inf=3640243
+  True  Backward Chaining + AC-3                 Time=0.9282s  Mem=2.45MB  Inf=55959
+
+[TRIVIAL] size6_trivial_3.txt  (Size 6x6)
+  True  Backtracking                             Time=0.0074s  Mem=0.00MB  Inf=284
+  False Artificial Bee Colony                    Time=3.4723s  Mem=0.05MB  Inf=1000
+  False Genetic Algorithm                        Time=24.0383s  Mem=0.12MB  Inf=1000
+  True  Forward Chaining                         Time=0.0355s  Mem=1.53MB  Inf=5
+  True  Backward Chaining                        Time=2.6840s  Mem=1.94MB  Inf=3817632
+  True  A* h1 (Hamming)                          Time=0.0075s  Mem=0.06MB  Inf=110
+  True  A* h2 (Forward Checking)                 Time=0.0028s  Mem=0.03MB  Inf=23
+  True  A* h3 (MRV)                              Time=0.0021s  Mem=0.03MB  Inf=23
+  True  Dancing Links                            Time=0.0019s  Mem=0.21MB  Inf=36
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0016s  Mem=0.04MB  Inf=597
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0016s  Mem=0.04MB  Inf=597
+  True  A* + AC-3 h3 (MRV)                       Time=0.0016s  Mem=0.04MB  Inf=597
+  True  Forward Chaining + Backtracking          Time=0.0355s  Mem=1.52MB  Inf=6
+  True  Advanced Backward Chaining               Time=57.4204s  Mem=1.63MB  Inf=3817608
+  True  Backward Chaining + AC-3                 Time=0.9342s  Mem=2.45MB  Inf=56616
+
+[EASY] size7_easy_1.txt  (Size 7x7)
+  True  Backtracking                             Time=12.1779s  Mem=0.00MB  Inf=275279
+  False Artificial Bee Colony                    Time=28.4093s  Mem=0.07MB  Inf=1000
+  False Genetic Algorithm                        Time=25.0606s  Mem=0.15MB  Inf=1000
+  True  Forward Chaining                         Time=0.0786s  Mem=3.51MB  Inf=16
+  True  Backward Chaining                        Time=10.8725s  Mem=9.65MB  Inf=6030332
+  True  A* h1 (Hamming)                          Time=9.2380s  Mem=8.96MB  Inf=107207
+  True  A* h2 (Forward Checking)                 Time=4.3951s  Mem=3.38MB  Inf=37095
+  True  A* h3 (MRV)                              Time=2.2020s  Mem=3.56MB  Inf=42453
+  False Dancing Links                            Time=60.0098s  Mem=0.52MB  Inf=11895898
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0130s  Mem=0.24MB  Inf=4675
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0129s  Mem=0.24MB  Inf=4675
+  True  A* + AC-3 h3 (MRV)                       Time=0.0128s  Mem=0.24MB  Inf=4675
+  True  Forward Chaining + Backtracking          Time=0.0796s  Mem=3.51MB  Inf=17
+  False Advanced Backward Chaining               Time=60.0115s  Mem=3.55MB  Inf=2227205
+  True  Backward Chaining + AC-3                 Time=5.8800s  Mem=5.72MB  Inf=209401
+
+[EASY] size7_easy_2.txt  (Size 7x7)
+  False Backtracking                             Time=60.0084s  Mem=0.02MB  Inf=1383359
+  False Artificial Bee Colony                    Time=29.6377s  Mem=0.07MB  Inf=1000
+  False Genetic Algorithm                        Time=24.9079s  Mem=0.15MB  Inf=1000
+  True  Forward Chaining                         Time=0.0854s  Mem=3.68MB  Inf=22
+  True  Backward Chaining                        Time=12.5776s  Mem=10.21MB  Inf=5221598
+  True  A* h1 (Hamming)                          Time=35.4024s  Mem=35.06MB  Inf=394737
+  True  A* h2 (Forward Checking)                 Time=47.1710s  Mem=34.89MB  Inf=338852
+  True  A* h3 (MRV)                              Time=8.1342s  Mem=9.30MB  Inf=121574
+  False Dancing Links                            Time=60.0061s  Mem=0.55MB  Inf=11367787
+  True  A* + AC-3 h1 (Hamming)                   Time=0.2046s  Mem=0.98MB  Inf=76274
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.2066s  Mem=0.98MB  Inf=76274
+  True  A* + AC-3 h3 (MRV)                       Time=0.2048s  Mem=0.98MB  Inf=76274
+  True  Forward Chaining + Backtracking          Time=0.0879s  Mem=3.68MB  Inf=23
+  False Advanced Backward Chaining               Time=60.0130s  Mem=3.72MB  Inf=2212821
+  True  Backward Chaining + AC-3                 Time=8.9785s  Mem=6.10MB  Inf=322574
+
+[EASY] size7_easy_3.txt  (Size 7x7)
+  False Backtracking                             Time=60.0064s  Mem=0.01MB  Inf=1551363
+  False Artificial Bee Colony                    Time=27.9063s  Mem=0.07MB  Inf=1000
+  False Genetic Algorithm                        Time=25.0026s  Mem=0.15MB  Inf=1000
+  True  Forward Chaining                         Time=0.0775s  Mem=3.48MB  Inf=14
+  True  Backward Chaining                        Time=23.7769s  Mem=9.49MB  Inf=18146160
+  True  A* h1 (Hamming)                          Time=10.2642s  Mem=8.87MB  Inf=121765
+  True  A* h2 (Forward Checking)                 Time=0.2350s  Mem=0.31MB  Inf=1909
+  True  A* h3 (MRV)                              Time=0.1131s  Mem=0.31MB  Inf=1933
+  True  Dancing Links                            Time=1.6219s  Mem=0.50MB  Inf=338457
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0271s  Mem=0.44MB  Inf=9630
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0259s  Mem=0.44MB  Inf=9630
+  True  A* + AC-3 h3 (MRV)                       Time=0.0258s  Mem=0.44MB  Inf=9630
+  True  Forward Chaining + Backtracking          Time=0.0773s  Mem=3.48MB  Inf=15
+  False Advanced Backward Chaining               Time=60.0108s  Mem=3.58MB  Inf=2276626
+  True  Backward Chaining + AC-3                 Time=8.4447s  Mem=5.59MB  Inf=304189
+
+[EXTREME] size7_extreme_1.txt  (Size 7x7)
+  True  Backtracking                             Time=7.0126s  Mem=0.00MB  Inf=164041
+  False Artificial Bee Colony                    Time=29.0378s  Mem=0.07MB  Inf=1000
+  False Genetic Algorithm                        Time=25.0528s  Mem=0.15MB  Inf=1000
+  False Forward Chaining                         Time=0.0781s  Mem=3.60MB  Inf=14
+  True  Backward Chaining                        Time=8.8108s  Mem=9.90MB  Inf=3399430
+  True  A* h1 (Hamming)                          Time=4.5540s  Mem=3.78MB  Inf=37205
+  True  A* h2 (Forward Checking)                 Time=23.5007s  Mem=9.62MB  Inf=155421
+  True  A* h3 (MRV)                              Time=4.1517s  Mem=4.15MB  Inf=44778
+  False Dancing Links                            Time=60.0089s  Mem=0.53MB  Inf=11183277
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0140s  Mem=0.31MB  Inf=4608
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0135s  Mem=0.31MB  Inf=4608
+  True  A* + AC-3 h3 (MRV)                       Time=0.0135s  Mem=0.31MB  Inf=4608
+  True  Forward Chaining + Backtracking          Time=0.0828s  Mem=3.64MB  Inf=22
+  False Advanced Backward Chaining               Time=60.0115s  Mem=3.69MB  Inf=2266484
+  True  Backward Chaining + AC-3                 Time=6.2598s  Mem=5.89MB  Inf=222584
+
+[EXTREME] size7_extreme_2.txt  (Size 7x7)
+  True  Backtracking                             Time=0.0723s  Mem=0.00MB  Inf=1849
+  False Artificial Bee Colony                    Time=28.2434s  Mem=0.07MB  Inf=1000
+  False Genetic Algorithm                        Time=25.0441s  Mem=0.15MB  Inf=1000
+  False Forward Chaining                         Time=0.0739s  Mem=3.53MB  Inf=8
+  True  Backward Chaining                        Time=18.2546s  Mem=9.55MB  Inf=14923131
+  True  A* h1 (Hamming)                          Time=0.0303s  Mem=0.21MB  Inf=310
+  True  A* h2 (Forward Checking)                 Time=0.0777s  Mem=0.14MB  Inf=635
+  True  A* h3 (MRV)                              Time=0.0213s  Mem=0.14MB  Inf=357
+  True  Dancing Links                            Time=0.0187s  Mem=0.50MB  Inf=2806
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0139s  Mem=0.34MB  Inf=5051
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0138s  Mem=0.34MB  Inf=5051
+  True  A* + AC-3 h3 (MRV)                       Time=0.0137s  Mem=0.34MB  Inf=5051
+  True  Forward Chaining + Backtracking          Time=0.0854s  Mem=3.57MB  Inf=26
+  False Advanced Backward Chaining               Time=60.0115s  Mem=3.58MB  Inf=2238675
+  True  Backward Chaining + AC-3                 Time=6.2026s  Mem=5.60MB  Inf=227874
+
+[EXTREME] size7_extreme_3.txt  (Size 7x7)
+  True  Backtracking                             Time=38.4166s  Mem=0.00MB  Inf=877608
+  False Artificial Bee Colony                    Time=29.5789s  Mem=0.07MB  Inf=1000
+  False Genetic Algorithm                        Time=24.9339s  Mem=0.15MB  Inf=1000
+  False Forward Chaining                         Time=0.0847s  Mem=3.62MB  Inf=3
+  True  Backward Chaining                        Time=17.2215s  Mem=10.04MB  Inf=2254337
+  True  A* h1 (Hamming)                          Time=4.9053s  Mem=3.94MB  Inf=49304
+  False A* h2 (Forward Checking)                 Time=60.0860s  Mem=34.93MB  Inf=446375
+  True  A* h3 (MRV)                              Time=17.2085s  Mem=17.77MB  Inf=276564
+  False Dancing Links                            Time=60.0092s  Mem=0.54MB  Inf=9955034
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0829s  Mem=0.67MB  Inf=31288
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0817s  Mem=0.67MB  Inf=31288
+  True  A* + AC-3 h3 (MRV)                       Time=0.0829s  Mem=0.67MB  Inf=31288
+  True  Forward Chaining + Backtracking          Time=0.1270s  Mem=3.74MB  Inf=99
+  False Advanced Backward Chaining               Time=60.0134s  Mem=3.73MB  Inf=2170081
+  True  Backward Chaining + AC-3                 Time=16.7962s  Mem=5.99MB  Inf=598856
+
+[TRICKY] size7_tricky_1.txt  (Size 7x7)
+  False Backtracking                             Time=60.0091s  Mem=0.01MB  Inf=1516582
+  False Artificial Bee Colony                    Time=28.4653s  Mem=0.07MB  Inf=1000
+  False Genetic Algorithm                        Time=24.9417s  Mem=0.15MB  Inf=1000
+  False Forward Chaining                         Time=0.0709s  Mem=3.56MB  Inf=4
+  True  Backward Chaining                        Time=20.3985s  Mem=9.78MB  Inf=3750992
+  True  A* h1 (Hamming)                          Time=14.9061s  Mem=17.63MB  Inf=200498
+  True  A* h2 (Forward Checking)                 Time=16.4041s  Mem=8.82MB  Inf=134555
+  True  A* h3 (MRV)                              Time=9.1704s  Mem=17.48MB  Inf=158312
+  True  Dancing Links                            Time=34.0900s  Mem=0.52MB  Inf=6630801
+  False A* + AC-3 h1 (Hamming)                   Time=0.2739s  Mem=0.76MB  Inf=101500
+  False A* + AC-3 h2 (Forward Checking)          Time=0.2717s  Mem=0.76MB  Inf=101500
+  False A* + AC-3 h3 (MRV)                       Time=0.2693s  Mem=0.76MB  Inf=101500
+  True  Forward Chaining + Backtracking          Time=0.1109s  Mem=3.62MB  Inf=74
+  False Advanced Backward Chaining               Time=60.0107s  Mem=3.66MB  Inf=2252232
+  True  Backward Chaining + AC-3                 Time=18.7403s  Mem=5.80MB  Inf=682586
+
+[TRICKY] size7_tricky_2.txt  (Size 7x7)
+  False Backtracking                             Time=60.0074s  Mem=0.01MB  Inf=1469027
+  False Artificial Bee Colony                    Time=28.1343s  Mem=0.07MB  Inf=1000
+  False Genetic Algorithm                        Time=24.7731s  Mem=0.15MB  Inf=1000
+  False Forward Chaining                         Time=0.0733s  Mem=3.50MB  Inf=8
+  True  Backward Chaining                        Time=21.6572s  Mem=9.67MB  Inf=8956278
+  False A* h1 (Hamming)                          Time=40.4504s  Mem=34.94MB  Inf=500001
+  True  A* h2 (Forward Checking)                 Time=31.1378s  Mem=17.76MB  Inf=283854
+  True  A* h3 (MRV)                              Time=8.8469s  Mem=17.49MB  Inf=193591
+  True  Dancing Links                            Time=42.1007s  Mem=0.52MB  Inf=9241111
+  True  A* + AC-3 h1 (Hamming)                   Time=0.1211s  Mem=0.74MB  Inf=45963
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.1216s  Mem=0.74MB  Inf=45963
+  True  A* + AC-3 h3 (MRV)                       Time=0.1215s  Mem=0.74MB  Inf=45963
+  True  Forward Chaining + Backtracking          Time=0.0838s  Mem=3.52MB  Inf=26
+  False Advanced Backward Chaining               Time=60.0106s  Mem=3.64MB  Inf=2191434
+  True  Backward Chaining + AC-3                 Time=15.0539s  Mem=5.74MB  Inf=540887
+
+[TRICKY] size7_tricky_3.txt  (Size 7x7)
+  False Backtracking                             Time=60.0094s  Mem=0.01MB  Inf=1331806
+  False Artificial Bee Colony                    Time=29.3534s  Mem=0.07MB  Inf=1000
+  False Genetic Algorithm                        Time=24.6839s  Mem=0.15MB  Inf=1000
+  False Forward Chaining                         Time=0.0757s  Mem=3.62MB  Inf=9
+  True  Backward Chaining                        Time=10.8769s  Mem=9.96MB  Inf=4787999
+  False A* h1 (Hamming)                          Time=46.4922s  Mem=35.20MB  Inf=500001
+  True  A* h2 (Forward Checking)                 Time=27.5687s  Mem=17.52MB  Inf=219266
+  True  A* h3 (MRV)                              Time=12.1479s  Mem=17.51MB  Inf=221239
+  False Dancing Links                            Time=60.0024s  Mem=0.53MB  Inf=12956269
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0510s  Mem=0.63MB  Inf=18379
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0498s  Mem=0.63MB  Inf=18379
+  True  A* + AC-3 h3 (MRV)                       Time=0.0493s  Mem=0.63MB  Inf=18379
+  True  Forward Chaining + Backtracking          Time=0.0935s  Mem=3.67MB  Inf=36
+  False Advanced Backward Chaining               Time=60.0075s  Mem=3.67MB  Inf=2185299
+  True  Backward Chaining + AC-3                 Time=7.4169s  Mem=5.91MB  Inf=259806
+
+[TRIVIAL] size7_trivial_1.txt  (Size 7x7)
+  True  Backtracking                             Time=0.0197s  Mem=0.00MB  Inf=566
+  False Artificial Bee Colony                    Time=3.4861s  Mem=0.07MB  Inf=1000
+  False Genetic Algorithm                        Time=25.1851s  Mem=0.15MB  Inf=1000
+  True  Forward Chaining                         Time=0.0686s  Mem=3.06MB  Inf=8
+  True  Backward Chaining                        Time=12.5928s  Mem=3.83MB  Inf=14899782
+  True  A* h1 (Hamming)                          Time=0.0200s  Mem=0.11MB  Inf=249
+  True  A* h2 (Forward Checking)                 Time=0.0045s  Mem=0.04MB  Inf=31
+  True  A* h3 (MRV)                              Time=0.0032s  Mem=0.04MB  Inf=31
+  True  Dancing Links                            Time=0.0029s  Mem=0.40MB  Inf=49
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0027s  Mem=0.06MB  Inf=1040
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0025s  Mem=0.06MB  Inf=1040
+  True  A* + AC-3 h3 (MRV)                       Time=0.0026s  Mem=0.06MB  Inf=1040
+  True  Forward Chaining + Backtracking          Time=0.0829s  Mem=3.06MB  Inf=9
+  False Advanced Backward Chaining               Time=60.0075s  Mem=3.16MB  Inf=2448880
+  True  Backward Chaining + AC-3                 Time=3.4320s  Mem=4.55MB  Inf=132550
+
+[TRIVIAL] size7_trivial_2.txt  (Size 7x7)
+  True  Backtracking                             Time=0.0105s  Mem=0.00MB  Inf=297
+  False Artificial Bee Colony                    Time=3.4832s  Mem=0.07MB  Inf=1000
+  False Genetic Algorithm                        Time=25.2416s  Mem=0.15MB  Inf=1000
+  True  Forward Chaining                         Time=0.0706s  Mem=3.06MB  Inf=11
+  True  Backward Chaining                        Time=9.1589s  Mem=8.02MB  Inf=6546307
+  True  A* h1 (Hamming)                          Time=0.0116s  Mem=0.11MB  Inf=131
+  True  A* h2 (Forward Checking)                 Time=0.0047s  Mem=0.05MB  Inf=31
+  True  A* h3 (MRV)                              Time=0.0037s  Mem=0.05MB  Inf=36
+  True  Dancing Links                            Time=0.0029s  Mem=0.40MB  Inf=49
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0043s  Mem=0.16MB  Inf=1592
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0044s  Mem=0.16MB  Inf=1592
+  True  A* + AC-3 h3 (MRV)                       Time=0.0043s  Mem=0.16MB  Inf=1592
+  True  Forward Chaining + Backtracking          Time=0.0701s  Mem=3.06MB  Inf=12
+  False Advanced Backward Chaining               Time=60.0077s  Mem=3.15MB  Inf=2465526
+  True  Backward Chaining + AC-3                 Time=3.4834s  Mem=4.56MB  Inf=133416
+
+[TRIVIAL] size7_trivial_3.txt  (Size 7x7)
+  True  Backtracking                             Time=0.0458s  Mem=0.00MB  Inf=1301
+  False Artificial Bee Colony                    Time=3.4455s  Mem=0.07MB  Inf=1000
+  False Genetic Algorithm                        Time=25.4082s  Mem=0.15MB  Inf=1000
+  True  Forward Chaining                         Time=0.0694s  Mem=3.06MB  Inf=10
+  True  Backward Chaining                        Time=6.6003s  Mem=7.97MB  Inf=3510648
+  True  A* h1 (Hamming)                          Time=0.0254s  Mem=0.10MB  Inf=340
+  True  A* h2 (Forward Checking)                 Time=0.0056s  Mem=0.05MB  Inf=42
+  True  A* h3 (MRV)                              Time=0.0037s  Mem=0.05MB  Inf=40
+  True  Dancing Links                            Time=0.0028s  Mem=0.39MB  Inf=49
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0081s  Mem=0.25MB  Inf=3168
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0082s  Mem=0.25MB  Inf=3168
+  True  A* + AC-3 h3 (MRV)                       Time=0.0081s  Mem=0.25MB  Inf=3168
+  True  Forward Chaining + Backtracking          Time=0.0758s  Mem=3.06MB  Inf=11
+  False Advanced Backward Chaining               Time=60.0083s  Mem=3.18MB  Inf=2478337
+  True  Backward Chaining + AC-3                 Time=3.6996s  Mem=4.51MB  Inf=142559
+
+[EASY] size8_easy_1.txt  (Size 8x8)
+  False Backtracking                             Time=60.0023s  Mem=0.02MB  Inf=1063091
+  False Artificial Bee Colony                    Time=36.4189s  Mem=0.08MB  Inf=1000
+  False Genetic Algorithm                        Time=26.3416s  Mem=0.19MB  Inf=1000
+  True  Forward Chaining                         Time=0.1455s  Mem=6.58MB  Inf=20
+  False Backward Chaining                        Time=60.0220s  Mem=16.24MB  Inf=5499101
+  False A* h1 (Hamming)                          Time=53.0166s  Mem=35.48MB  Inf=500001
+  False A* h2 (Forward Checking)                 Time=60.0670s  Mem=35.23MB  Inf=357220
+  False A* h3 (MRV)                              Time=32.5116s  Mem=35.22MB  Inf=500001
+  False Dancing Links                            Time=60.0084s  Mem=0.96MB  Inf=9226946
+  False A* + AC-3 h1 (Hamming)                   Time=0.3810s  Mem=1.87MB  Inf=110059
+  False A* + AC-3 h2 (Forward Checking)          Time=0.3808s  Mem=1.87MB  Inf=110059
+  False A* + AC-3 h3 (MRV)                       Time=0.3816s  Mem=1.87MB  Inf=110059
+  True  Forward Chaining + Backtracking          Time=0.1435s  Mem=6.57MB  Inf=21
+  False Advanced Backward Chaining               Time=60.0132s  Mem=6.70MB  Inf=1499445
+  False Backward Chaining + AC-3                 Time=60.0159s  Mem=9.17MB  Inf=1497153
+
+[EASY] size8_easy_2.txt  (Size 8x8)
+  False Backtracking                             Time=60.0074s  Mem=0.01MB  Inf=1069217
+  False Artificial Bee Colony                    Time=34.5010s  Mem=0.08MB  Inf=1000
+  False Genetic Algorithm                        Time=26.3585s  Mem=0.19MB  Inf=1000
+  True  Forward Chaining                         Time=0.1406s  Mem=6.24MB  Inf=20
+  False Backward Chaining                        Time=60.0228s  Mem=16.71MB  Inf=11553590
+  True  A* h1 (Hamming)                          Time=40.1727s  Mem=34.97MB  Inf=435312
+  True  A* h2 (Forward Checking)                 Time=47.5162s  Mem=18.34MB  Inf=297117
+  True  A* h3 (MRV)                              Time=30.7419s  Mem=34.81MB  Inf=448516
+  False Dancing Links                            Time=60.0051s  Mem=0.89MB  Inf=11120693
+  True  A* + AC-3 h1 (Hamming)                   Time=0.2235s  Mem=1.28MB  Inf=77676
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.2230s  Mem=1.28MB  Inf=77676
+  True  A* + AC-3 h3 (MRV)                       Time=0.2236s  Mem=1.28MB  Inf=77676
+  True  Forward Chaining + Backtracking          Time=0.1482s  Mem=6.23MB  Inf=21
+  False Advanced Backward Chaining               Time=60.0116s  Mem=6.29MB  Inf=1473850
+  False Backward Chaining + AC-3                 Time=60.0117s  Mem=9.98MB  Inf=1475073
+
+[EASY] size8_easy_3.txt  (Size 8x8)
+  False Backtracking                             Time=60.0028s  Mem=0.02MB  Inf=1039487
+  False Artificial Bee Colony                    Time=34.7310s  Mem=0.08MB  Inf=1000
+  False Genetic Algorithm                        Time=26.4646s  Mem=0.19MB  Inf=1000
+  True  Forward Chaining                         Time=0.1493s  Mem=6.31MB  Inf=20
+  True  Backward Chaining                        Time=35.8658s  Mem=17.41MB  Inf=14826937
+  False A* h1 (Hamming)                          Time=50.3427s  Mem=35.42MB  Inf=500001
+  False A* h2 (Forward Checking)                 Time=60.0725s  Mem=35.05MB  Inf=391115
+  True  A* h3 (MRV)                              Time=15.7535s  Mem=18.15MB  Inf=248799
+  False Dancing Links                            Time=60.0041s  Mem=0.92MB  Inf=12143387
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0406s  Mem=0.60MB  Inf=13447
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0406s  Mem=0.60MB  Inf=13447
+  True  A* + AC-3 h3 (MRV)                       Time=0.0399s  Mem=0.60MB  Inf=13447
+  True  Forward Chaining + Backtracking          Time=0.1438s  Mem=6.30MB  Inf=21
+  False Advanced Backward Chaining               Time=60.0104s  Mem=6.44MB  Inf=1471186
+  True  Backward Chaining + AC-3                 Time=20.9358s  Mem=10.60MB  Inf=498139
+
+[EXTREME] size8_extreme_1.txt  (Size 8x8)
+  False Backtracking                             Time=60.0044s  Mem=0.02MB  Inf=987484
+  False Artificial Bee Colony                    Time=35.7682s  Mem=0.08MB  Inf=1000
+  False Genetic Algorithm                        Time=25.8754s  Mem=0.19MB  Inf=1000
+  False Forward Chaining                         Time=0.1316s  Mem=6.43MB  Inf=9
+  False Backward Chaining                        Time=60.0244s  Mem=16.65MB  Inf=9772718
+  False A* h1 (Hamming)                          Time=50.9650s  Mem=35.61MB  Inf=500001
+  True  A* h2 (Forward Checking)                 Time=3.0397s  Mem=1.43MB  Inf=17550
+  True  A* h3 (MRV)                              Time=0.8150s  Mem=1.20MB  Inf=11992
+  False Dancing Links                            Time=60.0090s  Mem=0.96MB  Inf=10314490
+  True  A* + AC-3 h1 (Hamming)                   Time=0.2138s  Mem=1.37MB  Inf=68520
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.2141s  Mem=1.37MB  Inf=68520
+  True  A* + AC-3 h3 (MRV)                       Time=0.2187s  Mem=1.37MB  Inf=68520
+  True  Forward Chaining + Backtracking          Time=0.2000s  Mem=6.62MB  Inf=85
+  False Advanced Backward Chaining               Time=60.0157s  Mem=6.48MB  Inf=1506664
+  False Backward Chaining + AC-3                 Time=60.0181s  Mem=10.81MB  Inf=1414637
+
+[EXTREME] size8_extreme_2.txt  (Size 8x8)
+  False Backtracking                             Time=60.0068s  Mem=0.01MB  Inf=1020612
+  False Artificial Bee Colony                    Time=35.9353s  Mem=0.08MB  Inf=1000
+  False Genetic Algorithm                        Time=26.3903s  Mem=0.19MB  Inf=1000
+  False Forward Chaining                         Time=0.1392s  Mem=6.50MB  Inf=15
+  False Backward Chaining                        Time=60.0265s  Mem=16.92MB  Inf=5305981
+  False A* h1 (Hamming)                          Time=60.1001s  Mem=35.42MB  Inf=491084
+  False A* h2 (Forward Checking)                 Time=60.0917s  Mem=35.12MB  Inf=356064
+  False A* h3 (MRV)                              Time=35.6360s  Mem=37.22MB  Inf=500001
+  False Dancing Links                            Time=60.0039s  Mem=0.96MB  Inf=12251088
+  False A* + AC-3 h1 (Hamming)                   Time=0.3496s  Mem=1.82MB  Inf=105603
+  False A* + AC-3 h2 (Forward Checking)          Time=0.3486s  Mem=1.82MB  Inf=105603
+  False A* + AC-3 h3 (MRV)                       Time=0.3492s  Mem=1.82MB  Inf=105603
+  True  Forward Chaining + Backtracking          Time=0.1743s  Mem=6.70MB  Inf=54
+  False Advanced Backward Chaining               Time=60.0106s  Mem=6.55MB  Inf=1437605
+  False Backward Chaining + AC-3                 Time=60.0083s  Mem=9.92MB  Inf=1440678
+
+[EXTREME] size8_extreme_3.txt  (Size 8x8)
+  False Backtracking                             Time=60.0044s  Mem=0.02MB  Inf=1068397
+  False Artificial Bee Colony                    Time=35.3109s  Mem=0.08MB  Inf=1000
+  False Genetic Algorithm                        Time=26.4332s  Mem=0.19MB  Inf=1000
+  False Forward Chaining                         Time=0.1343s  Mem=6.35MB  Inf=14
+  False Backward Chaining                        Time=60.0238s  Mem=15.83MB  Inf=30347047
+  False A* h1 (Hamming)                          Time=56.9026s  Mem=35.27MB  Inf=500001
+  True  A* h2 (Forward Checking)                 Time=58.0308s  Mem=34.96MB  Inf=343408
+  False A* h3 (MRV)                              Time=34.9031s  Mem=35.08MB  Inf=500001
+  False Dancing Links                            Time=60.0054s  Mem=0.94MB  Inf=10864636
+  False A* + AC-3 h1 (Hamming)                   Time=0.3408s  Mem=1.57MB  Inf=106514
+  False A* + AC-3 h2 (Forward Checking)          Time=0.3417s  Mem=1.57MB  Inf=106514
+  False A* + AC-3 h3 (MRV)                       Time=0.3387s  Mem=1.57MB  Inf=106514
+  True  Forward Chaining + Backtracking          Time=0.1572s  Mem=6.50MB  Inf=39
+  False Advanced Backward Chaining               Time=60.0091s  Mem=6.47MB  Inf=1456093
+  False Backward Chaining + AC-3                 Time=60.0133s  Mem=8.99MB  Inf=1447632
+
+[TRICKY] size8_tricky_1.txt  (Size 8x8)
+  False Backtracking                             Time=60.0056s  Mem=0.02MB  Inf=978652
+  False Artificial Bee Colony                    Time=36.8083s  Mem=0.09MB  Inf=1000
+  False Genetic Algorithm                        Time=26.2689s  Mem=0.19MB  Inf=1000
+  False Forward Chaining                         Time=0.1285s  Mem=6.61MB  Inf=5
+  False Backward Chaining                        Time=60.0209s  Mem=17.16MB  Inf=9457631
+  False A* h1 (Hamming)                          Time=60.0923s  Mem=35.23MB  Inf=443529
+  False A* h2 (Forward Checking)                 Time=60.0629s  Mem=34.97MB  Inf=337815
+  False A* h3 (MRV)                              Time=39.3548s  Mem=35.35MB  Inf=500001
+  False Dancing Links                            Time=60.0044s  Mem=0.96MB  Inf=9328932
+  False A* + AC-3 h1 (Hamming)                   Time=0.3561s  Mem=1.62MB  Inf=108670
+  False A* + AC-3 h2 (Forward Checking)          Time=0.3538s  Mem=1.62MB  Inf=108670
+  False A* + AC-3 h3 (MRV)                       Time=0.3545s  Mem=1.62MB  Inf=108670
+  True  Forward Chaining + Backtracking          Time=0.2031s  Mem=6.76MB  Inf=67
+  False Advanced Backward Chaining               Time=60.0121s  Mem=6.70MB  Inf=1441594
+  False Backward Chaining + AC-3                 Time=60.0114s  Mem=10.04MB  Inf=1394854
+
+[TRICKY] size8_tricky_2.txt  (Size 8x8)
+  False Backtracking                             Time=60.0029s  Mem=0.01MB  Inf=985431
+  False Artificial Bee Colony                    Time=37.9626s  Mem=0.09MB  Inf=1000
+  False Genetic Algorithm                        Time=26.2613s  Mem=0.19MB  Inf=1000
+  False Forward Chaining                         Time=0.1287s  Mem=6.69MB  Inf=5
+  False Backward Chaining                        Time=60.0170s  Mem=17.91MB  Inf=23912222
+  False A* h1 (Hamming)                          Time=60.0494s  Mem=18.38MB  Inf=266641
+  False A* h2 (Forward Checking)                 Time=60.0516s  Mem=19.23MB  Inf=296051
+  False A* h3 (MRV)                              Time=45.2220s  Mem=37.01MB  Inf=500001
+  False Dancing Links                            Time=60.0086s  Mem=1.03MB  Inf=6088049
+  False A* + AC-3 h1 (Hamming)                   Time=0.3726s  Mem=1.84MB  Inf=111072
+  False A* + AC-3 h2 (Forward Checking)          Time=0.3722s  Mem=1.84MB  Inf=111072
+  False A* + AC-3 h3 (MRV)                       Time=0.3727s  Mem=1.84MB  Inf=111072
+  True  Forward Chaining + Backtracking          Time=0.2286s  Mem=6.89MB  Inf=103
+  False Advanced Backward Chaining               Time=60.0163s  Mem=6.76MB  Inf=1498928
+  False Backward Chaining + AC-3                 Time=60.0161s  Mem=10.72MB  Inf=1429380
+
+[TRICKY] size8_tricky_3.txt  (Size 8x8)
+  False Backtracking                             Time=60.0105s  Mem=0.02MB  Inf=966957
+  False Artificial Bee Colony                    Time=36.9997s  Mem=0.08MB  Inf=1000
+  False Genetic Algorithm                        Time=26.4785s  Mem=0.19MB  Inf=1000
+  False Forward Chaining                         Time=0.1464s  Mem=6.69MB  Inf=18
+  False Backward Chaining                        Time=60.0198s  Mem=17.09MB  Inf=10203457
+  False A* h1 (Hamming)                          Time=49.7674s  Mem=35.96MB  Inf=500001
+  False A* h2 (Forward Checking)                 Time=60.0614s  Mem=19.18MB  Inf=306435
+  False A* h3 (MRV)                              Time=45.3740s  Mem=53.09MB  Inf=500001
+  False Dancing Links                            Time=60.0026s  Mem=1.00MB  Inf=10357243
+  False A* + AC-3 h1 (Hamming)                   Time=0.3494s  Mem=1.54MB  Inf=109802
+  False A* + AC-3 h2 (Forward Checking)          Time=0.3498s  Mem=1.54MB  Inf=109802
+  False A* + AC-3 h3 (MRV)                       Time=0.3455s  Mem=1.53MB  Inf=109802
+  True  Forward Chaining + Backtracking          Time=0.1593s  Mem=6.73MB  Inf=34
+  False Advanced Backward Chaining               Time=60.0110s  Mem=6.85MB  Inf=1475722
+  False Backward Chaining + AC-3                 Time=60.0104s  Mem=9.90MB  Inf=1398045
+
+[TRIVIAL] size8_trivial_1.txt  (Size 8x8)
+  True  Backtracking                             Time=0.2476s  Mem=0.00MB  Inf=5148
+  False Artificial Bee Colony                    Time=3.4739s  Mem=0.08MB  Inf=1000
+  False Genetic Algorithm                        Time=26.6090s  Mem=0.19MB  Inf=1000
+  True  Forward Chaining                         Time=0.1236s  Mem=5.38MB  Inf=11
+  True  Backward Chaining                        Time=41.5894s  Mem=6.77MB  Inf=42060950
+  True  A* h1 (Hamming)                          Time=0.3532s  Mem=0.40MB  Inf=4166
+  True  A* h2 (Forward Checking)                 Time=0.0161s  Mem=0.07MB  Inf=129
+  True  A* h3 (MRV)                              Time=0.0048s  Mem=0.07MB  Inf=41
+  True  Dancing Links                            Time=0.0044s  Mem=0.68MB  Inf=64
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0154s  Mem=0.52MB  Inf=5828
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0156s  Mem=0.52MB  Inf=5828
+  True  A* + AC-3 h3 (MRV)                       Time=0.0158s  Mem=0.52MB  Inf=5828
+  True  Forward Chaining + Backtracking          Time=0.1206s  Mem=5.37MB  Inf=12
+  False Advanced Backward Chaining               Time=60.0134s  Mem=5.53MB  Inf=1584011
+  True  Backward Chaining + AC-3                 Time=10.5972s  Mem=8.24MB  Inf=270744
+
+[TRIVIAL] size8_trivial_2.txt  (Size 8x8)
+  True  Backtracking                             Time=0.1633s  Mem=0.00MB  Inf=3468
+  False Artificial Bee Colony                    Time=3.4585s  Mem=0.09MB  Inf=1000
+  False Genetic Algorithm                        Time=26.6922s  Mem=0.19MB  Inf=1000
+  True  Forward Chaining                         Time=0.1239s  Mem=5.38MB  Inf=14
+  True  Backward Chaining                        Time=33.4239s  Mem=14.09MB  Inf=21683037
+  True  A* h1 (Hamming)                          Time=0.2448s  Mem=0.35MB  Inf=2955
+  True  A* h2 (Forward Checking)                 Time=0.0072s  Mem=0.05MB  Inf=43
+  True  A* h3 (MRV)                              Time=0.0049s  Mem=0.05MB  Inf=43
+  True  Dancing Links                            Time=0.0046s  Mem=0.68MB  Inf=64
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0051s  Mem=0.15MB  Inf=1937
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0050s  Mem=0.15MB  Inf=1937
+  True  A* + AC-3 h3 (MRV)                       Time=0.0051s  Mem=0.15MB  Inf=1937
+  True  Forward Chaining + Backtracking          Time=0.1243s  Mem=5.37MB  Inf=15
+  False Advanced Backward Chaining               Time=59.9870s  Mem=5.54MB  Inf=1617561
+  True  Backward Chaining + AC-3                 Time=10.6669s  Mem=8.24MB  Inf=268473
+
+[TRIVIAL] size8_trivial_3.txt  (Size 8x8)
+  True  Backtracking                             Time=0.2473s  Mem=0.00MB  Inf=5160
+  False Artificial Bee Colony                    Time=3.4647s  Mem=0.08MB  Inf=1000
+  False Genetic Algorithm                        Time=26.3115s  Mem=0.19MB  Inf=1000
+  True  Forward Chaining                         Time=0.1181s  Mem=5.38MB  Inf=10
+  True  Backward Chaining                        Time=48.0479s  Mem=6.79MB  Inf=46773226
+  True  A* h1 (Hamming)                          Time=0.1076s  Mem=0.33MB  Inf=1235
+  True  A* h2 (Forward Checking)                 Time=0.0080s  Mem=0.06MB  Inf=53
+  True  A* h3 (MRV)                              Time=0.0054s  Mem=0.06MB  Inf=53
+  True  Dancing Links                            Time=0.0045s  Mem=0.70MB  Inf=64
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0069s  Mem=0.18MB  Inf=2802
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0067s  Mem=0.18MB  Inf=2802
+  True  A* + AC-3 h3 (MRV)                       Time=0.0067s  Mem=0.18MB  Inf=2802
+  True  Forward Chaining + Backtracking          Time=0.1197s  Mem=5.37MB  Inf=11
+  False Advanced Backward Chaining               Time=60.0065s  Mem=5.44MB  Inf=1652427
+  True  Backward Chaining + AC-3                 Time=10.6626s  Mem=8.32MB  Inf=281324
+
+[EASY] size9_easy_1.txt  (Size 9x9)
+  False Backtracking                             Time=60.0053s  Mem=0.03MB  Inf=764016
+  False Artificial Bee Colony                    Time=42.1830s  Mem=0.10MB  Inf=1000
+  False Genetic Algorithm                        Time=26.7801s  Mem=0.23MB  Inf=1000
+  True  Forward Chaining                         Time=0.2663s  Mem=10.56MB  Inf=35
+  False Backward Chaining                        Time=60.0254s  Mem=23.60MB  Inf=34449627
+  False A* h1 (Hamming)                          Time=53.8619s  Mem=35.62MB  Inf=500001
+  False A* h2 (Forward Checking)                 Time=60.0438s  Mem=18.61MB  Inf=266516
+  False A* h3 (MRV)                              Time=50.7653s  Mem=36.53MB  Inf=500001
+  False Dancing Links                            Time=60.0080s  Mem=1.59MB  Inf=9412523
+  False A* + AC-3 h1 (Hamming)                   Time=0.4009s  Mem=1.83MB  Inf=107426
+  False A* + AC-3 h2 (Forward Checking)          Time=0.4021s  Mem=1.83MB  Inf=107426
+  False A* + AC-3 h3 (MRV)                       Time=0.4090s  Mem=1.83MB  Inf=107426
+  True  Forward Chaining + Backtracking          Time=0.2535s  Mem=10.54MB  Inf=36
+  False Advanced Backward Chaining               Time=60.0137s  Mem=10.73MB  Inf=1074516
+  False Backward Chaining + AC-3                 Time=60.0168s  Mem=14.37MB  Inf=1053524
+
+[EASY] size9_easy_2.txt  (Size 9x9)
+  False Backtracking                             Time=60.0046s  Mem=0.02MB  Inf=820189
+  False Artificial Bee Colony                    Time=42.6675s  Mem=0.11MB  Inf=1000
+  False Genetic Algorithm                        Time=26.9038s  Mem=0.23MB  Inf=1000
+  True  Forward Chaining                         Time=0.2464s  Mem=10.65MB  Inf=26
+  False Backward Chaining                        Time=60.3706s  Mem=12.58MB  Inf=45366282
+  False A* h1 (Hamming)                          Time=60.0420s  Mem=35.30MB  Inf=479062
+  True  A* h2 (Forward Checking)                 Time=41.8319s  Mem=17.63MB  Inf=195400
+  True  A* h3 (MRV)                              Time=15.9959s  Mem=17.88MB  Inf=199108
+  False Dancing Links                            Time=60.0098s  Mem=1.52MB  Inf=10026653
+  False A* + AC-3 h1 (Hamming)                   Time=0.3946s  Mem=2.28MB  Inf=109662
+  False A* + AC-3 h2 (Forward Checking)          Time=0.3814s  Mem=2.28MB  Inf=109662
+  False A* + AC-3 h3 (MRV)                       Time=0.3772s  Mem=2.28MB  Inf=109662
+  True  Forward Chaining + Backtracking          Time=0.2474s  Mem=10.63MB  Inf=27
+  False Advanced Backward Chaining               Time=60.0148s  Mem=10.76MB  Inf=1005552
+  False Backward Chaining + AC-3                 Time=60.0163s  Mem=14.83MB  Inf=1005387
+
+[EASY] size9_easy_3.txt  (Size 9x9)
+  False Backtracking                             Time=60.0013s  Mem=0.02MB  Inf=851779
+  False Artificial Bee Colony                    Time=43.4724s  Mem=0.10MB  Inf=1000
+  False Genetic Algorithm                        Time=27.4267s  Mem=0.23MB  Inf=1000
+  True  Forward Chaining                         Time=0.2504s  Mem=10.61MB  Inf=24
+  False Backward Chaining                        Time=60.0256s  Mem=22.79MB  Inf=39254874
+  False A* h1 (Hamming)                          Time=57.8998s  Mem=35.83MB  Inf=500001
+  False A* h2 (Forward Checking)                 Time=60.0507s  Mem=17.95MB  Inf=266914
+  False A* h3 (MRV)                              Time=40.3197s  Mem=36.13MB  Inf=500001
+  False Dancing Links                            Time=60.0081s  Mem=1.55MB  Inf=9969100
+  False A* + AC-3 h1 (Hamming)                   Time=0.4680s  Mem=2.78MB  Inf=121014
+  False A* + AC-3 h2 (Forward Checking)          Time=0.4680s  Mem=2.78MB  Inf=121014
+  False A* + AC-3 h3 (MRV)                       Time=0.4631s  Mem=2.78MB  Inf=121014
+  True  Forward Chaining + Backtracking          Time=0.2404s  Mem=10.58MB  Inf=25
+  False Advanced Backward Chaining               Time=60.0194s  Mem=10.81MB  Inf=997351
+  False Backward Chaining + AC-3                 Time=60.0174s  Mem=14.09MB  Inf=1008005
+
+[EXTREME] size9_extreme_1.txt  (Size 9x9)
+  False Backtracking                             Time=60.0028s  Mem=0.03MB  Inf=819587
+  False Artificial Bee Colony                    Time=40.7183s  Mem=0.11MB  Inf=1000
+  False Genetic Algorithm                        Time=27.3340s  Mem=0.23MB  Inf=1000
+  False Forward Chaining                         Time=0.2367s  Mem=10.19MB  Inf=23
+  False Backward Chaining                        Time=61.0070s  Mem=12.05MB  Inf=44792808
+  False A* h1 (Hamming)                          Time=60.0868s  Mem=35.83MB  Inf=456775
+  False A* h2 (Forward Checking)                 Time=60.0459s  Mem=19.01MB  Inf=310303
+  False A* h3 (MRV)                              Time=39.4767s  Mem=35.17MB  Inf=500001
+  False Dancing Links                            Time=60.0086s  Mem=1.50MB  Inf=8912162
+  False A* + AC-3 h1 (Hamming)                   Time=0.3848s  Mem=2.26MB  Inf=112860
+  False A* + AC-3 h2 (Forward Checking)          Time=0.3823s  Mem=2.26MB  Inf=112860
+  False A* + AC-3 h3 (MRV)                       Time=0.3789s  Mem=2.26MB  Inf=112860
+  True  Forward Chaining + Backtracking          Time=0.2661s  Mem=10.31MB  Inf=49
+  False Advanced Backward Chaining               Time=60.0168s  Mem=10.30MB  Inf=993923
+  False Backward Chaining + AC-3                 Time=60.0214s  Mem=13.22MB  Inf=1016483
+
+[EXTREME] size9_extreme_2.txt  (Size 9x9)
+  False Backtracking                             Time=60.0057s  Mem=0.02MB  Inf=836649
+  False Artificial Bee Colony                    Time=41.7730s  Mem=0.11MB  Inf=1000
+  False Genetic Algorithm                        Time=27.4747s  Mem=0.23MB  Inf=1000
+  False Forward Chaining                         Time=0.2250s  Mem=10.42MB  Inf=15
+  False Backward Chaining                        Time=61.6886s  Mem=12.38MB  Inf=43058718
+  False A* h1 (Hamming)                          Time=60.0688s  Mem=35.76MB  Inf=368048
+  False A* h2 (Forward Checking)                 Time=60.0443s  Mem=17.95MB  Inf=278000
+  True  A* h3 (MRV)                              Time=30.8791s  Mem=35.19MB  Inf=361907
+  False Dancing Links                            Time=60.0044s  Mem=1.57MB  Inf=8810408
+  True  A* + AC-3 h1 (Hamming)                   Time=0.1731s  Mem=1.81MB  Inf=51587
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.1782s  Mem=1.81MB  Inf=51587
+  True  A* + AC-3 h3 (MRV)                       Time=0.1813s  Mem=1.81MB  Inf=51587
+  True  Forward Chaining + Backtracking          Time=0.4270s  Mem=10.82MB  Inf=133
+  False Advanced Backward Chaining               Time=60.0153s  Mem=10.60MB  Inf=1000798
+  False Backward Chaining + AC-3                 Time=60.0128s  Mem=14.36MB  Inf=1008088
+
+[EXTREME] size9_extreme_3.txt  (Size 9x9)
+  False Backtracking                             Time=60.0069s  Mem=0.02MB  Inf=922352
+  False Artificial Bee Colony                    Time=39.4096s  Mem=0.10MB  Inf=1000
+  False Genetic Algorithm                        Time=27.3977s  Mem=0.23MB  Inf=1000
+  False Forward Chaining                         Time=0.1991s  Mem=9.92MB  Inf=9
+  False Backward Chaining                        Time=61.5997s  Mem=11.84MB  Inf=42453377
+  False A* h1 (Hamming)                          Time=60.0976s  Mem=35.50MB  Inf=478288
+  False A* h2 (Forward Checking)                 Time=60.0619s  Mem=34.98MB  Inf=323845
+  False A* h3 (MRV)                              Time=35.8143s  Mem=36.14MB  Inf=500001
+  False Dancing Links                            Time=60.0050s  Mem=1.48MB  Inf=11004476
+  False A* + AC-3 h1 (Hamming)                   Time=0.3825s  Mem=1.99MB  Inf=110365
+  False A* + AC-3 h2 (Forward Checking)          Time=0.3704s  Mem=1.99MB  Inf=110365
+  False A* + AC-3 h3 (MRV)                       Time=0.3693s  Mem=1.99MB  Inf=110365
+  True  Forward Chaining + Backtracking          Time=0.2583s  Mem=9.99MB  Inf=41
+  False Advanced Backward Chaining               Time=60.0164s  Mem=9.99MB  Inf=1040260
+  False Backward Chaining + AC-3                 Time=60.0208s  Mem=13.11MB  Inf=1026466
+
+[TRICKY] size9_tricky_1.txt  (Size 9x9)
+  False Backtracking                             Time=60.0028s  Mem=0.03MB  Inf=803012
+  False Artificial Bee Colony                    Time=42.6085s  Mem=0.10MB  Inf=1000
+  False Genetic Algorithm                        Time=27.5877s  Mem=0.23MB  Inf=1000
+  False Forward Chaining                         Time=0.2220s  Mem=10.51MB  Inf=10
+  False Backward Chaining                        Time=60.0299s  Mem=25.57MB  Inf=9266262
+  False A* h1 (Hamming)                          Time=60.1218s  Mem=35.94MB  Inf=473059
+  False A* h2 (Forward Checking)                 Time=60.0656s  Mem=18.42MB  Inf=287663
+  False A* h3 (MRV)                              Time=39.0414s  Mem=35.76MB  Inf=500001
+  False Dancing Links                            Time=60.0362s  Mem=1.57MB  Inf=9846360
+  False A* + AC-3 h1 (Hamming)                   Time=0.4446s  Mem=2.52MB  Inf=116403
+  False A* + AC-3 h2 (Forward Checking)          Time=0.4225s  Mem=2.52MB  Inf=116403
+  False A* + AC-3 h3 (MRV)                       Time=0.4242s  Mem=2.52MB  Inf=116403
+  True  Forward Chaining + Backtracking          Time=3.0269s  Mem=11.08MB  Inf=1187
+  False Advanced Backward Chaining               Time=60.0129s  Mem=10.63MB  Inf=992473
+  False Backward Chaining + AC-3                 Time=60.0187s  Mem=14.69MB  Inf=989596
+
+[TRICKY] size9_tricky_2.txt  (Size 9x9)
+  False Backtracking                             Time=60.0053s  Mem=0.02MB  Inf=831776
+  False Artificial Bee Colony                    Time=43.6522s  Mem=0.11MB  Inf=1000
+  False Genetic Algorithm                        Time=27.6842s  Mem=0.23MB  Inf=1000
+  False Forward Chaining                         Time=0.2272s  Mem=10.70MB  Inf=11
+  False Backward Chaining                        Time=60.0341s  Mem=24.85MB  Inf=25277814
+  False A* h1 (Hamming)                          Time=60.0907s  Mem=35.52MB  Inf=441383
+  False A* h2 (Forward Checking)                 Time=60.0544s  Mem=17.97MB  Inf=250792
+  False A* h3 (MRV)                              Time=52.1778s  Mem=67.33MB  Inf=500001
+  False Dancing Links                            Time=60.0034s  Mem=1.57MB  Inf=8317855
+  False A* + AC-3 h1 (Hamming)                   Time=0.4634s  Mem=2.28MB  Inf=116624
+  False A* + AC-3 h2 (Forward Checking)          Time=0.4616s  Mem=2.28MB  Inf=116624
+  False A* + AC-3 h3 (MRV)                       Time=0.4563s  Mem=2.28MB  Inf=116624
+  True  Forward Chaining + Backtracking          Time=0.6380s  Mem=11.02MB  Inf=291
+  False Advanced Backward Chaining               Time=60.0175s  Mem=10.79MB  Inf=1020243
+  False Backward Chaining + AC-3                 Time=60.0168s  Mem=13.50MB  Inf=1042838
+
+[TRICKY] size9_tricky_3.txt  (Size 9x9)
+  False Backtracking                             Time=60.0057s  Mem=0.02MB  Inf=794009
+  False Artificial Bee Colony                    Time=44.1576s  Mem=0.10MB  Inf=1000
+  False Genetic Algorithm                        Time=27.2483s  Mem=0.23MB  Inf=1000
+  False Forward Chaining                         Time=0.2335s  Mem=10.84MB  Inf=15
+  False Backward Chaining                        Time=61.6835s  Mem=12.76MB  Inf=46378263
+  False A* h1 (Hamming)                          Time=60.1025s  Mem=36.43MB  Inf=468691
+  False A* h2 (Forward Checking)                 Time=60.0477s  Mem=18.19MB  Inf=278025
+  False A* h3 (MRV)                              Time=38.2510s  Mem=35.48MB  Inf=500001
+  False Dancing Links                            Time=60.0047s  Mem=1.57MB  Inf=8911742
+  False A* + AC-3 h1 (Hamming)                   Time=0.4447s  Mem=2.07MB  Inf=112223
+  False A* + AC-3 h2 (Forward Checking)          Time=0.4272s  Mem=2.07MB  Inf=112223
+  False A* + AC-3 h3 (MRV)                       Time=0.4284s  Mem=2.08MB  Inf=112223
+  True  Forward Chaining + Backtracking          Time=0.4125s  Mem=11.13MB  Inf=145
+  False Advanced Backward Chaining               Time=60.0164s  Mem=10.94MB  Inf=983832
+  False Backward Chaining + AC-3                 Time=60.0172s  Mem=14.53MB  Inf=976975
+
+[TRIVIAL] size9_trivial_1.txt  (Size 9x9)
+  True  Backtracking                             Time=1.4098s  Mem=0.01MB  Inf=22989
+  False Artificial Bee Colony                    Time=3.4132s  Mem=0.11MB  Inf=1000
+  False Genetic Algorithm                        Time=27.6002s  Mem=0.23MB  Inf=1000
+  True  Forward Chaining                         Time=0.1956s  Mem=8.77MB  Inf=13
+  False Backward Chaining                        Time=61.1301s  Mem=10.59MB  Inf=44982479
+  True  A* h1 (Hamming)                          Time=0.1583s  Mem=0.35MB  Inf=1569
+  True  A* h2 (Forward Checking)                 Time=0.0104s  Mem=0.08MB  Inf=52
+  True  A* h3 (MRV)                              Time=0.0071s  Mem=0.08MB  Inf=55
+  True  Dancing Links                            Time=0.0066s  Mem=1.12MB  Inf=81
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0157s  Mem=0.60MB  Inf=5488
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0152s  Mem=0.61MB  Inf=5488
+  True  A* + AC-3 h3 (MRV)                       Time=0.0154s  Mem=0.61MB  Inf=5488
+  True  Forward Chaining + Backtracking          Time=0.2131s  Mem=8.75MB  Inf=14
+  False Advanced Backward Chaining               Time=60.0156s  Mem=8.96MB  Inf=1077677
+  True  Backward Chaining + AC-3                 Time=29.9559s  Mem=12.54MB  Inf=533784
+
+[TRIVIAL] size9_trivial_2.txt  (Size 9x9)
+  False Backtracking                             Time=60.0055s  Mem=0.01MB  Inf=1048535
+  False Artificial Bee Colony                    Time=3.4095s  Mem=0.11MB  Inf=1000
+  False Genetic Algorithm                        Time=27.7751s  Mem=0.23MB  Inf=1000
+  True  Forward Chaining                         Time=0.1966s  Mem=8.77MB  Inf=13
+  False Backward Chaining                        Time=60.8731s  Mem=10.58MB  Inf=46660992
+  True  A* h1 (Hamming)                          Time=8.9326s  Mem=8.88MB  Inf=85377
+  True  A* h2 (Forward Checking)                 Time=0.0098s  Mem=0.07MB  Inf=48
+  True  A* h3 (MRV)                              Time=0.0064s  Mem=0.07MB  Inf=48
+  True  Dancing Links                            Time=0.0069s  Mem=1.12MB  Inf=81
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0063s  Mem=0.09MB  Inf=2625
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0063s  Mem=0.09MB  Inf=2625
+  True  A* + AC-3 h3 (MRV)                       Time=0.0063s  Mem=0.09MB  Inf=2625
+  True  Forward Chaining + Backtracking          Time=0.2117s  Mem=8.75MB  Inf=14
+  False Advanced Backward Chaining               Time=60.0188s  Mem=8.86MB  Inf=1081174
+  True  Backward Chaining + AC-3                 Time=28.3938s  Mem=12.10MB  Inf=504111
+
+[TRIVIAL] size9_trivial_3.txt  (Size 9x9)
+  False Backtracking                             Time=60.0042s  Mem=0.02MB  Inf=999244
+  False Artificial Bee Colony                    Time=3.4684s  Mem=0.10MB  Inf=1000
+  False Genetic Algorithm                        Time=27.4899s  Mem=0.23MB  Inf=1000
+  True  Forward Chaining                         Time=0.2127s  Mem=8.77MB  Inf=18
+  False Backward Chaining                        Time=60.9057s  Mem=10.58MB  Inf=44768715
+  True  A* h1 (Hamming)                          Time=0.8059s  Mem=1.06MB  Inf=7565
+  True  A* h2 (Forward Checking)                 Time=0.0125s  Mem=0.08MB  Inf=66
+  True  A* h3 (MRV)                              Time=0.0080s  Mem=0.08MB  Inf=66
+  True  Dancing Links                            Time=0.0069s  Mem=1.16MB  Inf=81
+  True  A* + AC-3 h1 (Hamming)                   Time=0.0148s  Mem=0.32MB  Inf=5782
+  True  A* + AC-3 h2 (Forward Checking)          Time=0.0149s  Mem=0.32MB  Inf=5782
+  True  A* + AC-3 h3 (MRV)                       Time=0.0149s  Mem=0.32MB  Inf=5782
+  True  Forward Chaining + Backtracking          Time=0.2203s  Mem=8.75MB  Inf=19
+  False Advanced Backward Chaining               Time=60.0133s  Mem=8.94MB  Inf=1087357
+  True  Backward Chaining + AC-3                 Time=32.7170s  Mem=12.53MB  Inf=575854
+
+============================================================
+GENERATING CHARTS BY DIFFICULTY
+============================================================
+  Saved: /Users/shelterin/Library/CloudStorage/OneDrive-Personal/Study/Nam2/HK1/HCMUS_CSC14003_Project_2/test/plot/easy_time.png
+  Saved: /Users/shelterin/Library/CloudStorage/OneDrive-Personal/Study/Nam2/HK1/HCMUS_CSC14003_Project_2/test/plot/easy_memory.png
+  Saved: /Users/shelterin/Library/CloudStorage/OneDrive-Personal/Study/Nam2/HK1/HCMUS_CSC14003_Project_2/test/plot/easy_accuracy.png
+  Saved: /Users/shelterin/Library/CloudStorage/OneDrive-Personal/Study/Nam2/HK1/HCMUS_CSC14003_Project_2/test/plot/easy_inferences.png
+  Saved: /Users/shelterin/Library/CloudStorage/OneDrive-Personal/Study/Nam2/HK1/HCMUS_CSC14003_Project_2/test/plot/extreme_time.png
+  Saved: /Users/shelterin/Library/CloudStorage/OneDrive-Personal/Study/Nam2/HK1/HCMUS_CSC14003_Project_2/test/plot/extreme_memory.png
+  Saved: /Users/shelterin/Library/CloudStorage/OneDrive-Personal/Study/Nam2/HK1/HCMUS_CSC14003_Project_2/test/plot/extreme_accuracy.png
+  Saved: /Users/shelterin/Library/CloudStorage/OneDrive-Personal/Study/Nam2/HK1/HCMUS_CSC14003_Project_2/test/plot/extreme_inferences.png
+  Saved: /Users/shelterin/Library/CloudStorage/OneDrive-Personal/Study/Nam2/HK1/HCMUS_CSC14003_Project_2/test/plot/tricky_time.png
+  Saved: /Users/shelterin/Library/CloudStorage/OneDrive-Personal/Study/Nam2/HK1/HCMUS_CSC14003_Project_2/test/plot/tricky_memory.png
+  Saved: /Users/shelterin/Library/CloudStorage/OneDrive-Personal/Study/Nam2/HK1/HCMUS_CSC14003_Project_2/test/plot/tricky_accuracy.png
+  Saved: /Users/shelterin/Library/CloudStorage/OneDrive-Personal/Study/Nam2/HK1/HCMUS_CSC14003_Project_2/test/plot/tricky_inferences.png
+  Saved: /Users/shelterin/Library/CloudStorage/OneDrive-Personal/Study/Nam2/HK1/HCMUS_CSC14003_Project_2/test/plot/trivial_time.png
+  Saved: /Users/shelterin/Library/CloudStorage/OneDrive-Personal/Study/Nam2/HK1/HCMUS_CSC14003_Project_2/test/plot/trivial_memory.png
+  Saved: /Users/shelterin/Library/CloudStorage/OneDrive-Personal/Study/Nam2/HK1/HCMUS_CSC14003_Project_2/test/plot/trivial_accuracy.png
+  Saved: /Users/shelterin/Library/CloudStorage/OneDrive-Personal/Study/Nam2/HK1/HCMUS_CSC14003_Project_2/test/plot/trivial_inferences.png
+
+BENCHMARK COMPLETED
+   Charts: /Users/shelterin/Library/CloudStorage/OneDrive-Personal/Study/Nam2/HK1/HCMUS_CSC14003_Project_2/test/plot/
+   Log:     /Users/shelterin/Library/CloudStorage/OneDrive-Personal/Study/Nam2/HK1/HCMUS_CSC14003_Project_2/test/benchmark_2026-04-18_08h52m03s.log

@@ -1,12 +1,12 @@
 6
 # Grid: N lines of N values separated by commas.
 # 0 = empty cell; 1..N = pre-filled digit.
-4, 0, 1, 0, 0, 0
-0, 0, 0, 0, 0, 0
-0, 6, 2, 0, 5, 0
-6, 2, 0, 3, 0, 0
-3, 5, 0, 0, 0, 0
-0, 0, 0, 0, 2, 1
+4, 5, 0, 1, 0, 0
+0, 4, 0, 0, 0, 0
+0, 0, 1, 6, 0, 4
+0, 0, 0, 5, 0, 0
+0, 0, 0, 2, 6, 0
+2, 1, 0, 0, 0, 5
 # Horizontal constraints: one line per row, N-1 values.
 # 0 = no constraint, 1 = "<" (left < right), -1 = ">" (left > right)
 0, 0, 0, 0, 0
