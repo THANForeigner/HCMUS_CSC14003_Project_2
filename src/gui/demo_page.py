@@ -72,18 +72,10 @@ class DemoPage(ft.View):
 
         self.algorithm_dropdown = ft.Dropdown(
             width=200,
-            value="backtrack",
+            value="astar_ac3",
             options=[
                 ft.dropdown.Option("backtrack", text="Backtracking"),
                 ft.dropdown.Option("brute_force", text="Brute Force"),
-                ft.dropdown.Option(
-                    "backward_chaining_with_ac3", text="Backward Chaining with AC3"
-                ),
-                ft.dropdown.Option("backward_chaining", text="Backward Chaining"),
-                ft.dropdown.Option("bc_no_backtrack", text="BC No Backtrack"),
-                ft.dropdown.Option("forward_chaining", text="Forward Chaining"),
-                ft.dropdown.Option("fc_with_backtrack", text="FC with Backtrack"),
-                ft.dropdown.Option("dancing_links", text="Dancing Links"),
                 ft.dropdown.Option("astar_h1", text="A* + h1 (Hamming)"),
                 ft.dropdown.Option("astar_h2", text="A* + h2 "),
                 ft.dropdown.Option("astar_h3", text="A* + h3 (MRV)"),
@@ -91,6 +83,12 @@ class DemoPage(ft.View):
                 ft.dropdown.Option("astar_ac3_h1", text="A* + AC-3 + h1"),
                 ft.dropdown.Option("astar_ac3_h2", text="A* + AC-3 + h2"),
                 ft.dropdown.Option("astar_ac3_h3", text="A* + AC-3 + h3"),
+                ft.dropdown.Option("backward_chaining_with_ac3", text="Backward Chaining + AC-3"),
+                ft.dropdown.Option("backward_chaining", text="Backward Chaining"),
+                ft.dropdown.Option("bc_no_backtrack", text="BC No Backtrack"),
+                ft.dropdown.Option("forward_chaining", text="Forward Chaining"),
+                ft.dropdown.Option("fc_with_backtrack", text="FC with Backtrack"),
+                ft.dropdown.Option("dancing_links", text="Dancing Links"),
             ],
             bgcolor=Win7Theme.CARD_BG,
             color=Win7Theme.TEXT_PRIMARY,
@@ -116,6 +114,20 @@ class DemoPage(ft.View):
             active_color=Win7Theme.PRIMARY,
             width=150,
             on_change=self.on_speed_change,
+        )
+        self.max_nodes_field = ft.TextField(
+            label="Max Nodes",
+            value="500000",
+            width=100,
+            text_align=ft.TextAlign.CENTER,
+            keyboard_type=ft.KeyboardType.NUMBER,
+            tooltip="Max Nodes to Expand",
+        )
+        self.unlimited_nodes_checkbox = ft.Checkbox(
+            label="Unlimited",
+            value=False,
+            on_change=self.on_unlimited_nodes_change,
+            tooltip="Disable node limit",
         )
         self.solve_instantly_button = ft.IconButton(
             icon=ft.Icons.FAST_FORWARD,
@@ -180,6 +192,9 @@ class DemoPage(ft.View):
                             ],
                             spacing=5,
                         ),
+                        ft.Text("Max Nodes:", size=12, color=Win7Theme.TEXT_PRIMARY),
+                        self.max_nodes_field,
+                        self.unlimited_nodes_checkbox,
                     ],
                     alignment=ft.MainAxisAlignment.START,
                     wrap=True,
@@ -565,6 +580,7 @@ class DemoPage(ft.View):
                     callback=callback,
                     algorithm=self.algorithm_dropdown.value,
                     step_player=self.step_player,
+                    max_nodes=int(self.max_nodes_field.value) if not self.unlimited_nodes_checkbox.value else None,
                 )
             )
 
@@ -597,6 +613,10 @@ class DemoPage(ft.View):
 
     async def on_speed_change(self, e):
         self.step_player._delay = float(self.speed_slider.value)
+
+    async def on_unlimited_nodes_change(self, e):
+        self.max_nodes_field.disabled = self.unlimited_nodes_checkbox.value
+        self._page.update()
 
     async def on_solve_instantly(self, e):
         # Only allow if animation is running AND solution is ready

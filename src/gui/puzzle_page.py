@@ -112,12 +112,8 @@ class PuzzlePage(ft.View):
             ),
             value="astar_ac3",
             options=[
-                ft.dropdown.Option("backtrack", text="Backtracking"),
-                ft.dropdown.Option("brute_force", text="Brute Force"),
-                ft.dropdown.Option("astar_h1", text="A* + h1 (Hamming)"),
-                ft.dropdown.Option("astar_h2", text="A* + h2 "),
-                ft.dropdown.Option("astar_h3", text="A* + h3 (MRV)"),
                 ft.dropdown.Option("astar_ac3", text="A* + AC-3"),
+                ft.dropdown.Option("backward_chaining_with_ac3", text="Backward Chaining + AC-3"),
             ],
             bgcolor=Win7Theme.CARD_BG,
             color=Win7Theme.TEXT_PRIMARY,
@@ -145,6 +141,20 @@ class PuzzlePage(ft.View):
             width=120,
             on_change=self.on_speed_change,
             active_color=Win7Theme.PRIMARY,
+        )
+        self.max_nodes_field = ft.TextField(
+            label="Max Nodes",
+            value="500000",
+            width=100,
+            text_align=ft.TextAlign.CENTER,
+            keyboard_type=ft.KeyboardType.NUMBER,
+            tooltip="Max Nodes to Expand",
+        )
+        self.unlimited_nodes_checkbox = ft.Checkbox(
+            label="Unlimited",
+            value=False,
+            on_change=self.on_unlimited_nodes_change,
+            tooltip="Disable node limit",
         )
         self.solve_instantly_button = ft.IconButton(
             icon=ft.Icons.FAST_FORWARD,
@@ -213,6 +223,16 @@ class PuzzlePage(ft.View):
                                 self.play_button,
                                 self.step_button,
                                 self.solve_instantly_button,
+                                ft.Row(
+                                    [
+                                        ft.Text("Speed", size=12, color=Win7Theme.TEXT_PRIMARY),
+                                        self.speed_slider,
+                                    ],
+                                    spacing=5,
+                                ),
+                                ft.Text("Max Nodes:", size=12, color=Win7Theme.TEXT_PRIMARY),
+                                self.max_nodes_field,
+                                self.unlimited_nodes_checkbox,
                                 ft.Container(expand=True),
                                 ft.TextButton(
                                     "Clear",
@@ -287,6 +307,8 @@ class PuzzlePage(ft.View):
         self.solver = SolverController()
         self.step_player = StepPlayer()
         self._solution = None
+        self._solution_ready = False
+        self._solving = False
         self._original_grid = None
         self._active_cell = None  # (r, c)
         self._bottom_sheet = None
@@ -841,14 +863,26 @@ class PuzzlePage(ft.View):
         self.page.update()
 
     async def solve_puzzle(self, e):
+        self._solving = True
+        self._solution_ready = False
+        self._solution = None
+        
         async def on_result(solution, stats, steps=None):
+            self._solving = False
+            self._solution = solution
+            self._solution_ready = solution is not None
+            
+            expanded = stats.get('nodes_expanded', 0)
+            max_nodes = int(self.max_nodes_field.value) if not self.unlimited_nodes_checkbox.value else None
+            
             if solution is None:
-                self.status_text.value = "No solution found"
+                if max_nodes is not None and expanded >= max_nodes:
+                    self.status_text.value = f"Max node limit reached ({expanded} nodes)"
+                else:
+                    self.status_text.value = "No solution found"
                 self.status_text.color = Win7Theme.ERROR
             else:
-                self.status_text.value = (
-                    f"Solved: {stats.get('nodes_generated', '?')} nodes"
-                )
+                self.status_text.value = f"Solved: {stats.get('nodes_generated', '?')} nodes | {stats.get('time', 0):.3f}s"
                 self.status_text.color = Win7Theme.SUCCESS
                 for r in range(self.size):
                     for c in range(self.size):
@@ -856,6 +890,7 @@ class PuzzlePage(ft.View):
                             self.cells[r][c].content.value = str(solution[r][c])
                             self.cells[r][c].bgcolor = Win7Theme.SUCCESS
                             self.cell_colors[r][c] = Win7Theme.SUCCESS
+            
             self.page.update()
 
         self.status_text.value = "Solving..."
@@ -931,6 +966,7 @@ class PuzzlePage(ft.View):
                     callback=on_result,
                     algorithm=self.algorithm_dropdown.value,
                     step_player=self.step_player,
+                    max_nodes=int(self.max_nodes_field.value) if not self.unlimited_nodes_checkbox.value else None,
                 )
             )
 
@@ -980,8 +1016,13 @@ class PuzzlePage(ft.View):
                     self.v_constraints,
                     callback=on_result,
                     algorithm=self.algorithm_dropdown.value,
+                    max_nodes=int(self.max_nodes_field.value) if not self.unlimited_nodes_checkbox.value else None,
                 )
             )
 
     async def on_speed_change(self, e):
         self.step_player._delay = float(self.speed_slider.value)
+
+    async def on_unlimited_nodes_change(self, e):
+        self.max_nodes_field.disabled = self.unlimited_nodes_checkbox.value
+        self.page.update()

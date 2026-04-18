@@ -345,7 +345,7 @@ class AStarFutoshiki(FutoshikiSolver):
         result, exp, gen = backtrack(initial_state, ac3.domains)
         return result.grid if result else None, exp, gen
 
-    def solve_with_history(self, stream_queue=None):
+    def solve_with_history(self, stream_queue=None, max_nodes: int = 999999999):
         import time
         self.nodes_expanded = 0
         self.nodes_generated = 0
@@ -376,7 +376,7 @@ class AStarFutoshiki(FutoshikiSolver):
                 return state
             
             self.nodes_expanded += 1
-            if self.nodes_expanded > 100000:
+            if self.nodes_expanded > max_nodes:
                 return None
             
             row, col = self.find_best_blank(state, current_domains)
