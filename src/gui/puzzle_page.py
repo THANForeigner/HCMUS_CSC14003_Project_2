@@ -874,9 +874,11 @@ class PuzzlePage(ft.View):
             
             expanded = stats.get('nodes_expanded', 0)
             max_nodes = int(self.max_nodes_field.value) if not self.unlimited_nodes_checkbox.value else None
+            is_incomplete = stats.get('incomplete', False)
+            hit_limit = stats.get('hit_limit', False)
             
-            if solution is None:
-                if max_nodes is not None and expanded >= max_nodes:
+            if solution is None or is_incomplete:
+                if hit_limit and max_nodes:
                     self.status_text.value = f"Max node limit reached ({expanded} nodes)"
                 else:
                     self.status_text.value = "No solution found"

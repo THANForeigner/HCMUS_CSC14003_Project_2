@@ -164,10 +164,13 @@ class SolverController:
                     return solution[0], stats
                 elif algorithm == 'astar_ac3':
                     from src.algorithm.comparing_algorithms.a_star.a_star_with_ac3 import AStarFutoshiki
+                    import time
                     s = AStarFutoshiki(size, grid, (h_constraints, v_constraints))
                     max_nodes_arg = max_nodes if max_nodes else 999999999
+                    start = time.time()
                     solution, nodes_expanded, nodes_generated = s.solve_with_ac3(max_nodes=max_nodes_arg)
-                    return solution.tolist() if solution is not None else None, {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated}
+                    duration = time.time() - start
+                    return solution.tolist() if solution is not None else None, {'nodes_expanded': nodes_expanded, 'nodes_generated': nodes_generated, 'time': duration}
                 elif algorithm == 'backward_chaining_with_ac3':
                     from src.algorithm.first_order_logic.backward_chaining_with_ac3 import backward_chaining_with_ac3
                     s = backward_chaining_with_ac3(size, grid, (h_constraints, v_constraints))
