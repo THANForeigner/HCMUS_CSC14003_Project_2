@@ -72,14 +72,13 @@ class DemoPage(ft.View):
 
         self.algorithm_dropdown = ft.Dropdown(
             width=200,
-            value="astar_ac3",
+            value="astar_ac3_h1",
             options=[
                 ft.dropdown.Option("backtrack", text="Backtracking"),
                 ft.dropdown.Option("brute_force", text="Brute Force"),
                 ft.dropdown.Option("astar_h1", text="A* + h1 (Hamming)"),
                 ft.dropdown.Option("astar_h2", text="A* + h2 "),
                 ft.dropdown.Option("astar_h3", text="A* + h3 (MRV)"),
-                ft.dropdown.Option("astar_ac3", text="A* + AC-3"),
                 ft.dropdown.Option("astar_ac3_h1", text="A* + AC-3 + h1"),
                 ft.dropdown.Option("astar_ac3_h2", text="A* + AC-3 + h2"),
                 ft.dropdown.Option("astar_ac3_h3", text="A* + AC-3 + h3"),
@@ -93,7 +92,14 @@ class DemoPage(ft.View):
             color=Win7Theme.TEXT_PRIMARY,
             border_color=Win7Theme.PANEL_BG,
         )
-        self.algorithm_dropdown.on_change = self.on_algorithm_selected
+
+        self.choose_algo_button = ft.ElevatedButton(
+            content=ft.Text("Choose this algorithm"),
+            on_click=self.on_choose_algorithm,
+            style=ft.ButtonStyle(
+                bgcolor=Win7Theme.PRIMARY, color=Win7Theme.TEXT_INVERSE
+            ),
+        )
 
         self.play_button = ft.IconButton(
             icon=ft.Icons.PLAY_ARROW,
@@ -110,7 +116,7 @@ class DemoPage(ft.View):
         self.speed_slider = ft.Slider(
             min=0.01,
             max=1.0,
-            value=0.1,
+            value=0.5,
             active_color=Win7Theme.PRIMARY,
             width=150,
             on_change=self.on_speed_change,
@@ -187,6 +193,7 @@ class DemoPage(ft.View):
                         ),
                         ft.Text("Algo:", size=14, color=Win7Theme.TEXT_SECONDARY),
                         self.algorithm_dropdown,
+                        self.choose_algo_button,
                         ft.ElevatedButton(
                             content=ft.Text("Demonstrate"),
                             on_click=self.on_compute_solution,
@@ -640,10 +647,11 @@ class DemoPage(ft.View):
     async def on_speed_change(self, e):
         self.step_player._delay = float(self.speed_slider.value)
 
-    def on_algorithm_selected(self, e):
+    async def on_choose_algorithm(self, e):
         algo = self.algorithm_dropdown.value
-        show_max_nodes = algo and (algo.startswith('astar') or algo in ['backtrack', 'brute_force'])
-        self.max_nodes_container.visible = show_max_nodes
+        show_max_nodes = algo and algo.startswith("astar")
+        self.max_nodes_container.visible = bool(show_max_nodes)
+        await self.refresh_puzzle(None)
         self._page.update()
 
     async def on_unlimited_nodes_change(self, e):

@@ -121,10 +121,10 @@ def _mp_worker(algorithm, size, grid, h_constraints, v_constraints, q, max_nodes
             from src.algorithm.first_order_logic.fc_with_backtrack import forward_chaining
             s = forward_chaining(size, grid, (h_constraints, v_constraints))
             s.solve_with_history(stream_queue=q)
-        elif algorithm == 'dancing_links':
-            from src.algorithm.comparing_algorithms.dancing_links.dlx_futoshiki import DLXFutoshiki
-            s = DLXFutoshiki(size, grid, (h_constraints, v_constraints))
-            s.solve_with_history(stream_queue=q)
+        # elif algorithm == 'dancing_links':
+        #     from src.algorithm.comparing_algorithms.dancing_links.dlx_futoshiki import DLXFutoshiki
+        #     s = DLXFutoshiki(size, grid, (h_constraints, v_constraints))
+        #     s.solve_with_history(stream_queue=q)
         else:
             from src.algorithm.comparing_algorithms.brute_force_and_backtrack.backtrack import BacktrackSolver
             s = BacktrackSolver(size, grid, (h_constraints, v_constraints))
@@ -176,11 +176,11 @@ class SolverController:
                     s = backward_chaining_with_ac3(size, grid, (h_constraints, v_constraints))
                     s.solve()
                     return s.solution, {'nodes_expanded': 0, 'nodes_generated': 0}
-                elif algorithm == 'dancing_links':
-                    from src.algorithm.comparing_algorithms.dancing_links.dlx_futoshiki import DLXFutoshiki
-                    s = DLXFutoshiki(size, grid, (h_constraints, v_constraints))
-                    solution = s.solve()
-                    return solution, {'nodes_expanded': 0, 'nodes_generated': 0}
+                # elif algorithm == 'dancing_links':
+                #     from src.algorithm.comparing_algorithms.dancing_links.dlx_futoshiki import DLXFutoshiki
+                #     s = DLXFutoshiki(size, grid, (h_constraints, v_constraints))
+                #     solution = s.solve()
+                #     return solution, {'nodes_expanded': 0, 'nodes_generated': 0}
                 else:
                     s = BacktrackSolverSimple(size, grid, (h_constraints, v_constraints))
                     return s.solve()

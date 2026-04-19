@@ -134,14 +134,6 @@ class PuzzlePage(ft.View):
             icon_color=Win7Theme.PRIMARY,
             tooltip="Next Step",
         )
-        self.speed_slider = ft.Slider(
-            min=0.01,
-            max=1.0,
-            value=0.1,
-            width=120,
-            on_change=self.on_speed_change,
-            active_color=Win7Theme.PRIMARY,
-        )
         self.max_nodes_field = ft.TextField(
             label="Max Nodes",
             value="500000",
@@ -156,11 +148,30 @@ class PuzzlePage(ft.View):
             on_change=self.on_unlimited_nodes_change,
             tooltip="Disable node limit",
         )
+        self.max_nodes_container = ft.Container(
+            content=ft.Row(
+                [
+                    ft.Text("Max Nodes:", size=12, color=Win7Theme.TEXT_PRIMARY),
+                    self.max_nodes_field,
+                    self.unlimited_nodes_checkbox,
+                ],
+                spacing=5,
+            ),
+            visible=self.algorithm_dropdown.value.startswith("astar") if self.algorithm_dropdown.value else True,
+        )
         self.solve_instantly_button = ft.IconButton(
             icon=ft.Icons.FAST_FORWARD,
             on_click=self.on_solve_instantly,
             icon_color=Win7Theme.PRIMARY,
             tooltip="Solve Instantly (No Delay)",
+        )
+        self.choose_algo_button = ft.ElevatedButton(
+            content=ft.Text("Choose this algorithm"),
+            on_click=self.on_choose_algorithm,
+            style=ft.ButtonStyle(
+                bgcolor=Win7Theme.PRIMARY,
+                color=Win7Theme.TEXT_INVERSE,
+            ),
         )
 
         # Control panel with improved dropdown styling
@@ -210,6 +221,7 @@ class PuzzlePage(ft.View):
                                     weight=ft.FontWeight.BOLD,
                                 ),
                                 self.algorithm_dropdown,
+                                self.choose_algo_button,
                                 ft.VerticalDivider(width=1, color=Win7Theme.PANEL_BG),
                                 ft.ElevatedButton(
                                     content=ft.Text("Solve"),
@@ -223,31 +235,19 @@ class PuzzlePage(ft.View):
                                 self.play_button,
                                 self.step_button,
                                 self.solve_instantly_button,
-                                ft.Row(
-                                    [
-                                        ft.Text("Speed", size=12, color=Win7Theme.TEXT_PRIMARY),
-                                        self.speed_slider,
-                                    ],
-                                    spacing=5,
-                                ),
-                                ft.Text("Max Nodes:", size=12, color=Win7Theme.TEXT_PRIMARY),
-                                self.max_nodes_field,
-                                self.unlimited_nodes_checkbox,
-                                ft.Container(expand=True),
-                                ft.TextButton(
-                                    "Clear",
-                                    on_click=self.clear_board,
-                                    style=ft.ButtonStyle(color=Win7Theme.ERROR),
-                                ),
                             ],
                             alignment=ft.MainAxisAlignment.START,
                             spacing=5,
                         ),
                         ft.Row(
                             [
-                                ft.Text("Speed", size=12, color=Win7Theme.TEXT_PRIMARY),
-                                self.speed_slider,
+                                self.max_nodes_container,
                                 ft.Container(expand=True),
+                                ft.TextButton(
+                                    "Clear",
+                                    on_click=self.clear_board,
+                                    style=ft.ButtonStyle(color=Win7Theme.ERROR),
+                                ),
                             ],
                             alignment=ft.MainAxisAlignment.START,
                             spacing=5,
@@ -378,6 +378,13 @@ class PuzzlePage(ft.View):
             self.status_text.value = "Please select Size, Difficulty, and ID"
             self.status_text.color = Win7Theme.ERROR
         self._page.update()
+
+    async def on_choose_algorithm(self, e):
+        algo = self.algorithm_dropdown.value
+        show_max_nodes = algo and algo.startswith("astar")
+        self.max_nodes_container.visible = bool(show_max_nodes)
+        await self.hard_refresh_page(None)
+        self.page.update()
 
     async def on_size_selected(self, e):
         try:
@@ -956,7 +963,7 @@ class PuzzlePage(ft.View):
         async with asyncio.TaskGroup() as tg:
             tg.create_task(
                 self.step_player.run_streaming(
-                    event_callback, delay=self.speed_slider.value
+                    event_callback, delay=0.1
                 )
             )
             tg.create_task(
@@ -974,7 +981,7 @@ class PuzzlePage(ft.View):
 
     async def on_play_pause(self, e):
         if not self.step_player.is_running():
-            await self.step_player.start_auto(delay=self.speed_slider.value)
+            await self.step_player.start_auto(delay=0.1)
             self.play_button.icon = ft.Icons.PAUSE
         else:
             if self.step_player.is_paused():
@@ -1021,9 +1028,6 @@ class PuzzlePage(ft.View):
                     max_nodes=int(self.max_nodes_field.value) if not self.unlimited_nodes_checkbox.value else None,
                 )
             )
-
-    async def on_speed_change(self, e):
-        self.step_player._delay = float(self.speed_slider.value)
 
     async def on_unlimited_nodes_change(self, e):
         self.max_nodes_field.disabled = self.unlimited_nodes_checkbox.value
