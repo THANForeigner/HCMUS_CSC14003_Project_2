@@ -72,7 +72,7 @@ class DemoPage(ft.View):
 
         self.algorithm_dropdown = ft.Dropdown(
             width=200,
-            value="astar_ac3_h1",
+            value="backtrack",
             options=[
                 ft.dropdown.Option("backtrack", text="Backtracking"),
                 ft.dropdown.Option("brute_force", text="Brute Force"),
@@ -101,18 +101,18 @@ class DemoPage(ft.View):
             ),
         )
 
-        self.play_button = ft.IconButton(
-            icon=ft.Icons.PLAY_ARROW,
-            on_click=self.on_play_pause,
-            icon_color=Win7Theme.PRIMARY,
-            tooltip="Play/Pause",
-        )
-        self.step_button = ft.IconButton(
-            icon=ft.Icons.SKIP_NEXT,
-            on_click=self.on_manual_step,
-            icon_color=Win7Theme.PRIMARY,
-            tooltip="Next Step",
-        )
+        # self.play_button = ft.IconButton(
+        #     icon=ft.Icons.PLAY_ARROW,
+        #     on_click=self.on_play_pause,
+        #     icon_color=Win7Theme.PRIMARY,
+        #     tooltip="Play/Pause",
+        # )
+        # self.step_button = ft.IconButton(
+        #     icon=ft.Icons.SKIP_NEXT,
+        #     on_click=self.on_manual_step,
+        #     icon_color=Win7Theme.PRIMARY,
+        #     tooltip="Next Step",
+        # )
         self.speed_slider = ft.Slider(
             min=0.01,
             max=1.0,
@@ -144,16 +144,16 @@ class DemoPage(ft.View):
                 ],
                 spacing=5,
             ),
-            visible=True,
+            visible=False,
         )
-        
-        self.solve_instantly_button = ft.IconButton(
-            icon=ft.Icons.FAST_FORWARD,
-            on_click=self.on_solve_instantly,
-            icon_color=Win7Theme.PRIMARY,
-            tooltip="Solve Instantly (No Delay)",
-            disabled=True,  # Initially disabled until animation is running with solution ready
-        )
+
+        # self.solve_instantly_button = ft.IconButton(
+        #     icon=ft.Icons.FAST_FORWARD,
+        #     on_click=self.on_solve_instantly,
+        #     icon_color=Win7Theme.PRIMARY,
+        #     tooltip="Solve Instantly (No Delay)",
+        #     disabled=True,
+        # )
 
         self.board_container = ft.Container(
             content=ft.Column(
@@ -201,9 +201,10 @@ class DemoPage(ft.View):
                                 bgcolor=Win7Theme.PRIMARY, color=Win7Theme.TEXT_INVERSE
                             ),
                         ),
-                        self.play_button,
-                        self.step_button,
-                        self.solve_instantly_button,
+                        # self.play_button,
+                        # self.step_button,
+                        # self.solve_instantly_button,
+
                         ft.Row(
                             [
                                 ft.Text("Speed", size=12, color=Win7Theme.TEXT_PRIMARY),
@@ -228,6 +229,7 @@ class DemoPage(ft.View):
 
         self.step_player = StepPlayer()
         self.solver = SolverController()
+        self.active_algorithm = "backtrack"
         self._original_grid = None
         self._solution_ready = False  # Track if solver has finished
         self._final_solution = None  # Store final solution for instant display
@@ -269,6 +271,10 @@ class DemoPage(ft.View):
 
     async def hard_refresh_page(self, e):
         """Perform a hard refresh of the page"""
+        if self.step_player.is_running() or self.step_player.is_paused():
+            await self.step_player.stop()
+        # self.play_button.icon = ft.Icons.PLAY_ARROW
+
         state = self._parse_dropdown_state()
         if state["size"] and state["difficulty"] and state["id"]:
             await self.on_id_selected(None)
@@ -354,7 +360,7 @@ class DemoPage(ft.View):
             await self.step_player.stop()
         
         # Reset UI elements
-        self.play_button.icon = ft.Icons.PAUSE
+        # self.play_button.icon = ft.Icons.PLAY_ARROW
         self.status.value = ""
         
         # Reload the puzzle
@@ -367,8 +373,9 @@ class DemoPage(ft.View):
         for attempt in range(10):  # Try up to 10 times with 0.1s each = 1 second total
             if self._is_initialized and self.grid:
                 await self.step_player.start_auto(delay=self.speed_slider.value)
-                self.play_button.icon = ft.Icons.PAUSE
-                self._update_solve_instantly_button_state()
+                # self.play_button.icon = ft.Icons.PAUSE
+                # self._update_solve_instantly_button_state()
+
                 self._page.update()
                 return
             await asyncio.sleep(0.1)
@@ -524,17 +531,8 @@ class DemoPage(ft.View):
                     f"Demo Finished. {stats.get('nodes_generated', '?')} nodes."
                 )
                 self.status.color = Win7Theme.SUCCESS
-                
-                # Update board with final solution
-                for r in range(self.size):
-                    for c in range(self.size):
-                        if self._original_grid[r][c] == 0:
-                            self.cells[r][c].content.value = str(solution[r][c])
-                            self.cells[r][c].bgcolor = Win7Theme.SUCCESS
-                            self.cells[r][c].content.color = Win7Theme.TEXT_INVERSE
             
-            # Update button state now that solution is ready
-            self._update_solve_instantly_button_state()
+            # self._update_solve_instantly_button_state()
             self._page.update()
 
         self.status.value = "Demonstrating..."
@@ -611,7 +609,7 @@ class DemoPage(ft.View):
                     self.h_constraints,
                     self.v_constraints,
                     callback=callback,
-                    algorithm=self.algorithm_dropdown.value,
+                    algorithm=self.active_algorithm,
                     step_player=self.step_player,
                     max_nodes=int(self.max_nodes_field.value) if not self.unlimited_nodes_checkbox.value else None,
                 )
@@ -619,25 +617,27 @@ class DemoPage(ft.View):
 
     def _update_solve_instantly_button_state(self):
         """Enable Solve Instantly button only if animation is running AND solution is ready."""
-        should_enable = self.step_player.is_running() and self._solution_ready
-        self.solve_instantly_button.disabled = not should_enable
-        if should_enable:
-            self.solve_instantly_button.tooltip = "Solve Instantly (stop animation, show solution)"
-        else:
-            self.solve_instantly_button.tooltip = "Solve Instantly (only available during animation with computed solution)"
+        # should_enable = self.step_player.is_running() and self._solution_ready
+        # self.solve_instantly_button.disabled = not should_enable
+        # if should_enable:
+        #     self.solve_instantly_button.tooltip = "Solve Instantly (stop animation, show solution)"
+        # else:
+        #     self.solve_instantly_button.tooltip = "Solve Instantly (only available during animation with computed solution)"
+        pass
 
     async def on_play_pause(self, e):
         if not self.step_player.is_running():
             await self.step_player.start_auto(delay=self.speed_slider.value)
-            self.play_button.icon = ft.Icons.PAUSE
+            # self.play_button.icon = ft.Icons.PAUSE
         else:
             if self.step_player.is_paused():
                 self.step_player.resume()
-                self.play_button.icon = ft.Icons.PAUSE
+                # self.play_button.icon = ft.Icons.PAUSE
             else:
                 self.step_player.pause()
-                self.play_button.icon = ft.Icons.PLAY_ARROW
-        self._update_solve_instantly_button_state()
+                # self.play_button.icon = ft.Icons.PAUSE
+                # self._update_solve_instantly_button_state()
+
         self._page.update()
 
     async def on_manual_step(self, e):
@@ -648,7 +648,8 @@ class DemoPage(ft.View):
         self.step_player._delay = float(self.speed_slider.value)
 
     async def on_choose_algorithm(self, e):
-        algo = self.algorithm_dropdown.value
+        self.active_algorithm = self.algorithm_dropdown.value
+        algo = self.active_algorithm
         show_max_nodes = algo and algo.startswith("astar")
         self.max_nodes_container.visible = bool(show_max_nodes)
         await self.refresh_puzzle(None)
@@ -681,5 +682,5 @@ class DemoPage(ft.View):
             self.status.value = "Solution displayed instantly"
             self.status.color = Win7Theme.SUCCESS
         
-        self.play_button.icon = ft.Icons.PLAY_ARROW
+        # self.play_button.icon = ft.Icons.PLAY_ARROW
         self._page.update()

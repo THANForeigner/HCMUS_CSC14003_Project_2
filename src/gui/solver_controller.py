@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 import threading
 import time
 from typing import List, Tuple, Optional, Any, Callable
@@ -194,7 +195,7 @@ class SolverController:
         async with self._lock:
             self._result = (solution, stats)
         if callback:
-            if asyncio.iscoroutinefunction(callback):
+            if inspect.iscoroutinefunction(callback):
                 await callback(solution, stats)
             else:
                 callback(solution, stats)
@@ -215,7 +216,7 @@ class SolverController:
                     step = await asyncio.to_thread(q.get, timeout=0.05)
                     if step[0] == 'done':
                         if callback:
-                            if asyncio.iscoroutinefunction(callback):
+                            if inspect.iscoroutinefunction(callback):
                                 await callback(step[1], step[2], [])
                             else:
                                 callback(step[1], step[2], [])
@@ -225,7 +226,7 @@ class SolverController:
                 except queue.Empty:
                     if not p.is_alive():
                         if callback:
-                            if asyncio.iscoroutinefunction(callback):
+                            if inspect.iscoroutinefunction(callback):
                                 await callback(None, {}, [])
                             else:
                                 callback(None, {}, [])

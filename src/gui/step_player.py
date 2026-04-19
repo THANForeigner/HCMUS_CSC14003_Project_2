@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 from typing import List, Tuple, Callable, Optional
 
 class StepPlayer:
@@ -86,7 +87,7 @@ class StepPlayer:
                 # execute step
                 try:
                     if self._callback:
-                        if asyncio.iscoroutinefunction(self._callback):
+                        if inspect.iscoroutinefunction(self._callback):
                             await self._callback(*step)
                         else:
                             self._callback(*step)
@@ -136,7 +137,7 @@ class StepPlayer:
             
         if step is not None and self._callback:
             try:
-                if asyncio.iscoroutinefunction(self._callback):
+                if inspect.iscoroutinefunction(self._callback):
                     await self._callback(*step)
                 else:
                     self._callback(*step)
