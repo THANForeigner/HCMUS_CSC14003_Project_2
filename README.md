@@ -73,16 +73,16 @@ python src/main.py --input inputs/input-01.txt --algorithm backtrack
 
 ## Testing & Benchmarking
 
-### Running Tests
-To verify the correctness of the solvers:
-```bash
-python test/test.py
-```
-
-### Benchmarking
-The project includes a benchmarking script that runs algorithms across various puzzle sizes and difficulties, generating performance plots in the `test/plot/` directory:
+### Test Data Generation
+Generate test cases by crawling web data using Selenium:
 ```bash
 python test/generate_test.py
+```
+
+### Running Algorithm Tests
+Execute the test script to run algorithms across various puzzle sizes and difficulties. This will also generate performance plots in the `test/plot/` directory:
+```bash
+python test/test.py
 ```
 This will output:
 - **Time Comparison**: Execution time per algorithm.
