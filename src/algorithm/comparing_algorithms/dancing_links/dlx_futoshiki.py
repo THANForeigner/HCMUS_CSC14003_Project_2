@@ -14,7 +14,7 @@ class DLXFutoshiki(futoshiki_solver, DancingLink):
         self.current_board = [[0] * size for _ in range(size)]
 
     def build_matrix(self, size, matrix):
-        # Tổng số cột: N*N (Ô) + N*N (Hàng) + N*N (Cột)
+        # Total columns: N*N (Cells) + N*N (Rows) + N*N (Columns)
         num_cols = 3 * (size * size)
         ans = []
         row_ids = []
@@ -30,18 +30,18 @@ class DLXFutoshiki(futoshiki_solver, DancingLink):
                     ans.append(row)
                     continue
                 for i in range(1, size + 1):
-                    # giải quyết trạng thái tại ô (r, c) với việc điền số i vào thì điều gì xảy ra
+                    # handle the state at cell (r, c) when filling number i, what happens
                     row_ids.append(f"R{r}_C{c}_V{i}")
                     row = [0] * num_cols
 
-                    # tai o (r, c) dien i
+                    # cell (r, c) fill i
                     row[r * size + c] = 1
 
-                    # hang c da co o i
-                    # di qua size * size(o), r * size: moi hang dung size index.
+                    # row r already has i
+                    # goes through size * size (cells), r * size: each row uses size index.
                     row[size * size + r * size + (i - 1)] = 1
 
-                    # tuong tu cho cot
+                    # similar for columns
                     row[2 * size * size + c * size + (i - 1)] = 1
                     ans.append(row)
 
@@ -55,19 +55,19 @@ class DLXFutoshiki(futoshiki_solver, DancingLink):
             for c in range(size - 1):
                 val = h_constraints[r][c]
                 if val == 1:
-                    # Trái < Phải
+                    # Left < Right
                     lt_pairs.append((r, c, r, c + 1))
                 elif val == -1:
-                    # Trái > Phải  =>  Phải < Trái
+                    # Left > Right => Right < Left
                     lt_pairs.append((r, c + 1, r, c))
         for r in range(size - 1):
             for c in range(size):
                 val = v_constraints[r][c]
                 if val == 1:
-                    # Trên < Dưới
+                    # Top < Bottom
                     lt_pairs.append((r, c, r + 1, c))
                 elif val == -1:
-                    # Trên > Dưới  =>  Dưới < Trên
+                    # Top > Bottom => Bottom < Top
                     lt_pairs.append((r + 1, c, r, c))
         adj_constraints = {}
         for r1, c1, r2, c2 in lt_pairs:
@@ -129,7 +129,7 @@ class DLXFutoshiki(futoshiki_solver, DancingLink):
             if stream_queue:
                 stream_queue.put(('assign', r_idx, c_idx, v_val))
 
-            # Kiểm tra class DLXFutoshiki có hàm 'check_futoshiki' không và kiểm tra điều kiện cộng thêm này
+            # Check if class DLXFutoshiki has 'check_futoshiki' and verify this extra condition
             if self.check_futoshiki(stack) == False:
                 stack.pop()
                 if stream_queue:

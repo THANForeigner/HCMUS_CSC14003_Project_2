@@ -3,7 +3,6 @@ import sys
 import asyncio
 import flet as ft
 
-# Ensure imports can resolve during different run modes
 base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if base_dir not in sys.path:
     sys.path.insert(0, base_dir)
@@ -84,7 +83,7 @@ class DemoPage(ft.View):
                 ft.dropdown.Option("astar_ac3_h3", text="A* + AC-3 + h3"),
                 ft.dropdown.Option("backward_chaining_with_ac3", text="Backward Chaining + AC-3"),
                 ft.dropdown.Option("backward_chaining", text="Backward Chaining"),
-                ft.dropdown.Option("bc_no_backtrack", text="BC No Backtrack"),
+                # ft.dropdown.Option("bc_no_backtrack", text="BC No Backtrack"),
                 ft.dropdown.Option("forward_chaining", text="Forward Chaining"),
                 ft.dropdown.Option("fc_with_backtrack", text="FC with Backtrack"),
             ],

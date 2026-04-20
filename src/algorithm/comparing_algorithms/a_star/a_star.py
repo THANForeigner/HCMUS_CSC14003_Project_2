@@ -150,7 +150,7 @@ class PureAStarSolver(FutoshikiSolver):
         return True
 
     def h3_mrv_domain_size(self, state: FutoshikiState) -> int:
-        """Đọc thẳng độ dài set nhỏ nhất trong O(1) thay vì lặp qua grid"""
+        """Directly read the smallest set length in O(1) instead of iterating through the grid"""
 
         domains = getattr(state, "domains", None)
         if not domains:

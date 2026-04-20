@@ -2,7 +2,6 @@ import sys
 import time
 from pathlib import Path
 
-# Add project root to sys.path to allow running as script or importing
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 
 from .knowledge_base import FutoshikiKB
@@ -103,40 +102,36 @@ class backward_chaining_with_ac3(futoshiki_solver):
         if goal in memo:
             return memo[goal]
             
-        # Phòng chống lặp vô hạn (Infinite Recursion cycle detection) trong luật
+        # Infinite recursion cycle detection in rules
         if goal in visited:
             return False 
             
         visited.add(goal)
         
-        # Duyệt từng luật trong Knowledge Base (đã được tạo dưới dạng tuple: Premises -> Conclusion)
+        # Traverse each rule in the Knowledge Base (created as a tuple: Premises -> Conclusion)
         for premises, conclusion in self.kb.rules:
-            # Thuật toán SLD: Nếu luật này có hệ quả = Goal ta đang tìm
+            # SLD algorithm: If this rule's consequence = Goal we are looking for
             if conclusion == goal:
                 all_premises_proven = True
                 
-                # Thì ta thiết lập Goal mới là phải đi chứng minh toàn bộ các tiền đề (Premises)
+                # Then set a new Goal to prove all premises
                 for premise in premises:
                     if not self.prove(premise, current_facts, visited, memo):
                         all_premises_proven = False
                         break
                         
-                # Chỉ cần 1 rule với toàn bộ conditions = True, Atom được tính là Proven!
+                # Only one rule with all conditions = True is needed for the Atom to be Proven!
                 if all_premises_proven:
                     visited.remove(goal)
                     memo[goal] = True
                     return True
                     
-        # Nếu duyệt hết các luật mà không có nhánh nào chứng minh được
+        # If all rules are traversed and no branch is proven
         visited.remove(goal)
         memo[goal] = False
         return False
 
     def sld_backtrack(self, current_facts, stream_queue=None):
-        """
-        Cấu trúc Depth First Search (DFS) đại diện cho nhánh rẽ cây lựa chọn của Prolog giải toàn bộ bài toán.
-        Sử dụng thêm AC-3 kết hợp để loại bỏ miền giá trị dư thừa siêu nhanh trước khi chạy Logic Rule Search.
-        """
         assigned_count = sum(1 for fact in current_facts if fact[0] == "Value")
         if assigned_count == self.size * self.size:
             return True, current_facts
@@ -150,34 +145,33 @@ class backward_chaining_with_ac3(futoshiki_solver):
                 assigned_cells.add((r, c))
                 domains[(r, c)] = {v}
 
-        # 1. Chạy CSP AC-3 để lọc domains trước khi đưa vào Prolog Resolution
+        # Run CSP AC-3 to filter domains before feeding into Prolog Resolution
         if not self.ac3(domains):
             return False, current_facts
                 
-        # Heuristic tìm ô phù hợp nhất (MRV) để đẩy Prolog search speed
+        # Heuristic to find the best cell (MRV) to boost Prolog search speed
         target_cell = None
         min_options = float('inf')
         valid_options_for_target = []
         
-        # Share memo cho toàn bộ step dò value trong cùng 1 context facts để không tốn thời gian chứng minh lại
+        # Share memo across all value searching steps in the same context facts to avoid re-proving
         shared_memo = {}
         
         for r in range(self.size):
             for c in range(self.size):
                 if (r, c) not in assigned_cells:
                     
-                    # 2. Thay vì duyệt 1..self.size, chỉ duyệt tập giá trị đã qua CSP AC-3 Filter
+                    # Iterate through values that passed CSP AC-3 Filter
                     ac3_filtered_vals = list(domains[(r, c)])
                     
                     if len(ac3_filtered_vals) == 0:
-                        return False, current_facts # Trả về false sớm cắt nhánh lỗi
+                        return False, current_facts 
                         
                     valid_vals = []
                     for v in ac3_filtered_vals:
                         if stream_queue:
                             stream_queue.put(('check', r, c, v))
-                        # Prolog NAF (Negation As Failure):
-                        # Gán `NotValue` làm Goal. AC3 coi v là có thể, còn prove() là Tòa Án FOL chốt hạ.
+                        # Prolog NAF (Negation As Failure)
                         if not self.prove(("NotValue", r, c, v), current_facts, memo=shared_memo):
                             valid_vals.append(v)
                             
@@ -194,7 +188,7 @@ class backward_chaining_with_ac3(futoshiki_solver):
 
         r, c = target_cell
         
-        # Prolog Branching: Thử Assert Fact mới và đệ quy xuống nhánh DFS
+        # Try asserting a new Fact and recurse down the DFS branch
         for val in valid_options_for_target:
             if stream_queue:
                 stream_queue.put(('assign', r, c, val))
@@ -236,17 +230,16 @@ class backward_chaining_with_ac3(futoshiki_solver):
             sys.setrecursionlimit(old_limit)
 
     def solve(self):
-        # Thiết lập giới hạn đệ quy cao hơn để chứa SLD Resolution Tree
+        # Set higher recursion limit to accommodate SLD Resolution Tree
         self.nodes_expanded = 0
         self.nodes_generated = 0
         old_limit = sys.getrecursionlimit()
         sys.setrecursionlimit(max(old_limit, 100000))
         
         try:
-            # Khởi tạo SLD Resolution Engine từ Given clues
+            # Initialize SLD Resolution Engine from Given clues
             success, final_facts = self.sld_backtrack(self.kb.facts)
             
-            # Đóng gói
             final_domains = [[set() for _ in range(self.size)] for _ in range(self.size)]
             self.solution = [[0 for _ in range(self.size)] for _ in range(self.size)]
             

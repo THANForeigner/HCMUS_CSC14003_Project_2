@@ -3,7 +3,6 @@ from typing import List
 from gui.theme import Win7Theme
 
 def render_grid(grid: List[List[int]], h_constraints: List[List[int]], v_constraints: List[List[int]]) -> ft.Control:
-    """Return a Windows 7-themed flet control rendering the grid."""
     n = len(grid)
     board_rows = []
 

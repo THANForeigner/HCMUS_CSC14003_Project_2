@@ -2,7 +2,6 @@ import time
 from ...futoshiki_solver import FutoshikiSolver
 
 class BruteForceSolver(FutoshikiSolver):
-    """A naive backtracking solver to represent 'Brute Force' in the visualizer."""
     def __init__(self, size, grid, constraint):
         super().__init__(size, grid, constraint)
         self.solution = self.grid.copy()

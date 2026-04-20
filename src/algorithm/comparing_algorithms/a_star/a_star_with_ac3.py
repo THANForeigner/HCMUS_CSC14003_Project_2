@@ -19,7 +19,7 @@ class AC3Solver:
         self.h_constraints = np.array(h_constraints)
         self.v_constraints = np.array(v_constraints)
 
-        # Tối ưu: Nếu đã truyền domain vào thì dùng luôn, không cần tính lại từ đầu
+        # Optimization: If domain is already passed, use it immediately, no need to recalculate from scratch
         if initial_domains is not None:
             self.domains = {k: v.copy() for k, v in initial_domains.items()}
         else:
@@ -40,7 +40,7 @@ class AC3Solver:
                     self.domains[(i, j)] -= row_used | col_used
 
     def get_neighbors(self, row: int, col: int) -> List[Tuple[int, int]]:
-        # Tối ưu: Dùng Set để tránh việc neighbor bị thêm vào 2 lần
+        # Optimization: Use a Set to avoid adding a neighbor twice
         neighbors = set()
         for j in range(self.size):
             if j != col:
@@ -84,7 +84,7 @@ class AC3Solver:
         r1, c1 = x
         r2, c2 = y
 
-        # Kiểm tra ràng buộc Lớn/Bé (chỉ áp dụng cho 2 ô kề nhau)
+        # Check Greater/Less constraints (only applies to 2 adjacent cells)
         if r1 == r2 and abs(c1 - c2) == 1:
             left, right = min(c1, c2), max(c1, c2)
             if self.h_constraints[r1, left] != 0:
@@ -101,7 +101,7 @@ class AC3Solver:
                     constraint = -constraint
                 return constraint
 
-        # Mọi ô cùng hàng hoặc cột ĐỀU PHẢI KHÁC NHAU (Constraint = 2)
+        # All cells in the same row or column MUST BE DIFFERENT (Constraint = 2)
         if r1 == r2 or c1 == c2:
             return 2
 
@@ -113,7 +113,7 @@ class AC3Solver:
             for j in range(self.size):
                 if (
                     len(self.domains[(i, j)]) > 1
-                ):  # Tối ưu: Chỉ enqueue các ô chưa chắc chắn
+                ):  # Optimization: Only enqueue uncertain cells
                     for ni, nj in self.get_neighbors(i, j):
                         queue.append(((i, j), (ni, nj)))
 
@@ -122,7 +122,7 @@ class AC3Solver:
             (x, y) = queue.popleft()
             if self.revise(x, y):
                 if len(self.domains[x]) == 0:
-                    return False  # Xung đột, ngõ cụt
+                    return False  # Conflict, dead end
                 for xi, xj in self.get_neighbors(*x):
                     if (xi, xj) != y:
                         queue.append(((xi, xj), x))
@@ -135,14 +135,14 @@ class AStarFutoshiki(FutoshikiSolver):
     ):
         super().__init__(size, grid, constraint)
         self.heuristic = heuristic
-        self.mode = mode  # 'ac3' hoặc 'astar'
+        self.mode = mode  # 'ac3' or 'astar'
         self.nodes_expanded = 0
         self.nodes_generated = 0
 
     def is_valid_move(
         self, state: FutoshikiState, row: int, col: int, value: int
     ) -> bool:
-        # Tối ưu siêu tốc để thay thế state.copy() bừa bãi trong A*
+        # Super-speed optimization to replace indiscriminate state.copy() in A*
         if value in state.grid[row, :]:
             return False
         if value in state.grid[:, col]:
@@ -225,7 +225,7 @@ class AStarFutoshiki(FutoshikiSolver):
         initial_state = FutoshikiState(self.grid)
 
         open_set = []
-        # -0 để ép A* đi sâu xuống theo chiều dọc
+        # -0 to force A* to go deeper vertically
         heapq.heappush(open_set, (0, -0, 0, 0, initial_state))
         counter = 0
 
@@ -251,7 +251,7 @@ class AStarFutoshiki(FutoshikiSolver):
                     self.nodes_generated += 1
 
                     new_g = g + 1
-                    # Hàm h3 (MRV) ước tính
+                    # Estimated h3 (MRV) function
                     new_h = self.size - new_g
                     counter += 1
                     heapq.heappush(
@@ -302,7 +302,7 @@ class AStarFutoshiki(FutoshikiSolver):
                     new_domains = {k: v.copy() for k, v in current_domains.items()}
                     new_domains[(row, col)] = {value}
 
-                    # Truyền domain cũ vào để tái sử dụng, không cần _init_domains từ đầu
+                    # Pass the old domain for reuse, no need for _init_domains from scratch
                     new_ac3 = AC3Solver(
                         self.size,
                         new_state.grid,

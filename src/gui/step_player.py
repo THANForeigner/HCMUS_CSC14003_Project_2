@@ -3,12 +3,6 @@ import inspect
 from typing import List, Tuple, Callable, Optional
 
 class StepPlayer:
-    """Play a sequence of steps (r,c,val) using asyncio. Provide play/pause/step/stop and speed control.
-
-    Supports two modes:
-      - history mode: set_steps / set_event_steps (existing behavior)
-      - streaming mode: push_event(step_tuple) to push live events. Player can be paused/resumed.
-    """
     def __init__(self):
         self._task: Optional[asyncio.Task] = None
         self._pause_event = asyncio.Event()

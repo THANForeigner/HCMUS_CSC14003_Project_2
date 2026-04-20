@@ -2,7 +2,6 @@ import sys
 import time
 from pathlib import Path
 
-# Add project root to sys.path to allow running as script or importing
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 
 from .knowledge_base import FutoshikiKB
@@ -15,55 +14,41 @@ class backward_chaining(futoshiki_solver):
         self.kb = FutoshikiKB.from_input(size, grid, h_constraints, v_constraints)
 
     def prove(self, goal, current_facts, visited=None, memo=None):
-        """
-        Prolog-style Backward Chaining engine (SLD Resolution).
-        """
         self.nodes_expanded += 1
         if visited is None:
             visited = set()
         if memo is None:
             memo = {}
             
-        # Base case: Goal is literally a known Fact
         if goal in current_facts:
             return True
             
         if goal in memo:
             return memo[goal]
             
-        # Phòng chống lặp vô hạn (Infinite Recursion cycle detection) trong luật
         if goal in visited:
             return False 
             
         visited.add(goal)
         
-        # Duyệt từng luật trong Knowledge Base (đã được tạo dưới dạng tuple: Premises -> Conclusion)
+        # Traverse each rule in the Knowledge Base 
         for premises, conclusion in self.kb.rules:
-            # Thuật toán SLD: Nếu luật này có hệ quả = Goal ta đang tìm
             if conclusion == goal:
                 all_premises_proven = True
-                
-                # Thì ta thiết lập Goal mới là phải đi chứng minh toàn bộ các tiền đề (Premises)
                 for premise in premises:
                     if not self.prove(premise, current_facts, visited, memo):
                         all_premises_proven = False
                         break
-                        
-                # Chỉ cần 1 rule với toàn bộ conditions = True, Atom được tính là Proven!
                 if all_premises_proven:
                     visited.remove(goal)
                     memo[goal] = True
                     return True
-                    
-        # Nếu duyệt hết các luật mà không có nhánh nào chứng minh được
         visited.remove(goal)
         memo[goal] = False
         return False
 
     def sld_backtrack(self, current_facts, stream_queue=None):
-        """
-        Cấu trúc Depth First Search (DFS) đại diện cho nhánh rẽ cây lựa chọn của Prolog giải toàn bộ bài toán.
-        """
+        # Depth First Search (DFS) 
         assigned_count = sum(1 for fact in current_facts if fact[0] == "Value")
         if assigned_count == self.size * self.size:
             return True, current_facts
@@ -74,7 +59,7 @@ class backward_chaining(futoshiki_solver):
                 _, r, c, v = fact
                 assigned_cells.add((r, c))
                 
-        # Heuristic tìm ô phù hợp nhất (MRV) để đẩy Prolog search speed
+        # Heuristic to find the best cell (MRV) to boost Prolog search speed
         target_cell = None
         min_options = float('inf')
         valid_options_for_target = []
@@ -85,16 +70,14 @@ class backward_chaining(futoshiki_solver):
                     
                     valid_vals = []
                     for v in range(1, self.size + 1):
-                        # Prolog NAF (Negation As Failure):
-                        # Gán `NotValue` làm Goal. Lệnh prove() sẽ dò lại Knowledge Base.
-                        # Nếu Hàm prove KHÔNG THỂ chứng minh `NotValue` là đúng -> nó Hợp lệ để thử điền!
+                        # Prolog NAF (Negation As Failure)
                         if stream_queue:
                             stream_queue.put(('check', r, c, v))
                         if not self.prove(("NotValue", r, c, v), current_facts):
                             valid_vals.append(v)
                             
                     if len(valid_vals) == 0:
-                        return False, current_facts # Trả về false sớm cắt nhánh lỗi
+                        return False, current_facts # Return false early to cut the error branch
                         
                     if len(valid_vals) < min_options:
                         min_options = len(valid_vals)
@@ -106,7 +89,7 @@ class backward_chaining(futoshiki_solver):
 
         r, c = target_cell
         
-        # Prolog Branching: Thử Assert Fact mới và đệ quy xuống nhánh DFS
+        # Try asserting a new Fact and recurse down the DFS branch
         for val in valid_options_for_target:
             if stream_queue:
                 stream_queue.put(('assign', r, c, val))
@@ -148,17 +131,14 @@ class backward_chaining(futoshiki_solver):
             sys.setrecursionlimit(old_limit)
 
     def solve(self):
-        # Thiết lập giới hạn đệ quy cao hơn để chứa SLD Resolution Tree
         self.nodes_expanded = 0
         self.nodes_generated = 0
         old_limit = sys.getrecursionlimit()
-        sys.setrecursionlimit(max(old_limit, 5000))
+        sys.setrecursionlimit(max(old_limit, 5000)) # Increase recursion limit
         
         try:
-            # Khởi tạo SLD Resolution Engine từ Given clues a9
             success, final_facts = self.sld_backtrack(self.kb.facts)
             
-            # Đóng gói
             final_domains = [[set() for _ in range(self.size)] for _ in range(self.size)]
             self.solution = [[0 for _ in range(self.size)] for _ in range(self.size)]
             

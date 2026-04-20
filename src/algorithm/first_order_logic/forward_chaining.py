@@ -16,8 +16,8 @@ class fc_no_backtrack(futoshiki_solver):
 
     def forward_chain(self, current_facts, stream_queue=None):
         """
-        Thuật toán Forward Chaining thuần túy không có logic quay lui (backtracking).
-        Áp dụng cơ chế suy diễn trên tập luật Horn.
+        Pure Forward Chaining algorithm without backtracking logic.
+        Applies inference mechanism on Horn clause set.
         """
         fact_set = set(current_facts)
         changed = True
@@ -82,25 +82,25 @@ class fc_no_backtrack(futoshiki_solver):
         self.nodes_generated = 0
         initial_facts = self.kb.facts.copy()
         
-        # Chỉ chạy Forward Chaining nguyên bản
+        # Run original Forward Chaining only
         success, final_facts = self.forward_chain(initial_facts)
         
-        # SỬA LỖI: Khởi tạo domain ban đầu chứa tất cả các giá trị từ 1 đến size
+        # BUG FIX: Initialize initial domain containing all values from 1 to size
         final_domains = [[set(range(1, self.size + 1)) for _ in range(self.size)] for _ in range(self.size)]
         self.solution = [[0 for _ in range(self.size)] for _ in range(self.size)]
         
-        # Cập nhật Domain dựa trên các fact thu được
+        # Update Domain based on obtained facts
         for fact in final_facts:
             #breakpoint()
             if fact[0] == "NotValue":
                 _, r, c, v = fact
-                # Loại bỏ giá trị v khỏi domain của ô (r, c)
+                # Remove value v from the domain of cell (r, c)
                 if v in final_domains[r][c]:
                     final_domains[r][c].remove(v)
             elif fact[0] == "Value":
                 _, r, c, v = fact
                 self.solution[r][c] = v
-                # Nếu đã có Value chắc chắn, domain chỉ còn duy nhất giá trị đó
+                # If a Value is certain, the domain contains only that value
                 final_domains[r][c] = {v}
 
         if success:

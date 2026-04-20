@@ -28,13 +28,10 @@ class GA(futoshiki_solver):
         self.best_solution = None
         self.best_fitness = 0.0
         
-    # -------------------------------------------------------------------------
-    # Initialization helpers
-    # -------------------------------------------------------------------------
     def generate_state(self, size, grid):
         """
-        Tạo một trạng thái ngẫu nhiên nhưng đảm bảo mỗi hàng là một hoán vị 
-        của các số từ 1 đến size (không trùng lặp hàng).
+        Create a random state but ensure each row is a permutation 
+        of numbers from 1 to size (no duplicate rows).
         """
         new_state = grid.copy()
         all_numbers = np.arange(1, size + 1)
@@ -42,40 +39,37 @@ class GA(futoshiki_solver):
         for r in range(size):
             empty_cols = np.where(new_state[r] == 0)[0]
             if len(empty_cols) > 0:
-                # Tìm các số chưa xuất hiện trong hàng r (đã có trong fixed_mask)
+                # Find numbers that haven't appeared in row r (already in fixed_mask)
                 existing_numbers = new_state[r][new_state[r] > 0]
                 missing_numbers = np.setdiff1d(all_numbers, existing_numbers)
                 
-                # Xáo trộn các số còn thiếu và điền vào
+                # Shuffle missing numbers and fill in
                 np.random.shuffle(missing_numbers)
                 new_state[r, empty_cols] = missing_numbers
 
         return new_state
         
     def generate_random_states(self, n_states=None):
-        """Tạo quần thể ban đầu gồm n trạng thái đã được tối ưu hàng."""
+        """Create initial population of n states with row optimization."""
         if n_states is None:
             n_states = self.pop_size
         
-        # Tạo danh sách các state và chuyển thành mảng numpy một lần duy nhất
+        # Create a list of states and convert to a numpy array once
         pop_list = [self.generate_state(self.size, self.grid) for _ in range(n_states)]
         return np.array(pop_list, dtype=np.int32)
     
-    # -------------------------------------------------------------------------
-    # Fitness evaluation
-    # -------------------------------------------------------------------------
     def find_all_errors(self, grid, constraint):
-        """Đếm tổng số lỗi vi phạm. Giả định hàng đã luôn đúng."""
+        """Count total violations. Assume rows are always correct."""
         h_constraints, v_constraints = constraint
         errors = 0
         n = self.size
         
-        # Kiểm tra trùng lập cột
+        # Check for column duplicates
         for col in range(n):
             column = grid[:, col]
             errors += len(column) - len(np.unique(column))
         
-        # Kiểm tra ràng buộc ngang
+        # Check horizontal constraints
         left_cells = grid[:, :-1]
         right_cells = grid[:, 1:]
 
@@ -83,7 +77,7 @@ class GA(futoshiki_solver):
                    np.sum((h_constraints == -1) & (left_cells <= right_cells))
         errors += h_errors
         
-        # Kiểm tra ràng buộc dọc
+        # Check vertical constraints
         top_cells = grid[:-1, :]
         bottom_cells = grid[1:, :]
     
@@ -95,24 +89,21 @@ class GA(futoshiki_solver):
         
     def calculate_fitness(self, pop, constraint):
         """
-        Tính toán độ thích nghi. 
+        Calculate fitness. 
         Fitness = 1 / (1 + errors). 
-        Điểm 1.0 là hoàn hảo, càng gần 0 càng tệ.
+        Score 1.0 is perfect, closer to 0 is worse.
         """
         fitness_scores = np.zeros(len(pop), dtype=np.float32)
         
         for i, grid in enumerate(pop):
             errors = self.find_all_errors(grid, constraint)
             
-            # Sử dụng công thức 1 / (1 + errors) để tránh chia cho 0 
-            # và tạo ra đường cong tiến hóa mượt mà hơn.
+            # Use formula 1 / (1 + errors) to avoid division by 0 
+            # and create a smoother evolution curve.
             fitness_scores[i] = 1.0 / (1.0 + errors)
             
         return fitness_scores
     
-    # -------------------------------------------------------------------------
-    # Selection
-    # -------------------------------------------------------------------------
     def tournament_selection(self, k=None):
         """
         Select one individual via tournament selection.
@@ -125,13 +116,10 @@ class GA(futoshiki_solver):
         best_candidate = candidates[np.argmax(self.fitness[candidates])]
         return best_candidate
     
-    # -------------------------------------------------------------------------
-    # Crossover operators
-    # -------------------------------------------------------------------------
     def crossover(self, parent1, parent2):
         """
-        Row-wise crossover: Trao đổi các hàng nguyên vẹn giữa bố và mẹ.
-        Đây là phép lai tốt nhất để giữ cho các hàng luôn là hoán vị đúng.
+        Row-wise crossover: Exchange intact rows between parents.
+        This is the best crossover to keep rows as correct permutations.
         """
         mask = np.random.randint(0, 2, size=self.size).astype(bool)
 
@@ -140,11 +128,8 @@ class GA(futoshiki_solver):
         
         return child1, child2
     
-    # -------------------------------------------------------------------------
-    # Mutation operators
-    # -------------------------------------------------------------------------
     def swap_mutation(self, individual):
-        """Hoán đổi 2 ô ngẫu nhiên trong một hàng ngẫu nhiên."""
+        """Swap 2 random cells in a random row."""
         mutant = individual.copy()
         row = np.random.randint(0, self.size)
         non_fixed_cols = np.where(~self.fixed_mask[row])[0]
@@ -156,7 +141,7 @@ class GA(futoshiki_solver):
         return mutant
     
     def scramble_mutation(self, individual):
-        """Xáo trộn tất cả các ô không cố định trong một hàng ngẫu nhiên."""
+        """Scramble all non-fixed cells in a random row."""
         mutant = individual.copy()
         row = np.random.randint(0, self.size)
         non_fixed_cols = np.where(~self.fixed_mask[row])[0]
@@ -173,7 +158,7 @@ class GA(futoshiki_solver):
             return individual
         
         mutant = individual.copy()
-        # Đột biến "mạnh": thực hiện từ 1 đến 3 lần thay đổi
+        # "Strong" mutation: perform 1 to 3 changes
         for _ in range(np.random.randint(1, 4)):
             strategy = np.random.randint(0, 2)
             if strategy == 0:
@@ -183,30 +168,27 @@ class GA(futoshiki_solver):
         return mutant
     
     def mutate_heavy(self, individual):
-        """Đột biến cực mạnh: Xáo trộn 3-5 hàng cùng lúc."""
+        """Very strong mutation: Scramble 3-5 rows at once."""
         mutant = individual.copy()
-        # Chọn ngẫu nhiên số lượng hàng bị tác động (khoảng 1/2 bảng)
+        # Randomly select the number of affected rows (about 1/2 of the board)
         num_rows = np.random.randint(3, 6)
         rows = np.random.choice(self.size, size=num_rows, replace=False)
         
         for r in rows:
             non_fixed = np.where(~self.fixed_mask[r])[0]
             if len(non_fixed) >= 2:
-                # Xáo trộn (Scramble) toàn bộ ô trống trong hàng đó
+                # Scramble all empty cells in that row
                 vals = mutant[r, non_fixed]
                 np.random.shuffle(vals)
                 mutant[r, non_fixed] = vals
         return mutant
     
-    # -------------------------------------------------------------------------
-    # Main GA loop
-    # -------------------------------------------------------------------------
     def solve(self):
         """
-        Chạy Giải thuật Di truyền để giải Futoshiki.
-        Bổ sung cơ chế Adaptive Mutation để tránh kẹt ở tối ưu cục bộ.
+        Run Genetic Algorithm to solve Futoshiki.
+        Add Adaptive Mutation mechanism to avoid local optima.
         """
-        # Lưu lại mutation ban đầu để reset khi cần
+        # Save initial mutation rate to reset when needed
         orig_mut_rate = self.mutation_rate
         stagnant_generations = 0
 
@@ -225,41 +207,38 @@ class GA(futoshiki_solver):
             if self.best_fitness >= 1.0:
                 break
 
-            # --- Tự động điều chỉnh Mutation Rate (Adaptive) ---
-            # Nếu 50 thế hệ không tìm thấy cá thể tốt hơn, tăng đột biến để phá vỡ bẫy
+            # If 50 generations find no better individual, increase mutation to break the trap
 
             if stagnant_generations > 50:
-                # Cấp 1: Tăng dần nhiệt độ (Mutation rate)
+                # Level 1: Gradually increase temperature (Mutation rate)
                 self.mutation_rate = min(0.5, self.mutation_rate + 0.05)
                 
             if stagnant_generations > 150:
-                # Cấp 2: Đổi sang vũ khí hạng nặng (Heavy Mutation)
+                # Level 2: Switch to heavy weapons (Heavy Mutation)
                 current_mutate_fn = self.mutate_heavy
 
             # if stagnant_generations > 500:
-            #     # Cấp 3: THAY MÁU (Reset 90% quần thể)
-            #     print(f"\n[Gen {iteration}] Kẹt quá lâu ở {self.best_fitness:.4f}. Đang thay máu...")
+            #     # Level 3: NEW BLOOD (Reset 90% of population)
+            #     print(f"\n[Gen {iteration}] Stuck too long at {self.best_fitness:.4f}. Changing blood...")
             #     num_new = int(self.pop_size * 0.95)
             #     new_blood = self.generate_random_states(num_new)
-            #     # Giữ lại 5% elite cũ, thay 95% bằng máu mới
+            #     # Keep 5% old elite, replace 95% with new blood
             #     elite_indices = np.argsort(self.fitness)[-int(self.pop_size*0.1):]
             #     new_pop_list = [self.population[i].copy() for i in elite_indices]
             #     self.population = np.vstack([np.array(new_pop_list), new_blood])
                 
-            #     # Reset các thông số về ban đầu sau khi thay máu
+            #     # Reset parameters to initial after changing blood
             #     self.mutation_rate = orig_mut_rate
             #     stagnant_generations = 0
             #     self.fitness = self.calculate_fitness(self.population, self.constraint)
-            #     continue # Nhảy sang thế hệ mới
+            #     continue # Skip to next generation
             
             new_population = []
             
-            # ----- Step 1: Elitism -----
             elite_indices = np.argsort(self.fitness)[-self.elite_size:]
             for idx in elite_indices:
                 new_population.append(self.population[idx].copy())
             
-            # ----- Steps 2-4: Selection, Crossover, Mutation -----
             while len(new_population) < self.pop_size:
                 # Selection
                 parent1_idx = self.tournament_selection()
@@ -283,18 +262,16 @@ class GA(futoshiki_solver):
                 if len(new_population) < self.pop_size:
                     new_population.append(child2)
             
-            # ----- Step 5: Replacement -----
             self.population = np.array(new_population[:self.pop_size], dtype=np.int32)
             self.nodes_generated += len(self.population)
             self.fitness = self.calculate_fitness(self.population, self.constraint)
             
-            # ----- Step 6: Update best -----
             gen_best_idx = np.argmax(self.fitness)
             if self.fitness[gen_best_idx] > self.best_fitness:
                 self.best_fitness = self.fitness[gen_best_idx]
                 self.best_solution = self.population[gen_best_idx].copy()
-                stagnant_generations = 0 # Reset khi có tiến triển
-                self.mutation_rate = orig_mut_rate # Trở về mức cũ để khai thác
+                stagnant_generations = 0 # Reset when progress is made
+                self.mutation_rate = orig_mut_rate # Return to old level for exploitation
             else:
                 stagnant_generations += 1
 

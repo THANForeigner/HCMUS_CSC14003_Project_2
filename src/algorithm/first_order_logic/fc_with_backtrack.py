@@ -3,7 +3,6 @@ import time
 from pathlib import Path
 import copy
 
-# Add project root to sys.path to allow running as script or importing
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 
 from .knowledge_base import FutoshikiKB
@@ -18,9 +17,9 @@ class forward_chaining(futoshiki_solver):
 
     def forward_chain(self, current_facts, stream_queue=None):
         """
-        Thuật toán Forward Chaining áp dụng cơ chế suy diễn trên tập luật Horn.
-        Sử dụng fact_set (kiểu set của Python) để đạt O(1) tra cứu, thay vì duyệt List.
-        Vòng lặp tiếp tục cho đến khi không có Fact mới nào được suy diễn từ bộ luật.
+        Forward Chaining algorithm applies inference mechanism on Horn clause set.
+        Uses fact_set (Python set) to achieve O(1) lookup, instead of iterating through a List.
+        Loop continues until no new facts are derived from the ruleset.
         """
         fact_set = set(current_facts)
         changed = True
@@ -31,16 +30,16 @@ class forward_chaining(futoshiki_solver):
             for rule in self.kb.rules:
                 premises, conclusion = rule
                 
-                # Kiểm tra nhanh conclusion đã tồn tại chưa (tránh duyệt premises tốn thời gian)
+                # Quick check if conclusion already exists
                 if conclusion not in fact_set:
-                    # Kiểm tra xem TẤT CẢ các điều kiện (premises) đã được thỏa mãn (có sẵn) chưa
+                    # Check if ALL conditions are satisfied 
                     all_premises_met = True
                     for premise in premises:
                         if premise not in fact_set:
                             all_premises_met = False
                             break
                             
-                    # Áp dụng Modus Ponens: Nếu tất cả Vế Trái đúng -> Rút ra hệ quả Vế Phải
+                    # If all premises are true -> Derive the consequence
                     if all_premises_met:
                         if conclusion == ("Contradiction",):
                             return False, current_facts
@@ -52,13 +51,12 @@ class forward_chaining(futoshiki_solver):
                             stream_queue.put(('assign', r, c, v))
                         changed = True
                         
-        # POST-CHECK: Kiểm tra xem có sinh ra mâu thuẫn logic nào không
-        # Mâu thuẫn khi ô (r,c) cùng xuất hiện cả ("Value", r, c, v) và ("NotValue", r, c, v)
+        # Check for any logical contradictions
         for fact in current_facts:
             if fact[0] == "Value":
                 _, r, c, v = fact
                 if ("NotValue", r, c, v) in fact_set:
-                    return False, current_facts # Xung đột logic phát sinh!
+                    return False, current_facts # Logical conflict occurred!
                     
         return True, current_facts
 
@@ -67,16 +65,12 @@ class forward_chaining(futoshiki_solver):
         for fact in facts:
             if fact[0] == "Value":
                 count += 1
-        # Lưới giải thành công khi số lượng mốc hoàn thành đúng bằng tổng số ô (N x N)
+        # Puzzle successfully solved when the number of completed marks equals total cells (N x N)
         return count == self.size * self.size
 
     def backtrack(self, current_facts, stream_queue=None):
-        """
-        Logic Backtracking kết hợp Forward Chaining.
-        Nều FC tắc (chưa ra kết quả cuối nhưng hết luật suy diễn), ta đoán 1 biến và chạy FC tiếp.
-        """
         self.nodes_expanded += 1
-        # Bước 1: Suy diễn Forward Chaining trên thực tại đang có
+        # Perform Forward Chaining inference on current state
         success, derived_facts = self.forward_chain(current_facts, stream_queue)
         if not success:
             return False, derived_facts
@@ -84,7 +78,7 @@ class forward_chaining(futoshiki_solver):
         if self.is_solved_check(derived_facts):
             return True, derived_facts
             
-        # Lập bản đồ các ô đã được gán giá trị
+        # Map cells that have been assigned values
         fact_set = set(derived_facts)
         assigned_cells = set()
         for fact in derived_facts:
@@ -92,7 +86,7 @@ class forward_chaining(futoshiki_solver):
                 _, r, c, v = fact
                 assigned_cells.add((r, c))
                 
-        # Bước 2: Chọn một ô mục tiêu (Minimum Remaining Values - MRV)
+        # Select a target cell (Minimum Remaining Values - MRV)
         best_cell = None
         min_options = float('inf')
         valid_options_for_best = []
@@ -102,12 +96,12 @@ class forward_chaining(futoshiki_solver):
                 if (r, c) not in assigned_cells:
                     options = []
                     for v in range(1, self.size + 1):
-                        # Khả năng hợp lệ là nếu quy luật không cấm nó (chưa có NotValue)
+                        # A valid possibility is if the rule doesn't forbid it (no NotValue yet)
                         if ("NotValue", r, c, v) not in fact_set:
                             options.append(v)
                     
                     if len(options) == 0:
-                        return False, derived_facts # Ô này không có khả năng nào do Contradiction
+                        return False, derived_facts # This cell has no possibilities due to contradiction
                         
                     if len(options) < min_options:
                         min_options = len(options)
@@ -119,9 +113,9 @@ class forward_chaining(futoshiki_solver):
 
         r, c = best_cell
         
-        # Bước 3: Phỏng đoán và chạy nhánh mới dựa trên FC 
+        # Guess and run a new branch based on FC 
         for val in valid_options_for_best:
-            # COPY môi trường biến để Backtracking không phá hỏng thực tại cũ cùa DFS
+            # COPY the environment variables so Backtracking doesn't ruin the current state of DFS
             if stream_queue:
                 stream_queue.put(('assign', r, c, val))
             new_facts = derived_facts.copy() 
@@ -156,14 +150,14 @@ class forward_chaining(futoshiki_solver):
         return self.solution, stats, []
 
     def solve(self):
-        # Gọi engine bắt nguồn từ các sự kiện ban đầu của Base (từ lưới câu đố)
+        # Call the engine starting from the initial events of the Base (from the puzzle grid)
         self.nodes_expanded = 0
         self.nodes_generated = 0
         initial_facts = self.kb.facts.copy()
         
         success, final_facts = self.backtrack(initial_facts)
         
-        # Đóng gói kết quả cho giao diện Main module
+        # Package the results for the Main module interface
         final_domains = [[set() for _ in range(self.size)] for _ in range(self.size)]
         self.solution = [[0 for _ in range(self.size)] for _ in range(self.size)]
         

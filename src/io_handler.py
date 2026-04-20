@@ -162,20 +162,6 @@ def get_input_path(base_dir, size, difficulty, puzzle_id):
         return os.path.join(base_dir, "test", "input", filename)
 
 def read_input(input_file):
-    """
-    Read Futoshiki puzzle input from file.
-
-    Input format:
-    - Line 1: n (grid size)
-    - Lines 2 to n+1: Initial grid (n x n) with 0 for empty cells
-    - Next lines: Horizontal constraints (length n-1) and Vertical constraints (length n)
-
-    Args:
-        input_file: Path to input file
-
-    Returns:
-        Tuple of (size, grid, [h_constraints, v_constraints])
-    """
 
     def get_clean_lines(filepath):
         with open(filepath, 'r', encoding='utf-8') as f:
@@ -185,7 +171,7 @@ def read_input(input_file):
                     continue
                 yield line.replace(',', ' ')
 
-    # Khởi tạo generator đọc file
+    # Initialize file reading generator
     lines_gen = get_clean_lines(input_file)
 
     try:
@@ -202,7 +188,7 @@ def read_input(input_file):
         h_constraints_raw = []
         v_constraints_raw = []
 
-        # Đọc tất cả các dòng dữ liệu sạch còn lại
+        # Read all remaining clean data lines
         for line in lines_gen:
             row = list(map(int, line.split()))
             if len(row) == size - 1:
@@ -211,7 +197,7 @@ def read_input(input_file):
                 v_constraints_raw.append(row)
 
     except StopIteration:
-        # Xử lý trường hợp file bị thiếu dòng so với dự kiến
+        # Handle case where file has fewer lines than expected
         pass
 
     # Ensure h_constraints has exactly `size` rows
@@ -220,7 +206,7 @@ def read_input(input_file):
         if r < len(h_constraints_raw):
             h_constraints.append(h_constraints_raw[r])
         else:
-            # Lưu ý: Horizontal constraints có độ dài là (size - 1)
+            # Note: Horizontal constraints have a length of (size - 1)
             h_constraints.append([0] * (size - 1))
 
             # Ensure v_constraints has exactly `size - 1` rows

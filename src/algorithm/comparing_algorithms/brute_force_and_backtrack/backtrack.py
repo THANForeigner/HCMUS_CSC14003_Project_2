@@ -92,7 +92,6 @@ class BacktrackSolver(FutoshikiSolver):
         return (sol_list, stats, [])
 
     def solve(self):
-        """Backward-compatible solve(): returns solution only as before."""
         self.solution = self.grid.copy()
         if self.backtrack(0, 0):
             return self.solution

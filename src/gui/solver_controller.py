@@ -110,10 +110,10 @@ def _mp_worker(algorithm, size, grid, h_constraints, v_constraints, q, max_nodes
             from src.algorithm.first_order_logic.backward_chaining_with_ac3 import backward_chaining_with_ac3
             s = backward_chaining_with_ac3(size, grid, (h_constraints, v_constraints))
             s.solve_with_history(stream_queue=q)
-        elif algorithm == 'bc_no_backtrack':
-            from src.algorithm.first_order_logic.bc_no_backtrack import bc_no_backtrack
-            s = bc_no_backtrack(size, grid, (h_constraints, v_constraints))
-            s.solve_with_history(stream_queue=q)
+        # elif algorithm == 'bc_no_backtrack':
+        #     from src.algorithm.first_order_logic.bc_no_backtrack import bc_no_backtrack
+        #     s = bc_no_backtrack(size, grid, (h_constraints, v_constraints))
+        #     s.solve_with_history(stream_queue=q)
         elif algorithm == 'forward_chaining':
             from src.algorithm.first_order_logic.forward_chaining import fc_no_backtrack
             s = fc_no_backtrack(size, grid, (h_constraints, v_constraints))

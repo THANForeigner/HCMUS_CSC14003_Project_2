@@ -44,14 +44,14 @@ class DancingLink:
                 newNode.row_id = self.row_ids[i]
                 newNode.C = colum[j]
 
-                # Cập nhật Up/Down
+                # Update Up/Down
                 newNode.U = col_header.U
                 newNode.D = col_header
                 col_header.U.D = newNode
                 col_header.U = newNode
                 col_header.sum += 1
 
-                # Cập nhật Left/Right
+                # Update Left/Right
                 if FirstNodeInRow is None:
                     FirstNodeInRow = newNode
                 else:
@@ -111,7 +111,7 @@ class DancingLink:
                 self.nodes_generated += 1
             stack.append(col)
 
-            # Kiểm tra class DLXFutoshiki có hàm 'check_futoshiki' không và kiểm tra điều kiện cộng thêm này
+            # Check if class DLXFutoshiki has 'check_futoshiki' and verify this extra condition
             if hasattr(self, 'check_futoshiki') and getattr(self, 'check_futoshiki')(stack) == False:
                 stack.pop()
                 col = col.D
@@ -137,10 +137,10 @@ class DancingLink:
         self.uncover(c)
 
     def print_smart_solution(self, solution_nodes):
-        print("\n🎉 TÌM THẤY ĐÁP ÁN:")
+        print("\n🎉 SOLUTION FOUND:")
 
         labels = [node.row_id for node in solution_nodes]
-        print(f"Các hàng được chọn để Exact Cover: {', '.join(labels)}")
+        print(f"Rows selected for Exact Cover: {', '.join(labels)}")
 
         is_board_format = all('_' in label for label in labels)
 
@@ -149,7 +149,7 @@ class DancingLink:
                 max_r = max_c = 0
                 parsed_cells = []
 
-                # Phân tích từng chuỗi
+                # Analyze each string
                 for label in labels:
                     parts = label.split('_')
                     r = int(parts[0][1:])
@@ -159,13 +159,13 @@ class DancingLink:
                     if r > max_r: max_r = r
                     if c > max_c: max_c = c
 
-                # Tạo bàn cờ theo kích thước linh hoạt
+                # Create board with flexible size
                 board = [[0] * (max_c + 1) for _ in range(max_r + 1)]
                 for r, c, v in parsed_cells:
                     board[r][c] = v
 
-                # In ra màn hình
-                print("\nBàn cờ chi tiết:")
+                # Print to screen
+                print("\nDetailed board:")
                 separator = "-" * ((max_c + 1) * 4 + 1)
                 print(separator)
                 for row in board:
@@ -173,35 +173,35 @@ class DancingLink:
                     print(f"| {row_str} |")
                     print(separator)
             except Exception as e:
-                print(f"Không thể vẽ bàn cờ do lỗi format: {e}")
+                print(f"Cannot draw board due to format error: {e}")
         else:
-            # SỬA TẠI ĐÂY: Khôi phục và in ra ma trận 2D
-            print("\nMa trận 2D của nghiệm (các hàng được chọn):")
+            # FIX HERE: Restore and print 2D matrix
+            print("\n2D matrix of solution (selected rows):")
             solution_matrix = [[0] * self.m for _ in range(self.n)]
 
             for node in solution_nodes:
-                r_idx = int(node.row_id[1:]) - 1  # Lấy số hàng từ "R1", "R2"...
+                r_idx = int(node.row_id[1:]) - 1  # Get row number from "R1", "R2"...
                 curr = node
                 while True:
-                    c_idx = int(curr.C.name[1:]) - 1  # Lấy số cột từ "C1", "C2"...
+                    c_idx = int(curr.C.name[1:]) - 1  # Get column number from "C1", "C2"...
                     solution_matrix[r_idx][c_idx] = 1
                     curr = curr.R
                     if curr == node:
                         break
 
-            # In ma trận
+            # Print matrix
             for row in solution_matrix:
                 print(row)
 
     def debug_print_columns(self):
-        print("\n=== DEBUG: CÁC CỘT (CHIỀU DỌC) ===")
+        print("\n=== DEBUG: COLUMNS (VERTICAL) ===")
         curr_col = self.root.R
         if curr_col == self.root:
-            print("Lưới đang trống!")
+            print("Grid is empty!")
             return
 
         while curr_col != self.root:
-            print(f"Cột {curr_col.name} (sum={curr_col.sum}): ", end="")
+            print(f"Column {curr_col.name} (sum={curr_col.sum}): ", end="")
             curr_node = curr_col.D
             while curr_node != curr_col:
                 print(f"[{curr_node.row_id}] ", end="")
@@ -210,7 +210,7 @@ class DancingLink:
             curr_col = curr_col.R
 
     def debug_print_rows(self):
-        print("\n=== DEBUG: CÁC HÀNG (CHIỀU NGANG) ===")
+        print("\n=== DEBUG: ROWS (HORIZONTAL) ===")
         visited_rows = set()
 
         curr_col = self.root.R
@@ -219,7 +219,7 @@ class DancingLink:
             while curr_node != curr_col:
                 if curr_node.row_id not in visited_rows:
                     visited_rows.add(curr_node.row_id)
-                    print(f"Hàng {curr_node.row_id} chứa các Node tại: ", end="")
+                    print(f"Row {curr_node.row_id} contains Nodes at: ", end="")
 
                     start_node = curr_node
                     print(f"[{start_node.C.name}] ", end="")
@@ -237,7 +237,7 @@ class DancingLink:
         self.debug_print_rows()
 
 if __name__ == "__main__":
-    # Ma trận tiệc Potluck (5 Hàng, 4 Cột)
+    # Potluck party matrix (5 Rows, 4 Columns)
     matrix1 = [
         [1, 0, 0, 1],  # R1
         [1, 0, 0, 0],  # R2
@@ -246,10 +246,10 @@ if __name__ == "__main__":
         [0, 0, 1, 0]  # R5
     ]
 
-    # 1. Xây lưới
+    # 1. Build grid
     root = DancingLink()
     root.insert(matrix1)
 
-    # 2. Chạy thuật toán
+    # 2. Run algorithm
     stack = []
     root.search(0, stack)

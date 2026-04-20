@@ -3,14 +3,6 @@ from typing import List, Tuple
 
 
 class PuzzleManager:
-    """Simple puzzle manager that can generate a fully solved Futoshiki board.
-
-    This is intentionally lightweight for Phase 1 scaffold: it produces a
-    completed Latin-square (rows and columns contain 1..n) and empty inequality
-    constraints. Later phases will add constraint-aware generation and removals
-    to produce playable puzzles.
-    """
-
     def __init__(self, seed: int | None = None):
         self.seed = seed
         if seed is not None:
@@ -49,13 +41,6 @@ class PuzzleManager:
         return False
 
     def generate_solved(self, n: int) -> Tuple[List[List[int]], List[List[int]], List[List[int]]]:
-        """Generate a solved n x n Futoshiki grid and empty constraints.
-
-        Returns (grid, h_constraints, v_constraints)
-        - grid: list of n lists each with n integers (1..n)
-        - h_constraints: n x (n-1) matrix of 0 (no inequality)
-        - v_constraints: (n-1) x n matrix of 0 (no inequality)
-        """
         if n < 2:
             raise ValueError("Size must be >= 2")
 
