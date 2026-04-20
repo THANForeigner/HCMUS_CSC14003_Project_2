@@ -141,6 +141,46 @@ class SolverController:
         self._task: Optional[asyncio.Task] = None
         self._result = None
         self._lock = asyncio.Lock()
+        self._process: Optional[multiprocessing.Process] = None
+        self._queue: Optional[multiprocessing.Queue] = None
+
+    @staticmethod
+    def _cleanup_process(process: Optional[multiprocessing.Process], q: Optional[multiprocessing.Queue]):
+        if process is not None:
+            if process.is_alive():
+                process.terminate()
+            process.join(timeout=0.5)
+        if q is not None:
+            try:
+                q.close()
+            except Exception:
+                pass
+            try:
+                q.cancel_join_thread()
+            except Exception:
+                pass
+
+    async def cancel(self):
+        async with self._lock:
+            task = self._task
+            process = self._process
+            q = self._queue
+            self._task = None
+            self._process = None
+            self._queue = None
+            self._result = None
+
+        current_task = asyncio.current_task()
+        if task is not None and task is not current_task and not task.done():
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
+            except Exception:
+                pass
+
+        await asyncio.to_thread(self._cleanup_process, process, q)
 
     async def run_full(self, size: int, grid: List[List[int]], h_constraints: List[List[int]], v_constraints: List[List[int]], callback=None, algorithm: str = 'backtrack', max_nodes: int = None):
         try:
@@ -209,6 +249,12 @@ class SolverController:
         p.daemon = True
         p.start()
 
+        current_task = asyncio.current_task()
+        async with self._lock:
+            self._task = current_task
+            self._process = p
+            self._queue = q
+
         try:
             while True:
                 try:
@@ -233,9 +279,15 @@ class SolverController:
                         break
                 except Exception:
                     break
+        except asyncio.CancelledError:
+            raise
         finally:
-            if p.is_alive():
-                p.terminate()
+            await asyncio.to_thread(self._cleanup_process, p, q)
+            async with self._lock:
+                if self._task is current_task:
+                    self._task = None
+                    self._process = None
+                    self._queue = None
         return p
 
 

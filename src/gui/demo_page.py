@@ -76,9 +76,9 @@ class DemoPage(ft.View):
             options=[
                 ft.dropdown.Option("backtrack", text="Backtracking"),
                 ft.dropdown.Option("brute_force", text="Brute Force"),
-                ft.dropdown.Option("astar_h1", text="A* + h1 (Hamming)"),
-                ft.dropdown.Option("astar_h2", text="A* + h2 "),
-                ft.dropdown.Option("astar_h3", text="A* + h3 (MRV)"),
+                ft.dropdown.Option("astar_h1", text="A* + h1"),
+                ft.dropdown.Option("astar_h2", text="A* + h2"),
+                ft.dropdown.Option("astar_h3", text="A* + h3"),
                 ft.dropdown.Option("astar_ac3_h1", text="A* + AC-3 + h1"),
                 ft.dropdown.Option("astar_ac3_h2", text="A* + AC-3 + h2"),
                 ft.dropdown.Option("astar_ac3_h3", text="A* + AC-3 + h3"),
@@ -96,6 +96,25 @@ class DemoPage(ft.View):
         self.choose_algo_button = ft.ElevatedButton(
             content=ft.Text("Choose this algorithm"),
             on_click=self.on_choose_algorithm,
+            style=ft.ButtonStyle(
+                bgcolor=Win7Theme.PRIMARY, color=Win7Theme.TEXT_INVERSE
+            ),
+        )
+        self.upload_test_button = ft.ElevatedButton(
+            content=ft.Text("Upload Test"),
+            on_click=self.hard_refresh_page,
+            style=ft.ButtonStyle(
+                bgcolor=Win7Theme.PRIMARY, color=Win7Theme.TEXT_INVERSE
+            ),
+        )
+        self.refresh_button = ft.IconButton(
+            icon=ft.Icons.REFRESH,
+            on_click=self.refresh_puzzle,
+            icon_color=Win7Theme.PRIMARY,
+        )
+        self.demonstrate_button = ft.ElevatedButton(
+            content=ft.Text("Demonstrate"),
+            on_click=self.on_compute_solution,
             style=ft.ButtonStyle(
                 bgcolor=Win7Theme.PRIMARY, color=Win7Theme.TEXT_INVERSE
             ),
@@ -179,28 +198,12 @@ class DemoPage(ft.View):
                         self.size_dropdown,
                         self.diff_dropdown,
                         self.id_dropdown,
-                        ft.ElevatedButton(
-                            content=ft.Text("Upload Test"),
-                            on_click=self.hard_refresh_page,
-                            style=ft.ButtonStyle(
-                                bgcolor=Win7Theme.PRIMARY, color=Win7Theme.TEXT_INVERSE
-                            ),
-                        ),
-                        ft.IconButton(
-                            icon=ft.Icons.REFRESH,
-                            on_click=self.refresh_puzzle,
-                            icon_color=Win7Theme.PRIMARY,
-                        ),
+                        self.upload_test_button,
+                        self.refresh_button,
                         ft.Text("Algo:", size=14, color=Win7Theme.TEXT_SECONDARY),
                         self.algorithm_dropdown,
                         self.choose_algo_button,
-                        ft.ElevatedButton(
-                            content=ft.Text("Demonstrate"),
-                            on_click=self.on_compute_solution,
-                            style=ft.ButtonStyle(
-                                bgcolor=Win7Theme.PRIMARY, color=Win7Theme.TEXT_INVERSE
-                            ),
-                        ),
+                        self.demonstrate_button,
                         # self.play_button,
                         # self.step_button,
                         # self.solve_instantly_button,
@@ -233,6 +236,9 @@ class DemoPage(ft.View):
         self._original_grid = None
         self._solution_ready = False  # Track if solver has finished
         self._final_solution = None  # Store final solution for instant display
+        self._solve_session = 0
+        self._backend_running = False
+        self._backend_task = None
 
         if self.size_dropdown.options:
             self.size_dropdown.value = "4"
@@ -269,10 +275,34 @@ class DemoPage(ft.View):
         # Removed - address field is no longer used
         pass
 
+    def _set_backend_running(self, is_running: bool):
+        self._backend_running = is_running
+        controls_disabled = is_running
+        self.size_dropdown.disabled = controls_disabled
+        self.diff_dropdown.disabled = controls_disabled
+        self.id_dropdown.disabled = controls_disabled
+        self.upload_test_button.disabled = controls_disabled
+        self.refresh_button.disabled = controls_disabled
+        self.algorithm_dropdown.disabled = controls_disabled
+        self.choose_algo_button.disabled = controls_disabled
+        self.demonstrate_button.disabled = controls_disabled
+
+    def _block_if_backend_running(self, message: str) -> bool:
+        if not self._backend_running:
+            return False
+
+        self.status.value = message
+        self.status.color = Win7Theme.WARNING
+        self._page.update()
+        return True
+
     async def hard_refresh_page(self, e):
         """Perform a hard refresh of the page"""
-        if self.step_player.is_running() or self.step_player.is_paused():
-            await self.step_player.stop()
+        if self._block_if_backend_running(
+            "Wait for the backend to finish before refreshing the page."
+        ):
+            return
+        await self._stop_active_demo()
         # self.play_button.icon = ft.Icons.PLAY_ARROW
 
         state = self._parse_dropdown_state()
@@ -286,6 +316,10 @@ class DemoPage(ft.View):
         self._page.update()
 
     async def on_size_selected(self, e):
+        if e is not None and self._block_if_backend_running(
+            "Wait for the backend to finish before choosing a new puzzle."
+        ):
+            return
         try:
             state = self._parse_dropdown_state()
             size_val = state["size"]
@@ -307,6 +341,10 @@ class DemoPage(ft.View):
                 self._page.update()
 
     async def on_diff_selected(self, e):
+        if e is not None and self._block_if_backend_running(
+            "Wait for the backend to finish before choosing a new puzzle."
+        ):
+            return
         try:
             state = self._parse_dropdown_state()
             size_val = state["size"]
@@ -329,6 +367,10 @@ class DemoPage(ft.View):
                 self._page.update()
 
     async def on_id_selected(self, e):
+        if e is not None and self._block_if_backend_running(
+            "Wait for the backend to finish before choosing a new puzzle."
+        ):
+            return
         try:
             state = self._parse_dropdown_state()
             size_val = state["size"]
@@ -355,15 +397,12 @@ class DemoPage(ft.View):
                 self._page.update()
 
     async def refresh_puzzle(self, e):
-        # Stop any running animation and reset state
-        if self.step_player.is_running() or self.step_player.is_paused():
-            await self.step_player.stop()
-        
-        # Reset UI elements
-        # self.play_button.icon = ft.Icons.PLAY_ARROW
+        if self._block_if_backend_running(
+            "Wait for the backend to finish before refreshing the puzzle."
+        ):
+            return
+        await self._stop_active_demo()
         self.status.value = ""
-        
-        # Reload the puzzle
         await self.on_id_selected(None)
 
     async def _auto_start_animation(self):
@@ -505,12 +544,59 @@ class DemoPage(ft.View):
         if self._is_initialized:
             self._page.update()
 
-    async def on_compute_solution(self, e):
-        # Reset solution tracking state
+    def _reset_solution_state(self):
         self._solution_ready = False
         self._final_solution = None
+        self._last_grid = None
+
+    async def _stop_active_demo(self):
+        self._solve_session += 1
+        self._reset_solution_state()
+        self._set_backend_running(False)
+        if self._backend_task is not None and not self._backend_task.done():
+            self._backend_task.cancel()
+            try:
+                await self._backend_task
+            except asyncio.CancelledError:
+                pass
+            except Exception:
+                pass
+        self._backend_task = None
+        await self.solver.cancel()
+        await self.step_player.stop()
+        self.step_player = StepPlayer()
+        self._page.update()
+
+    def _restore_board_to_original(self):
+        if not self.cells or self._original_grid is None:
+            return
+
+        for r in range(self.size):
+            for c in range(self.size):
+                val = self._original_grid[r][c]
+                self.cells[r][c].content.value = str(val) if val != 0 else ""
+                self.cells[r][c].bgcolor = (
+                    Win7Theme.CELL_FIXED_BG if val != 0 else Win7Theme.CELL_EMPTY_BG
+                )
+                self.cells[r][c].content.color = (
+                    Win7Theme.CELL_TEXT_FIXED
+                    if val != 0
+                    else Win7Theme.CELL_TEXT_EMPTY
+                )
+                self.cells[r][c].scale = 1.0
+
+    async def on_compute_solution(self, e):
+        await self._stop_active_demo()
+        session_id = self._solve_session
+        self._set_backend_running(True)
+        self._page.update()
         
         async def callback(solution, stats, steps=None):
+            if session_id != self._solve_session:
+                return
+
+            self._set_backend_running(False)
+
             # Store the final solution when solver finishes
             self._final_solution = solution
             self._solution_ready = True
@@ -528,7 +614,7 @@ class DemoPage(ft.View):
                 self.status.color = Win7Theme.ERROR
             else:
                 self.status.value = (
-                    f"Demo Finished. {stats.get('nodes_generated', '?')} nodes."
+                    f"Backend finished. Replaying remaining steps. {stats.get('nodes_generated', '?')} nodes."
                 )
                 self.status.color = Win7Theme.SUCCESS
             
@@ -540,18 +626,15 @@ class DemoPage(ft.View):
         self._page.update()
 
         # Reset board visuals
-        for r in range(self.size):
-            for c in range(self.size):
-                val = self._original_grid[r][c]
-                self.cells[r][c].content.value = str(val) if val != 0 else ""
-                self.cells[r][c].bgcolor = (
-                    Win7Theme.CELL_FIXED_BG if val != 0 else Win7Theme.CELL_EMPTY_BG
-                )
+        self._restore_board_to_original()
         self._page.update()
 
         self._last_grid = [row[:] for row in self._original_grid]
 
         async def event_callback(action, r_or_grid, c_or_nodes=None, val_or_none=None):
+            if session_id != self._solve_session:
+                return
+
             if action == "step" and isinstance(r_or_grid, list):
                 grid = r_or_grid
                 for r in range(self.size):
@@ -596,24 +679,33 @@ class DemoPage(ft.View):
                 self.cells[r][c].content.color = Win7Theme.TEXT_INVERSE
                 self._page.update()
 
-        async with asyncio.TaskGroup() as tg:
-            tg.create_task(
-                self.step_player.run_streaming(
-                    event_callback, delay=self.speed_slider.value
-                )
+        await self.step_player.start_streaming(
+            event_callback, delay=self.speed_slider.value
+        )
+        self._backend_task = asyncio.create_task(
+            self._run_demo_backend(session_id, callback)
+        )
+
+    async def _run_demo_backend(self, session_id, callback):
+        try:
+            await self.solver.run_with_history(
+                self.size,
+                self._original_grid,
+                self.h_constraints,
+                self.v_constraints,
+                callback=callback,
+                algorithm=self.active_algorithm,
+                step_player=self.step_player,
+                max_nodes=int(self.max_nodes_field.value)
+                if not self.unlimited_nodes_checkbox.value
+                else None,
             )
-            tg.create_task(
-                self.solver.run_with_history(
-                    self.size,
-                    self._original_grid,
-                    self.h_constraints,
-                    self.v_constraints,
-                    callback=callback,
-                    algorithm=self.active_algorithm,
-                    step_player=self.step_player,
-                    max_nodes=int(self.max_nodes_field.value) if not self.unlimited_nodes_checkbox.value else None,
-                )
-            )
+        finally:
+            if session_id == self._solve_session and self._backend_running:
+                self._set_backend_running(False)
+                self._page.update()
+            if self._backend_task is not None and self._backend_task.done():
+                self._backend_task = None
 
     def _update_solve_instantly_button_state(self):
         """Enable Solve Instantly button only if animation is running AND solution is ready."""
@@ -648,11 +740,15 @@ class DemoPage(ft.View):
         self.step_player._delay = float(self.speed_slider.value)
 
     async def on_choose_algorithm(self, e):
+        if self._block_if_backend_running(
+            "Wait for the backend to finish before choosing a new algorithm."
+        ):
+            return
         self.active_algorithm = self.algorithm_dropdown.value
         algo = self.active_algorithm
         show_max_nodes = algo and algo.startswith("astar")
         self.max_nodes_container.visible = bool(show_max_nodes)
-        await self.refresh_puzzle(None)
+        await self.hard_refresh_page(None)
         self._page.update()
 
     async def on_unlimited_nodes_change(self, e):
